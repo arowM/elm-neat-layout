@@ -1,0 +1,10 @@
+{
+  "root": "../src",
+  "tests":
+  [ "Email"
+  , "MobilePhone"
+  , "ZenDigit"
+  , "Atom.Input"
+  , "Atom.Select"
+  ]
+}

@@ -1,0 +1,89 @@
+@import 'mixin';
+@import 'variables';
+
+.pageTitle {
+  font-size: 1.6em;
+  font-weight: 800;
+  text-align: center;
+  color: $main-color4;
+  text-shadow: 0 0 3px $main-color0;
+}
+
+.form {
+  padding: 6px;
+
+  .body {
+    width: calc(90vw - #{$default-padding} - 2 * 6px);
+    max-width: 60em;
+    opacity: 0.8;
+    background-color: $background-color0;
+    border-radius: 0.2em;
+    box-shadow: 0 0 6px 6px rgba($background-color0, 1);
+
+    &_inner {
+      margin: -6px;
+    }
+  }
+
+  .label {
+    padding-bottom: 0;
+    width: 10em;
+    font-size: 1.1em;
+    font-weight: 600;
+  }
+
+  .control {
+    min-width: 16em;
+  }
+
+  .subdescription {
+    font-size: 0.9em;
+    color: $notable-color;
+  }
+
+  &[data-submitted="true"] {
+    .subdescription {
+      &-required {
+        &[data-required-error="true"] {
+          @include errorText;
+        }
+      }
+    }
+  }
+
+  .errorField {
+    @include errorText;
+  }
+}
+
+.goatWrapper {
+  padding: 6px;
+
+  .goat {
+    width: calc(90vw - #{$default-padding} - 2 * 6px);
+    max-width: 60em;
+    opacity: 0.8;
+    background-color: $background-color0;
+    border-radius: 0.2em;
+    box-shadow: 0 0 6px 6px rgba($background-color0, 1);
+  }
+
+  .goatField {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    border-bottom: solid 2px $background-color1;
+
+    .goatTitle {
+      padding-bottom: 0;
+      width: 10em;
+      font-size: 1.1em;
+      font-weight: 600;
+    }
+
+    .goatContent {
+      min-width: 16em;
+    }
+  }
+}
+
