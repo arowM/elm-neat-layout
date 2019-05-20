@@ -18,4 +18,4 @@ In CSS files, the prefix is supposed to be prepend to each class selectors by CS
 -}
 classWithPrefix : String -> String -> Attribute msg
 classWithPrefix prefix =
-    Attributes.batch << List.map (\name -> Attributes.class <| prefix ++ name) << String.split " "
+    Attributes.classList << List.map (\name -> (prefix ++ name, True) ) << String.split " "
