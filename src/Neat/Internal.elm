@@ -1,9 +1,9 @@
 module Neat.Internal exposing
     ( View(..)
-    , fromHtml
-    , toHtml
-    , setMixin
     , coerce
+    , fromHtml
+    , setMixin
+    , toHtml
     )
 
 import Html exposing (Attribute, Html, div)
@@ -29,7 +29,6 @@ fromHtml f =
     View <|
         \mixin ->
             f <| Mixin.toAttributes mixin
-
 
 
 coerce : View p1 a -> View p2 a

@@ -4,16 +4,16 @@ module Neat exposing
     , apply
     , batch
     , none
-    , unsafeToHtml
-    , unsafeFromHtml
+    , toHtmlForLazy
     , setMixin
     , setMixins
     , Ratio
     , ratio
     , convert
     , div
-    -- , row
     , keyed
+    , keyedLazy
+    -- , row
     )
 
 {-| Main framework for managing paddings.
@@ -26,8 +26,7 @@ module Neat exposing
 @docs apply
 @docs batch
 @docs none
-@docs unsafeToHtml
-@docs unsafeFromHtml
+@docs toHtmlForLazy
 @docs setMixin
 @docs setMixins
 
@@ -42,12 +41,14 @@ module Neat exposing
 # Helper functions for Html
 
 @docs div
+
 -- @docs row
 
 
 # Keyed
 
 @docs keyed
+@docs keyedLazy
 
 -}
 
@@ -108,8 +109,6 @@ apply f (Internal.View html) =
             f <| html <| Mixin.fromAttributes attrs
 
 
-
-
 {-| -}
 batch : List (View padding a) -> View padding a
 batch =
@@ -123,21 +122,12 @@ none =
 
 
 {-| DO NOT overuse.
-    This is only supposed to be used in order to make `Html.Lazy.lazy` works.
+This is only supposed to be used in order to make `Html.Lazy.lazy` works.
+See `keyedLazy` for real usage.
 -}
-unsafeToHtml : View p a -> Html a
-unsafeToHtml =
+toHtmlForLazy : View p a -> Html a
+toHtmlForLazy =
     Internal.toHtml []
-
-
-{-| DO NOT overuse.
-    This is only supposed to be used in order to make `Html.Lazy.lazy` works.
--}
-unsafeFromHtml : Html a -> View p a
-unsafeFromHtml html =
-    Internal.fromHtml <|
-        \attrs ->
-            Html.div attrs [ html ]
 
 
 {-| -}
@@ -152,17 +142,18 @@ setMixins mixins =
     Internal.setMixin <| Mixin.batch mixins
 
 
+
 -- Convert to another padding
 
 
 {-| Padding ratio to `FullPadding`.
 -}
-type Ratio p =
-    Ratio Float
+type Ratio p
+    = Ratio Float
 
 
 {-| Constructor for `Ratio`.
-    Takes float value of `"Width of p" / "Width of FullPadding"`.
+Takes float value of `"Width of p" / "Width of FullPadding"`.
 -}
 ratio : Float -> Ratio p
 ratio =
@@ -170,17 +161,19 @@ ratio =
 
 
 {-| Convert padding from `p1` to `p2`.
-    It must satisfy condition: `"Width of p1" <= "Width of p2" <= "Width of FullPadding"`.
+It must satisfy condition: `"Width of p1" <= "Width of p2" <= "Width of FullPadding"`.
 -}
 convert : Ratio p1 -> Ratio p2 -> View p1 msg -> View p2 msg
 convert (Ratio r1) (Ratio r2) child =
     Internal.coerce <|
-    lift Html.div
-        [ Mixin.fromAttribute <|
-            Attributes.style "padding" <| String.fromFloat ((r2 - r1) / 2) ++ "rem"
-        ]
-        [ child
-        ]
+        lift Html.div
+            [ Mixin.fromAttribute <|
+                Attributes.style "padding" <|
+                    String.fromFloat ((r2 - r1) / 2)
+                        ++ "rem"
+            ]
+            [ child
+            ]
 
 
 
@@ -193,13 +186,11 @@ div =
     lift Html.div
 
 
+
 -- {-| -}
 -- row : List (View p msg) -> View p msg
 -- row =
 --     div [ Mixin.row ]
-
-
-
 -- Keyed
 
 
@@ -209,8 +200,35 @@ keyed :
     -> List (Mixin msg)
     -> List ( String, View p msg )
     -> View p msg
-keyed tag mixin children =
+keyed tag mixin =
+    keyedLazy tag mixin << List.map (Tuple.mapSecond (Internal.toHtml []))
+
+
+{-|
+    v1 : View p msg
+    v1 = Debug.todo "v1"
+
+    v2 : View p msg
+    v2 = Debug.todo "v2"
+
+    child : Int -> View p msg
+    child _ = Debug.todo "child"
+
+    child_ : Int -> Html msg
+    child_ = toHtmlForLazy << child
+
+    v : List Int -> View p msg
+    v ns =
+        keyedLazy "div" []
+            (\n -> ( String.fromInt n, lazy child n ))
+
+-}
+keyedLazy :
+    String
+    -> List (Mixin msg)
+    -> List ( String, Html msg )
+    -> View p msg
+keyedLazy tag mixin children =
     Internal.fromHtml <|
         \extra ->
-            Keyed.node tag (List.concatMap Mixin.toAttributes mixin ++ extra) <|
-                List.map (Tuple.mapSecond (Internal.toHtml [])) children
+            Keyed.node tag (List.concatMap Mixin.toAttributes mixin ++ extra) <| children

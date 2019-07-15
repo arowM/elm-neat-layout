@@ -2,6 +2,7 @@ module Neat.NoPadding exposing
     ( NoPadding
     , Atom
     , toPage
+    , ratio
     , text
     )
 
@@ -13,6 +14,7 @@ module Neat.NoPadding exposing
 @docs NoPadding
 @docs Atom
 @docs toPage
+@docs ratio
 
 
 # Helper functions for Html
@@ -23,6 +25,7 @@ module Neat.NoPadding exposing
 
 import Html exposing (Html)
 import Neat exposing (View)
+import Neat.Internal as Internal
 
 
 
@@ -45,14 +48,21 @@ type alias Atom msg =
 -}
 toPage : View NoPadding msg -> Html msg
 toPage =
-    Neat.unsafeToHtml
+    Internal.toHtml []
+
+
+{-| -}
+ratio : Neat.Ratio NoPadding
+ratio =
+    Neat.ratio 0
 
 
 
 -- Helper functions for Html
 
 
-{-| `View` version of `Html.text`. -}
+{-| `View` version of `Html.text`.
+-}
 text : String -> View NoPadding msg
-text =
-    Neat.unsafeFromHtml << Html.text
+text str =
+    Internal.fromHtml <| \_ -> Html.text str
