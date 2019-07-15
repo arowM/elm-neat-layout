@@ -205,21 +205,27 @@ keyed tag mixin =
 
 
 {-|
+
     v1 : View p msg
-    v1 = Debug.todo "v1"
+    v1 =
+        Debug.todo "v1"
 
     v2 : View p msg
-    v2 = Debug.todo "v2"
+    v2 =
+        Debug.todo "v2"
 
     child : Int -> View p msg
-    child _ = Debug.todo "child"
+    child _ =
+        Debug.todo "child"
 
     child_ : Int -> Html msg
-    child_ = toHtmlForLazy << child
+    child_ =
+        toHtmlForLazy << child
 
     v : List Int -> View p msg
     v ns =
-        keyedLazy "div" []
+        keyedLazy "div"
+            []
             (\n -> ( String.fromInt n, lazy child n ))
 
 -}
