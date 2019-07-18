@@ -2,11 +2,11 @@ module Neat exposing
     ( View
     , toPage
     , lift
-    , apply
     , batch
     , none
     , setMixin
     , setMixins
+    , apply
     , setBoundary
     , setBoundaryWith
     , BoundaryConfig
@@ -19,7 +19,7 @@ module Neat exposing
     -- , row
     )
 
-{-| Main framework for managing paddings.
+{-| Main module for elm-neat-layout.
 
 
 # Core
@@ -28,14 +28,14 @@ module Neat exposing
 @docs toPage
 
 
-# Constructors and operators for View
+# Constructors and Modifiers for View
 
 @docs lift
-@docs apply
 @docs batch
 @docs none
 @docs setMixin
 @docs setMixins
+@docs apply
 
 
 # Boundary
@@ -46,7 +46,7 @@ module Neat exposing
 @docs defaultBoundaryConfig
 
 
-# Alternatives to Html
+# Alternatives to Html nodes
 
 @docs div
 @docs text
@@ -73,14 +73,14 @@ import Neat.NoPadding exposing (NoPadding)
 -- Core
 
 
-{-| Html alternative that is aware of padding width in type level.
+{-| Html alternative with type level paddings.
 -}
 type alias View padding msg =
     Internal.View padding msg
 
 
 {-| Call this function **only once** on root view function.
-Make sure that your own CSS is overwritten by following CSS.
+Make sure that your own CSS is partially overwritten by following CSS.
 
     *,
     *::before,
@@ -118,32 +118,38 @@ resetCss =
         ]
 
 
-{-|
+
+-- Constructors and Modifiers for View
+
+
+{-| Lift `Html` nodes into `View`.
 
     import Html exposing (div)
     import Mixin
     import View.NoPadding as NoPadding exposing (NoPadding)
 
-    atom1 : View NoPadding msg
-    atom1 =
+    view1 : View NoPadding msg
+    view1 =
         View.div
             []
-            [ NoPadding.text "atom1"
+            [ NoPadding.text "view1"
             ]
 
-    atom2 : View NoPadding msg
-    atom2 =
+    view2 : View NoPadding msg
+    view2 =
         View.div
             []
-            [ NoPadding.text "atom2"
+            [ NoPadding.text "view2"
             ]
 
-    lift div
-        [ Mixin.class "parent"
-        ]
-        [ atom1
-        , atom2
-        ]
+    composed : View NoPadding msg
+    composed =
+        lift div
+            [ Mixin.class "parent"
+            ]
+            [ view1
+            , view2
+            ]
 
 -}
 lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
@@ -152,20 +158,13 @@ lift =
 
 
 {-| -}
-apply : (Html a -> Html a) -> View p a -> View p a
-apply f (Internal.View html) =
-    Internal.fromHtml <|
-        \attrs ->
-            f <| html <| Mixin.fromAttributes attrs
-
-
-{-| -}
 batch : List (View p a) -> View p a
 batch =
     div []
 
 
-{-| -}
+{-| Alias for `text ""`.
+-}
 none : View p a
 none =
     Internal.fromHtml <| \_ -> Html.text ""
@@ -183,23 +182,12 @@ setMixins mixins =
     Internal.setMixin <| Mixin.batch mixins
 
 
-
--- Constructors and operators for View
--- Alternatives to Html
-
-
-{-| `View` version of `Html.div`.
--}
-div : List (Mixin msg) -> List (View p msg) -> View p msg
-div =
-    lift Html.div
-
-
-{-| `View` version of `Html.text`.
--}
-text : String -> View p msg
-text str =
-    Internal.fromHtml <| \_ -> Html.text str
+{-| -}
+apply : (Html a -> Html a) -> View p a -> View p a
+apply f (Internal.View html) =
+    Internal.fromHtml <|
+        \attrs ->
+            f <| html <| Mixin.fromAttributes attrs
 
 
 
@@ -296,11 +284,21 @@ fullPaddingValue =
 
 
 
--- {-| -}
--- row : List (View p msg) -> View p msg
--- row =
---     div [ Mixin.row ]
--- Keyed
+-- Alternatives to Html nodes
+
+
+{-| `View` version of `Html.div`.
+-}
+div : List (Mixin msg) -> List (View p msg) -> View p msg
+div =
+    lift Html.div
+
+
+{-| `View` version of `Html.text`.
+-}
+text : String -> View NoPadding msg
+text str =
+    Internal.fromHtml <| \_ -> Html.text str
 
 
 {-| -}
@@ -350,7 +348,7 @@ keyedLazy tag mixin children =
 
 
 {-| DO NOT overuse.
-This is only supposed to be used in order to make `Html.Lazy.lazy` works.
+This is only supposed to be used in order to make `Html.Lazy.lazy` work.
 See `keyedLazy` for real usage.
 -}
 toHtmlForLazy : View p a -> Html a

@@ -6,9 +6,6 @@ module Neat.NoPadding exposing
 
 {-| Functions for View without paddings.
 
-
-# Core
-
 @docs NoPadding
 @docs Atom
 @docs ratio

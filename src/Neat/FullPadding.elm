@@ -4,10 +4,7 @@ module Neat.FullPadding exposing
     , ratio
     )
 
-{-|
-
-
-# Core
+{-| Functions for View with full paddings.
 
 @docs FullPadding
 @docs fromNoPadding
