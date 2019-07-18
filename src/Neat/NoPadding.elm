@@ -2,6 +2,8 @@ module Neat.NoPadding exposing
     ( NoPadding
     , Atom
     , toPage
+    , PageConfig
+    , defaultPageConfig
     , ratio
     , text
     )
@@ -14,6 +16,8 @@ module Neat.NoPadding exposing
 @docs NoPadding
 @docs Atom
 @docs toPage
+@docs PageConfig
+@docs defaultPageConfig
 @docs ratio
 
 
@@ -24,6 +28,8 @@ module Neat.NoPadding exposing
 -}
 
 import Html exposing (Html)
+import Html.Attributes exposing (style)
+import Mixin exposing (Mixin)
 import Neat exposing (View)
 import Neat.Internal as Internal
 
@@ -45,10 +51,61 @@ type alias Atom msg =
 
 
 {-| Call this function **only once** on root view function.
+Make sure that your own CSS is overwritten by following CSS.
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      border: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
 -}
-toPage : View NoPadding msg -> Html msg
-toPage =
-    Internal.toHtml []
+toPage : PageConfig msg -> View NoPadding msg -> Html msg
+toPage setting v =
+    Html.div []
+        [ resetCss
+        , Internal.toHtml (Mixin.toAttributes setting.mixin) v
+        ]
+
+
+{-| Configuration for `toPage`.
+-}
+type alias PageConfig msg =
+    { mixin : Mixin msg
+    }
+
+
+{-| Default value for `PageConfig`.
+
+    { mixin = Mixin.none
+    }
+
+-}
+defaultPageConfig : PageConfig msg
+defaultPageConfig =
+    { mixin = Mixin.none
+    }
+
+
+resetCss : Html msg
+resetCss =
+    Html.node "style"
+        []
+        [ Html.text <|
+            """
+            *,
+            *::before,
+            *::after {
+              margin: 0;
+              border: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            """
+        ]
 
 
 {-| -}
