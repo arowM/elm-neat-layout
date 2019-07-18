@@ -1,18 +1,21 @@
 module Neat exposing
     ( View
+    , toPage
     , lift
     , apply
     , batch
     , none
-    , toHtmlForLazy
     , setMixin
     , setMixins
-    , Ratio
-    , ratio
-    , convert
+    , setBoundary
+    , setBoundaryWith
+    , BoundaryConfig
+    , defaultBoundaryConfig
     , div
+    , text
     , keyed
     , keyedLazy
+    , toHtmlForLazy
     -- , row
     )
 
@@ -22,33 +25,38 @@ module Neat exposing
 # Core
 
 @docs View
+@docs toPage
+
+
+# Constructors and operators for View
+
 @docs lift
 @docs apply
 @docs batch
 @docs none
-@docs toHtmlForLazy
 @docs setMixin
 @docs setMixins
 
 
-# Convert to another padding
+# Boundary
 
-@docs Ratio
-@docs ratio
-@docs convert
+@docs setBoundary
+@docs setBoundaryWith
+@docs BoundaryConfig
+@docs defaultBoundaryConfig
 
 
-# Helper functions for Html
+# Alternatives to Html
 
 @docs div
-
--- @docs row
+@docs text
 
 
 # Keyed
 
 @docs keyed
 @docs keyedLazy
+@docs toHtmlForLazy
 
 -}
 
@@ -56,13 +64,58 @@ import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
+import Neat.FullPadding exposing (FullPadding)
 import Neat.Internal as Internal
+import Neat.NoPadding exposing (NoPadding)
+
+
+
+-- Core
 
 
 {-| Html alternative that is aware of padding width in type level.
 -}
 type alias View padding msg =
     Internal.View padding msg
+
+
+{-| Call this function **only once** on root view function.
+Make sure that your own CSS is overwritten by following CSS.
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      border: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+-}
+toPage : View NoPadding msg -> Html msg
+toPage v =
+    Html.div []
+        [ resetCss
+        , Internal.toHtml [] v
+        ]
+
+
+resetCss : Html msg
+resetCss =
+    Html.node "style"
+        []
+        [ Html.text <|
+            """
+            *,
+            *::before,
+            *::after {
+              margin: 0;
+              border: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            """
+        ]
 
 
 {-|
@@ -94,11 +147,8 @@ type alias View padding msg =
 
 -}
 lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
-lift node mixins children =
-    Internal.fromHtml <|
-        \extra ->
-            node (List.concatMap Mixin.toAttributes mixins ++ extra) <|
-                List.map (Internal.toHtml []) children
+lift =
+    Internal.lift
 
 
 {-| -}
@@ -110,24 +160,15 @@ apply f (Internal.View html) =
 
 
 {-| -}
-batch : List (View padding a) -> View padding a
+batch : List (View p a) -> View p a
 batch =
     div []
 
 
 {-| -}
-none : View padding a
+none : View p a
 none =
     Internal.fromHtml <| \_ -> Html.text ""
-
-
-{-| DO NOT overuse.
-This is only supposed to be used in order to make `Html.Lazy.lazy` works.
-See `keyedLazy` for real usage.
--}
-toHtmlForLazy : View p a -> Html a
-toHtmlForLazy =
-    Internal.toHtml []
 
 
 {-| -}
@@ -143,47 +184,115 @@ setMixins mixins =
 
 
 
--- Convert to another padding
+-- Constructors and operators for View
+-- Alternatives to Html
 
 
-{-| Padding ratio to `FullPadding`.
+{-| `View` version of `Html.div`.
 -}
-type Ratio p
-    = Ratio Float
-
-
-{-| Constructor for `Ratio`.
-Takes float value of `"Width of p" / "Width of FullPadding"`.
--}
-ratio : Float -> Ratio p
-ratio =
-    Ratio
-
-
-{-| Convert padding from `p1` to `p2`.
-It must satisfy condition: `"Width of p1" <= "Width of p2" <= "Width of FullPadding"`.
--}
-convert : Ratio p1 -> Ratio p2 -> View p1 msg -> View p2 msg
-convert (Ratio r1) (Ratio r2) child =
-    Internal.coerce <|
-        lift Html.div
-            [ Mixin.fromAttribute <|
-                Attributes.style "padding" <|
-                    String.fromFloat ((r2 - r1) / 2)
-                        ++ "rem"
-            ]
-            [ child
-            ]
-
-
-
--- Helper functions for Html
-
-
-{-| -}
-div : List (Mixin msg) -> List (View padding msg) -> View padding msg
+div : List (Mixin msg) -> List (View p msg) -> View p msg
 div =
     lift Html.div
+
+
+{-| `View` version of `Html.text`.
+-}
+text : String -> View p msg
+text str =
+    Internal.fromHtml <| \_ -> Html.text str
+
+
+
+-- Boundary
+
+
+{-| Set boundary to full-padding views.
+-}
+setBoundaryWith : BoundaryConfig -> List (Mixin msg) -> List (View FullPadding msg) -> View NoPadding msg
+setBoundaryWith boundary mixins children =
+    Internal.coerce <|
+        setOffset boundary.outerOffset <|
+            div mixins
+                [ div
+                    [ fullPaddingWithOffset boundary.innerOffset
+                    ]
+                    children
+                ]
+
+
+{-| Shorthands for `setBoundaryWith defaultBoundaryConfig`.
+-}
+setBoundary : List (Mixin msg) -> List (View FullPadding msg) -> View NoPadding msg
+setBoundary =
+    setBoundaryWith defaultBoundaryConfig
+
+
+{-| Boundary config.
+Available value for `innerOffset` and `outerOffset` is CSS value for length.
+e.g., `Just "2px"`, `Just "-3em"`,...
+-}
+type alias BoundaryConfig =
+    { innerOffset : Maybe String
+    , outerOffset : Maybe String
+    }
+
+
+{-| Default `BoundaryConfig`.
+
+    { innerOffset = Nothing
+    , outerOffset = Nothing
+    }
+
+-}
+defaultBoundaryConfig : BoundaryConfig
+defaultBoundaryConfig =
+    { innerOffset = Nothing
+    , outerOffset = Nothing
+    }
+
+
+fullPadding : Mixin msg
+fullPadding =
+    Mixin.fromAttribute <|
+        Attributes.style "padding" fullPaddingValue
+
+
+fullPaddingWithOffset : Maybe String -> Mixin msg
+fullPaddingWithOffset moffset =
+    case moffset of
+        Nothing ->
+            fullPadding
+
+        Just offset ->
+            Mixin.fromAttribute <|
+                Attributes.style "padding" <|
+                    String.concat
+                        [ "calc("
+                        , offset
+                        , " + "
+                        , fullPaddingValue
+                        , ")"
+                        ]
+
+
+setOffset : Maybe String -> View p msg -> View p msg
+setOffset moffset v =
+    case moffset of
+        Nothing ->
+            v
+
+        Just offset ->
+            div
+                [ Mixin.fromAttribute <|
+                    Attributes.style "padding" offset
+                ]
+                [ v
+                ]
+
+
+fullPaddingValue : String
+fullPaddingValue =
+    "0.5rem"
 
 
 
@@ -238,3 +347,12 @@ keyedLazy tag mixin children =
     Internal.fromHtml <|
         \extra ->
             Keyed.node tag (List.concatMap Mixin.toAttributes mixin ++ extra) <| children
+
+
+{-| DO NOT overuse.
+This is only supposed to be used in order to make `Html.Lazy.lazy` works.
+See `keyedLazy` for real usage.
+-}
+toHtmlForLazy : View p a -> Html a
+toHtmlForLazy =
+    Internal.toHtml []

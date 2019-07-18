@@ -2,6 +2,7 @@ module Neat.Internal exposing
     ( View(..)
     , coerce
     , fromHtml
+    , lift
     , setMixin
     , toHtml
     )
@@ -34,3 +35,11 @@ fromHtml f =
 coerce : View p1 a -> View p2 a
 coerce (View f) =
     View f
+
+
+lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
+lift node mixins children =
+    fromHtml <|
+        \extra ->
+            node (List.concatMap Mixin.toAttributes mixins ++ extra) <|
+                List.map (toHtml []) children
