@@ -1,4 +1,4 @@
-module Neat.NoPadding exposing
+module Neat.Padding.NoPadding exposing
     ( NoPadding
     , Atom
     , ratio
@@ -12,7 +12,7 @@ module Neat.NoPadding exposing
 
 -}
 
-import Neat.Helper.Ratio as Ratio exposing (Ratio)
+import Neat.Padding.Helper.Ratio as Ratio exposing (Ratio)
 import Neat.Internal exposing (View)
 
 

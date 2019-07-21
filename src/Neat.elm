@@ -64,9 +64,9 @@ import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
-import Neat.FullPadding exposing (FullPadding)
 import Neat.Internal as Internal
-import Neat.NoPadding exposing (NoPadding)
+import Neat.Padding.FullPadding exposing (FullPadding)
+import Neat.Padding.NoPadding exposing (NoPadding)
 
 
 

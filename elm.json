@@ -6,8 +6,9 @@
     "version": "1.0.0",
     "exposed-modules": [
         "Neat",
-        "Neat.NoPadding",
-        "Neat.FullPadding"
+        "Neat.Padding.NoPadding",
+        "Neat.Padding.FullPadding",
+        "Neat.Padding.Helper.Ratio"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {
