@@ -1,6 +1,7 @@
 module Neat.Internal exposing
     ( View(..)
     , coerce
+    , div
     , fromHtml
     , lift
     , setMixin
@@ -43,3 +44,8 @@ lift node mixins children =
         \extra ->
             node (List.concatMap Mixin.toAttributes mixins ++ extra) <|
                 List.map (toHtml []) children
+
+
+div : List (Mixin msg) -> List (View p msg) -> View p msg
+div =
+    lift Html.div

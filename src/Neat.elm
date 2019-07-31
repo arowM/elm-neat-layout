@@ -16,7 +16,6 @@ module Neat exposing
     , keyed
     , keyedLazy
     , toHtmlForLazy
-    -- , row
     )
 
 {-| Main module for elm-neat-layout.
@@ -291,7 +290,7 @@ fullPaddingValue =
 -}
 div : List (Mixin msg) -> List (View p msg) -> View p msg
 div =
-    lift Html.div
+    Internal.div
 
 
 {-| `View` version of `Html.text`.
