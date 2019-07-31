@@ -10,8 +10,6 @@
 }
 
 .form {
-  padding: 6px;
-
   .body {
     width: calc(90vw - #{$default-padding} - 2 * 6px);
     max-width: 60em;
@@ -19,10 +17,6 @@
     background-color: $background-color0;
     border-radius: 0.2em;
     box-shadow: 0 0 6px 6px rgba($background-color0, 1);
-
-    &_inner {
-      margin: -6px;
-    }
   }
 
   .label {
@@ -57,8 +51,6 @@
 }
 
 .goatWrapper {
-  padding: 6px;
-
   .goat {
     width: calc(90vw - #{$default-padding} - 2 * 6px);
     max-width: 60em;

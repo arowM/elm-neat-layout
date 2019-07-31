@@ -41,7 +41,9 @@ import Html exposing (Attribute, input)
 import Html.Attributes as Attributes
 import Html.Events as Events
 import Html.Events.Extra as Events
-import View.NoPadding as NoPadding exposing (Atom)
+import Mixin exposing (Mixin)
+import Neat
+import Neat.Padding.NoPadding exposing (Atom)
 
 
 
@@ -95,15 +97,16 @@ type alias Config msg =
 -}
 view : Config msg -> Input -> Atom msg
 view conf (Input v) =
-    NoPadding.fromHtml <|
-        input
+    Neat.lift input
+        [ Mixin.fromAttributes
             [ Attributes.placeholder conf.placeholder
             , Attributes.value v
             , Attributes.type_ "text"
             , Events.onChange conf.onChange
-            , class "input"
             ]
-            []
+        , class "input"
+        ]
+        []
 
 
 
@@ -183,6 +186,6 @@ required err d =
 {-| A specialized version of `class` for this module.
 It handles generated class name by CSS modules.
 -}
-class : String -> Attribute msg
+class : String -> Mixin msg
 class =
     Css.classWithPrefix "input__"

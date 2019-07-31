@@ -28,14 +28,14 @@ import Goat.Name as Name exposing (Name)
 import Goat.Phone as Phone exposing (Phone)
 import Html exposing (Html)
 import Html.Attributes as Attributes
-import Html.Attributes.More as Attributes
 import Html.Extra as Html
 import Html.Lazy as Html
 import Mixin exposing (Mixin)
-import View exposing (View)
-import View.FullPadding as FullPadding exposing (FullPadding)
-import View.MiddlePadding as MiddlePadding exposing (MiddlePadding)
-import View.NoPadding as NoPadding exposing (Atom)
+import Mixin.Extra as Mixin
+import Neat exposing (View, defaultBoundaryConfig)
+import Neat.Padding.FullPadding as FullPadding exposing (FullPadding)
+import Neat.Padding.MiddlePadding as MiddlePadding exposing (MiddlePadding)
+import Neat.Padding.NoPadding as NoPadding exposing (Atom)
 
 
 
@@ -183,10 +183,10 @@ type Error
 
 pageTitle : String -> Atom msg
 pageTitle t =
-    View.lift Html.h1
+    Neat.lift Html.h1
         [ class "pageTitle"
         ]
-        [ NoPadding.text t
+        [ Neat.text t
         ]
 
 
@@ -196,34 +196,36 @@ pageTitle t =
 
 goats : List Goat -> View FullPadding msg
 goats gs =
-    View.div
+    Neat.div
         [ class "goats"
         ]
         [ FullPadding.fromNoPadding <| pageTitle "List of Goats"
-        , View.keyed "div"
-            []
-          <|
-            List.map keyedGoat gs
+        , Neat.keyedLazy "div" []
+          <| List.map keyedGoat gs
         ]
 
 
-keyedGoat : Goat -> ( String, View FullPadding msg )
+keyedGoat : Goat -> ( String, Html msg )
 keyedGoat g =
-    ( Contact.toString g.contact, View.fromHtml <| Html.lazy goat_ g )
+    ( Contact.toString g.contact, Html.lazy goat_ g )
 
 
 goat_ : Goat -> Html msg
 goat_ g =
-    View.toHtml <| goat g
+    Neat.toHtmlForLazy <| goat g
 
 
 goat : Goat -> View FullPadding msg
 goat g =
     FullPadding.fromNoPadding <|
-        View.div
+        Neat.div
             [ class "goatWrapper"
             ]
-            [ FullPadding.setBoundary Html.div
+            [ Neat.setBoundaryWith
+                { defaultBoundaryConfig
+                  | innerOffset = Just "-6px"
+                  , outerOffset = Just "6px"
+                }
                 [ class "goat"
                 ]
                 [ goatField "Name" <| Name.toString g.name
@@ -237,7 +239,7 @@ goat g =
                     Contact.ContactPhone phone ->
                         goatField "Phone" <|
                             Phone.toString phone
-                , Maybe.withDefault View.none <|
+                , Maybe.withDefault Neat.none <|
                     Maybe.map
                         (goatField "Message" << Message.toString)
                         g.message
@@ -247,20 +249,20 @@ goat g =
 
 goatField : String -> String -> View FullPadding msg
 goatField title content =
-    View.div
+    Neat.div
         [ class "goatField"
         ]
         [ FullPadding.fromNoPadding <|
-            View.div
+            Neat.div
                 [ class "goatTitle"
                 ]
-                [ NoPadding.text title
+                [ Neat.text title
                 ]
         , FullPadding.fromNoPadding <|
-            View.div
+            Neat.div
                 [ class "goatContent"
                 ]
-                [ NoPadding.text content
+                [ Neat.text content
                 ]
         ]
 
@@ -271,20 +273,24 @@ goatField title content =
 
 registerForm : String -> Bool -> List (View FullPadding msg) -> View FullPadding msg
 registerForm id submitted children =
-    View.div
+    Neat.div
         [ Mixin.id id
         ]
         [ FullPadding.fromNoPadding <| pageTitle "Register new Goat"
         , FullPadding.fromNoPadding <|
-            View.lift Html.form
+            Neat.lift Html.form
                 [ class "form"
                 , Mixin.boolAttribute "data-submitted" submitted
                 , Mixin.fromAttribute <| Attributes.novalidate True
                 ]
-                [ FullPadding.setBoundary Html.div
+                [ Neat.setBoundaryWith
+                    { defaultBoundaryConfig
+                      | innerOffset = Just "-6px"
+                      , outerOffset = Just "6px"
+                    }
                     [ class "body"
                     ]
-                    [ View.div
+                    [ Neat.div
                         [ class "body_inner"
                         ]
                         children
@@ -295,16 +301,16 @@ registerForm id submitted children =
 
 label : String -> Atom msg
 label str =
-    View.div
+    Neat.div
         [ class "label"
         ]
-        [ NoPadding.text str
+        [ Neat.text str
         ]
 
 
 control : List (View p msg) -> View p msg
 control children =
-    View.div
+    Neat.div
         [ class "control"
         ]
         children
@@ -312,38 +318,38 @@ control children =
 
 description : String -> Atom msg
 description str =
-    View.div
+    Neat.div
         [ class "description"
         ]
-        [ NoPadding.text str
+        [ Neat.text str
         ]
 
 
 fieldRequired : Bool -> List String -> Atom msg
 fieldRequired b desc =
-    View.batch
-        [ View.batch <|
+    Neat.batch
+        [ Neat.batch <|
             List.map description desc
-        , View.div
+        , Neat.div
             [ class "subdescription"
             , class "subdescription-required"
             , Mixin.boolAttribute "data-required-error" b
             ]
-            [ NoPadding.text "(required)"
+            [ Neat.text "(required)"
             ]
         ]
 
 
 fieldOptional : List String -> Atom msg
 fieldOptional desc =
-    View.batch
-        [ View.batch <|
+    Neat.batch
+        [ Neat.batch <|
             List.map description desc
-        , View.div
+        , Neat.div
             [ class "subdescription"
             , class "subdescription-optional"
             ]
-            [ NoPadding.text "(optional)"
+            [ Neat.text "(optional)"
             ]
         ]
 
@@ -352,7 +358,7 @@ inputErrorField : (err -> List String) -> Decoder String err a -> Input -> View 
 inputErrorField f d i =
     case Input.decodeField d i of
         Ok _ ->
-            View.none
+            Neat.none
 
         Err errs ->
             errorField <|
@@ -363,7 +369,7 @@ selectErrorField : (err -> List String) -> Decoder String err a -> Select -> Vie
 selectErrorField f d i =
     case Select.decodeField d i of
         Ok _ ->
-            View.none
+            Neat.none
 
         Err errs ->
             errorField <|
@@ -372,7 +378,7 @@ selectErrorField f d i =
 
 errorField : List (List String) -> View MiddlePadding msg
 errorField errs =
-    View.div
+    Neat.div
         [ class "errorField"
         ]
     <|
@@ -383,13 +389,13 @@ errorField errs =
 
 errorFieldP : List String -> Atom msg
 errorFieldP ls =
-    View.batch <|
+    Neat.batch <|
         List.map
             (\s ->
-                View.lift Html.p
+                Neat.lift Html.p
                     [ class "errorField_p"
                     ]
-                    [ NoPadding.text s
+                    [ Neat.text s
                     ]
             )
             ls
@@ -404,4 +410,4 @@ It handles generated class name by CSS modules.
 -}
 class : String -> Mixin msg
 class =
-    Mixin.fromAttribute << Css.classWithPrefix "form__"
+    Css.classWithPrefix "form__"

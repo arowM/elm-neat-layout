@@ -6,7 +6,7 @@ module.exports =
       "postcss-flexbugs-fixes": {},
       "postcss-modules": {
         "generateScopedName": "[name]__[local]",
-        "getJSON": () => null,
+        "getJSON": () => null
       }
     }
   }

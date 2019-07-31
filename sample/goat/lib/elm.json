@@ -14,18 +14,14 @@
         ],
         "Padding": [
             "Mixin",
-            "View",
-            "View.NoPadding",
-            "View.NarrowPadding",
-            "View.MiddlePadding",
-            "View.FullPadding"
+            "Neat.Padding.MiddlePadding"
         ],
         "Common Types": [
             "Email",
             "MobilePhone"
         ],
-        "HTML": [
-            "Html.Attributes.More"
+        "Mixin": [
+            "Mixin.Extra"
         ],
         "Utilities": [
             "ZenDigit",
@@ -35,9 +31,10 @@
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {
         "arowM/elm-form-decoder": "1.0.0 <= v < 2.0.0",
-        "arowM/elm-mixin": "2.0.0 <= v < 3.0.0",
+        "arowM/elm-mixin": "2.1.0 <= v < 3.0.0",
         "elm/core": "1.0.0 <= v < 2.0.0",
-        "elm/html": "1.0.0 <= v < 2.0.0"
+        "elm/html": "1.0.0 <= v < 2.0.0",
+        "elm-community/html-extra": "3.2.0 <= v < 4.0.0"
     },
     "test-dependencies": {
         "elm/json": "1.1.3 <= v < 2.0.0",

@@ -1,6 +1,6 @@
-module Html.Attributes.More exposing (boolAttribute)
+module Mixin.Extra exposing (boolAttribute)
 
-{-| Helper functions related to Html.Attributes.
+{-| Helper mixins.
 
 
 # Custom Attributes
@@ -9,7 +9,7 @@ module Html.Attributes.More exposing (boolAttribute)
 
 -}
 
-import Html exposing (Attribute)
+import Mixin exposing (Mixin)
 import Html.Attributes as Attributes
 
 
@@ -19,9 +19,9 @@ import Html.Attributes as Attributes
 
 {-| Create arbitrary string properties.
 -}
-boolAttribute : String -> Bool -> Attribute msg
+boolAttribute : String -> Bool -> Mixin msg
 boolAttribute name b =
-    Attributes.attribute name <|
+    Mixin.fromAttribute <| Attributes.attribute name <|
         if b then
             "true"
 

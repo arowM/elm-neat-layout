@@ -16,14 +16,16 @@ import Goat.Name
 import Goat.Phone
 import Html exposing (Html, button, div, text)
 import Html.Attributes as Attributes
-import Html.Attributes.More as Attributes
 import Html.Events as Events
 import Layout.Mixin as Mixin
 import Mixin exposing (Mixin)
-import View exposing (View)
-import View.FullPadding as FullPadding exposing (FullPadding)
-import View.MiddlePadding as MiddlePadding
-import View.NoPadding as NoPadding exposing (Atom)
+import Mixin.Extra as Mixin
+import Neat exposing (View)
+import Neat.Alignment as Neat
+import Neat.Alignment.Row as Row exposing (defaultRow)
+import Neat.Padding.FullPadding as FullPadding exposing (FullPadding)
+import Neat.Padding.MiddlePadding as MiddlePadding
+import Neat.Padding.NoPadding as NoPadding exposing (Atom)
 
 
 
@@ -174,27 +176,30 @@ onSubmitRegister model =
 
 view : Model -> Html Msg
 view model =
-    NoPadding.toHtml <|
-        View.div
+    Neat.toPage <|
+        Neat.div
             [ class "wrapper" ]
             [ background
-            , FullPadding.setBoundary div
-                [ Mixin.row
-                , Mixin.justifyCenter
-                , class "body"
+            , Neat.setBoundary
+                [ class "body"
                 ]
-                [ View.div
-                    [ class "body_inner"
-                    ]
-                    [ case model.pageState of
-                        ShowGoats ->
-                            goats_view model.goats
+                [ Neat.rowWith
+                    { defaultRow
+                        | horizontal = Row.hcenter
+                    }
+                    [ Neat.div
+                        [ class "body_inner"
+                        ]
+                        [ case model.pageState of
+                            ShowGoats ->
+                                goats_view model.goats
 
-                        Registering ->
-                            registerForm_view False model
+                            Registering ->
+                                registerForm_view False model
 
-                        FixingRegisterErrors ->
-                            registerForm_view True model
+                            FixingRegisterErrors ->
+                                registerForm_view True model
+                        ]
                     ]
                 ]
             ]
@@ -211,9 +216,9 @@ subscriptions _ =
 
 background : Atom Msg
 background =
-    View.div
+    Neat.div
         [ class "background" ]
-        [ View.div
+        [ Neat.div
             [ class "background_header"
             ]
             []
@@ -226,18 +231,18 @@ background =
 
 goats_view : List Goat -> View FullPadding Msg
 goats_view goats =
-    View.batch
+    Neat.batch
         [ Goat.goats goats
         , FullPadding.fromNoPadding <|
-            View.div
+            Neat.div
                 [ class "row-button"
                 ]
-                [ View.lift button
+                [ Neat.lift button
                     [ class "button"
                     , Mixin.fromAttribute <| Attributes.type_ "button"
                     , Mixin.fromAttribute <| Events.onClick RegisterAnotherGoat
                     ]
-                    [ NoPadding.text "Register another goat"
+                    [ Neat.text "Register another goat"
                     ]
                 ]
         ]
@@ -262,10 +267,10 @@ registerForm_view verbose { registerForm } =
     Goat.registerForm
         "goat-registerForm"
         verbose
-        [ View.row
+        [ Neat.row
             [ FullPadding.fromNoPadding <| Goat.label "Name"
-            , View.setMixin Mixin.expanded <|
-                FullPadding.fromMiddlePadding <|
+            , Neat.setMixin Mixin.expanded <|
+                MiddlePadding.toFullPadding <|
                     Goat.control
                         [ MiddlePadding.fromNoPadding <|
                             Goat.fieldRequired
@@ -273,7 +278,7 @@ registerForm_view verbose { registerForm } =
                                 [ "What's your name?"
                                 ]
                         , MiddlePadding.fromNoPadding <|
-                            View.setMixin Mixin.fullWidth <|
+                            Neat.setMixin Mixin.fullWidth <|
                                 Input.view
                                     { placeholder = "Sakura-chan"
                                     , onChange = ChangeName
@@ -285,10 +290,10 @@ registerForm_view verbose { registerForm } =
                             registerForm.name
                         ]
             ]
-        , View.row
+        , Neat.row
             [ FullPadding.fromNoPadding <| Goat.label "Age"
-            , View.setMixin Mixin.expanded <|
-                FullPadding.fromMiddlePadding <|
+            , Neat.setMixin Mixin.expanded <|
+                MiddlePadding.toFullPadding <|
                     Goat.control
                         [ MiddlePadding.fromNoPadding <|
                             Goat.fieldRequired
@@ -296,7 +301,7 @@ registerForm_view verbose { registerForm } =
                                 [ "How old are you? [years old]"
                                 ]
                         , MiddlePadding.fromNoPadding <|
-                            View.setMixin Mixin.fullWidth <|
+                            Neat.setMixin Mixin.fullWidth <|
                                 Input.view
                                     { placeholder = "2"
                                     , onChange = ChangeAge
@@ -308,10 +313,10 @@ registerForm_view verbose { registerForm } =
                             registerForm.age
                         ]
             ]
-        , View.row
+        , Neat.row
             [ FullPadding.fromNoPadding <| Goat.label "Horns"
-            , View.setMixin Mixin.expanded <|
-                FullPadding.fromMiddlePadding <|
+            , Neat.setMixin Mixin.expanded <|
+                MiddlePadding.toFullPadding <|
                     Goat.control
                         [ MiddlePadding.fromNoPadding <|
                             Goat.fieldRequired
@@ -319,7 +324,7 @@ registerForm_view verbose { registerForm } =
                                 [ "How many horns do you have?"
                                 ]
                         , MiddlePadding.fromNoPadding <|
-                            View.setMixin Mixin.fullWidth <|
+                            Neat.setMixin Mixin.fullWidth <|
                                 Input.view
                                     { placeholder = "0"
                                     , onChange = ChangeHorns
@@ -331,10 +336,10 @@ registerForm_view verbose { registerForm } =
                             registerForm.horns
                         ]
             ]
-        , View.row
+        , Neat.row
             [ FullPadding.fromNoPadding <| Goat.label "Means of contact"
-            , View.setMixin Mixin.expanded <|
-                FullPadding.fromMiddlePadding <|
+            , Neat.setMixin Mixin.expanded <|
+                MiddlePadding.toFullPadding <|
                     Goat.control
                         [ MiddlePadding.fromNoPadding <|
                             Goat.fieldRequired
@@ -342,7 +347,7 @@ registerForm_view verbose { registerForm } =
                                 [ "How to contact you?"
                                 ]
                         , MiddlePadding.fromNoPadding <|
-                            View.setMixin Mixin.fullWidth <|
+                            Neat.setMixin Mixin.fullWidth <|
                                 Select.view
                                     { options =
                                         ( Select.label "== Choose one ==", "" )
@@ -356,16 +361,16 @@ registerForm_view verbose { registerForm } =
                             registerForm.contactType
                         ]
             ]
-        , View.div
-            [ Mixin.row
-            , class "toggle-field"
+        , Neat.setMixins
+            [ class "toggle-field"
             , Mixin.boolAttribute "aria-hidden" <|
                 Select.decodeField ContactType.decoder registerForm.contactType
                     /= Ok (Just ContactType.UseEmail)
             ]
+            <| Neat.row
             [ FullPadding.fromNoPadding <| Goat.label "Email"
-            , View.setMixin Mixin.expanded <|
-                FullPadding.fromMiddlePadding <|
+            , Neat.setMixin Mixin.expanded <|
+                MiddlePadding.toFullPadding <|
                     Goat.control
                         [ MiddlePadding.fromNoPadding <|
                             Goat.fieldRequired
@@ -373,7 +378,7 @@ registerForm_view verbose { registerForm } =
                                 [ "Email address to contact you?"
                                 ]
                         , MiddlePadding.fromNoPadding <|
-                            View.setMixin Mixin.fullWidth <|
+                            Neat.setMixin Mixin.fullWidth <|
                                 Input.view
                                     { placeholder = "you-goat-mail@example.com"
                                     , onChange = ChangeEmail
@@ -385,16 +390,16 @@ registerForm_view verbose { registerForm } =
                             registerForm.email
                         ]
             ]
-        , View.div
-            [ Mixin.row
-            , class "toggle-field"
+        , Neat.setMixins
+            [ class "toggle-field"
             , Mixin.boolAttribute "aria-hidden" <|
                 Select.decodeField ContactType.decoder registerForm.contactType
                     /= Ok (Just ContactType.UsePhone)
             ]
+            <| Neat.row
             [ FullPadding.fromNoPadding <| Goat.label "Phone number"
-            , View.setMixin Mixin.expanded <|
-                FullPadding.fromMiddlePadding <|
+            , Neat.setMixin Mixin.expanded <|
+                MiddlePadding.toFullPadding <|
                     Goat.control
                         [ MiddlePadding.fromNoPadding <|
                             Goat.fieldRequired
@@ -403,7 +408,7 @@ registerForm_view verbose { registerForm } =
                                 , "(Only Japanese-style mobile phone number)"
                                 ]
                         , MiddlePadding.fromNoPadding <|
-                            View.setMixin Mixin.fullWidth <|
+                            Neat.setMixin Mixin.fullWidth <|
                                 Input.view
                                     { placeholder = "090-0000-0000"
                                     , onChange = ChangePhone
@@ -415,17 +420,17 @@ registerForm_view verbose { registerForm } =
                             registerForm.phone
                         ]
             ]
-        , View.row
+        , Neat.row
             [ FullPadding.fromNoPadding <| Goat.label "Message"
-            , View.setMixin Mixin.expanded <|
-                FullPadding.fromMiddlePadding <|
+            , Neat.setMixin Mixin.expanded <|
+                MiddlePadding.toFullPadding <|
                     Goat.control
                         [ MiddlePadding.fromNoPadding <|
                             Goat.fieldOptional
                                 [ "Any messages?"
                                 ]
                         , MiddlePadding.fromNoPadding <|
-                            View.setMixin Mixin.fullWidth <|
+                            Neat.setMixin Mixin.fullWidth <|
                                 Input.view
                                     { placeholder = "Hi! I'm Sakura-chan."
                                     , onChange = ChangeMessage
@@ -438,15 +443,15 @@ registerForm_view verbose { registerForm } =
                         ]
             ]
         , FullPadding.fromNoPadding <|
-            View.div
+            Neat.div
                 [ class "row-button"
                 ]
-                [ View.lift button
+                [ Neat.lift button
                     [ class "button"
                     , Mixin.fromAttribute <| Attributes.type_ "button"
                     , Mixin.fromAttribute <| Events.onClick SubmitRegister
                     ]
-                    [ NoPadding.text "Register"
+                    [ Neat.text "Register"
                     ]
                 ]
         ]
@@ -461,4 +466,4 @@ It handles generated class name by CSS modules.
 -}
 class : String -> Mixin msg
 class =
-    Mixin.fromAttribute << Css.classWithPrefix "app__"
+    Css.classWithPrefix "app__"

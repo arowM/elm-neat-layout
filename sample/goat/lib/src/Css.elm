@@ -9,13 +9,13 @@ module Css exposing (classWithPrefix)
 
 -}
 
-import Html exposing (Attribute)
 import Html.Attributes as Attributes
+import Mixin exposing (Mixin)
 
 
 {-| Helper function to declare module specific `class` function which prepend prefix to each class names.
 In CSS files, the prefix is supposed to be prepend to each class selectors by CSS modules.
 -}
-classWithPrefix : String -> String -> Attribute msg
+classWithPrefix : String -> String -> Mixin msg
 classWithPrefix prefix =
-    Attributes.classList << List.map (\name -> (prefix ++ name, True) ) << String.split " "
+    Mixin.fromAttributes << List.map (\name -> Attributes.class <| prefix ++ name) << String.split " "

@@ -163,6 +163,4 @@ It handles generated class name by CSS modules.
 -}
 class : String -> Mixin msg
 class str =
-    Mixin.fromAttributes
-        [ Css.classWithPrefix "layout__" str
-        ]
+    Css.classWithPrefix "layout__" str

@@ -45,12 +45,14 @@ module Atom.Select exposing
 
 import Css
 import Form.Decoder as Decoder exposing (Decoder)
-import Html exposing (Attribute, Html, select, text)
+import Html exposing (Attribute, Html, text)
 import Html.Attributes as Attributes
 import Html.Events as Events
 import Html.Events.Extra as Events
 import Html.Lazy exposing (lazy2)
-import View.NoPadding as NoPadding exposing (Atom)
+import Mixin exposing (Mixin)
+import Neat
+import Neat.Padding.NoPadding exposing (Atom)
 
 
 
@@ -126,27 +128,30 @@ type alias Config msg =
 -}
 view : Config msg -> Select -> Atom msg
 view conf (Select v) =
-    NoPadding.fromHtml <|
-        select
+    Neat.keyedLazy "select"
+        [ Mixin.fromAttributes
             [ Attributes.value v
             , Events.onInput conf.onChange
-            , class "select"
             ]
-        <|
-            List.map
-                (\( Label str, value ) ->
-                    lazy2 option str value
-                )
-                conf.options
+        , class "select"
+        ]
+    <|
+        List.map
+            (\( Label str, value ) ->
+                ( str, lazy2 option str value )
+            )
+            conf.options
 
 
 option : String -> String -> Html msg
 option str v =
-    Html.option
-        -- DO NOT CHANGE TO `Attributes.value`.
-        -- `Attributes.value ""` does not actually add "value" option to the `option` tag.
+    Mixin.lift Html.option
         [ class "option"
-        , Attributes.attribute "value" v
+        , Mixin.fromAttributes
+            -- DO NOT CHANGE TO `Attributes.value`.
+            -- `Attributes.value ""` does not actually add "value" option to the `option` tag.
+            [ Attributes.attribute "value" v
+            ]
         ]
         [ text str
         ]
@@ -229,6 +234,6 @@ required err d =
 {-| A specialized version of `class` for this module.
 It handles generated class name by CSS modules.
 -}
-class : String -> Attribute msg
+class : String -> Mixin msg
 class =
     Css.classWithPrefix "select__"
