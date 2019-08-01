@@ -3,49 +3,18 @@ module Neat.Alignment.Column exposing
     , Column
     , defaultColumn
     , column
-    , Vertical
-    , top
-    , bottom
-    , vcenter
-    , vstretch
-    , Horizontal
-    , left
-    , right
-    , hcenter
-    , spaceBetween
-    , spaceAround
-    , hstretch
+    , Vertical(..)
+    , Horizontal(..)
     )
 
 {-| Columns
-
-
-# Core
 
 @docs columnWith
 @docs Column
 @docs defaultColumn
 @docs column
-
-
-# Vertical constructors
-
 @docs Vertical
-@docs top
-@docs bottom
-@docs vcenter
-@docs vstretch
-
-
-# Horizontal constructors
-
 @docs Horizontal
-@docs left
-@docs right
-@docs hcenter
-@docs spaceBetween
-@docs spaceAround
-@docs hstretch
 
 -}
 
@@ -96,16 +65,16 @@ type alias Column =
 
 {-| Default `Column` configuration.
 
-    { vertical = top
-    , horizontal = left
+    { vertical = Top
+    , horizontal = Left
     , wrap = True
     }
 
 -}
 defaultColumn : Column
 defaultColumn =
-    { vertical = top
-    , horizontal = left
+    { vertical = Top
+    , horizontal = Left
     , wrap = True
     }
 
@@ -139,31 +108,12 @@ flexWrap b =
 -- Horizontal alignment
 
 
+{-| -}
 type Horizontal
     = Left
     | Right
     | HCenter
     | HStretch
-
-
-left : Horizontal
-left =
-    Left
-
-
-right : Horizontal
-right =
-    Right
-
-
-hcenter : Horizontal
-hcenter =
-    HCenter
-
-
-hstretch : Horizontal
-hstretch =
-    HStretch
 
 
 horizontal : Horizontal -> List ( String, String )
@@ -198,6 +148,7 @@ horizontal hor =
 -- Vertical alignment
 
 
+{-| -}
 type Vertical
     = Top
     | Bottom
@@ -205,36 +156,6 @@ type Vertical
     | SpaceBetween
     | SpaceAround
     | VStretch
-
-
-top : Vertical
-top =
-    Top
-
-
-bottom : Vertical
-bottom =
-    Bottom
-
-
-vcenter : Vertical
-vcenter =
-    VCenter
-
-
-spaceBetween : Vertical
-spaceBetween =
-    SpaceBetween
-
-
-spaceAround : Vertical
-spaceAround =
-    SpaceAround
-
-
-vstretch : Vertical
-vstretch =
-    VStretch
 
 
 vertical : Vertical -> List ( String, String )

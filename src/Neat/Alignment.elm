@@ -9,12 +9,14 @@ module Neat.Alignment exposing
 
 {-| Alignment functions.
 
+
 # Rows and Columns
 
 @docs row
 @docs rowWith
 @docs column
 @docs columnWith
+
 
 # Fill items in Rows and Columns
 
@@ -27,6 +29,8 @@ import Mixin exposing (Mixin, style)
 import Neat.Alignment.Column as Column exposing (Column)
 import Neat.Alignment.Row as Row exposing (Row)
 import Neat.Internal exposing (View)
+
+
 
 -- Rows and Columns
 
@@ -64,11 +68,15 @@ columnWith : Column -> List (View p msg) -> View p msg
 columnWith =
     Column.columnWith
 
+
+
 -- Fill items in Rows and Columns
+
 
 {-| Expand the item in row/column.
 
 Shorthands for `fillBy 1`.
+
 -}
 fill : Mixin msg
 fill =

@@ -3,49 +3,18 @@ module Neat.Alignment.Row exposing
     , Row
     , defaultRow
     , row
-    , Vertical
-    , top
-    , bottom
-    , vcenter
-    , vstretch
-    , Horizontal
-    , left
-    , right
-    , hcenter
-    , spaceBetween
-    , spaceAround
-    , hstretch
+    , Vertical(..)
+    , Horizontal(..)
     )
 
 {-| Rows
-
-
-# Core
 
 @docs rowWith
 @docs Row
 @docs defaultRow
 @docs row
-
-
-# Vertical constructors
-
 @docs Vertical
-@docs top
-@docs bottom
-@docs vcenter
-@docs vstretch
-
-
-# Horizontal constructors
-
 @docs Horizontal
-@docs left
-@docs right
-@docs hcenter
-@docs spaceBetween
-@docs spaceAround
-@docs hstretch
 
 -}
 
@@ -96,16 +65,16 @@ type alias Row =
 
 {-| Default `Row` configuration.
 
-    { vertical = top
-    , horizontal = left
+    { vertical = Top
+    , horizontal = Left
     , wrap = True
     }
 
 -}
 defaultRow : Row
 defaultRow =
-    { vertical = top
-    , horizontal = left
+    { vertical = Top
+    , horizontal = Left
     , wrap = True
     }
 
@@ -139,6 +108,7 @@ flexWrap b =
 -- Horizontal alignment
 
 
+{-| -}
 type Horizontal
     = Left
     | Right
@@ -146,36 +116,6 @@ type Horizontal
     | SpaceBetween
     | SpaceAround
     | HStretch
-
-
-left : Horizontal
-left =
-    Left
-
-
-right : Horizontal
-right =
-    Right
-
-
-hcenter : Horizontal
-hcenter =
-    HCenter
-
-
-spaceBetween : Horizontal
-spaceBetween =
-    SpaceBetween
-
-
-spaceAround : Horizontal
-spaceAround =
-    SpaceAround
-
-
-hstretch : Horizontal
-hstretch =
-    HStretch
 
 
 horizontal : Horizontal -> List ( String, String )
@@ -221,31 +161,12 @@ horizontal hor =
 -- Vertical alignment
 
 
+{-| -}
 type Vertical
     = Top
     | Bottom
     | VCenter
     | VStretch
-
-
-top : Vertical
-top =
-    Top
-
-
-bottom : Vertical
-bottom =
-    Bottom
-
-
-vcenter : Vertical
-vcenter =
-    VCenter
-
-
-vstretch : Vertical
-vstretch =
-    VStretch
 
 
 vertical : Vertical -> List ( String, String )
