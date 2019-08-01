@@ -7,10 +7,6 @@ module Neat exposing
     , setMixin
     , setMixins
     , apply
-    , setBoundary
-    , setBoundaryWith
-    , BoundaryConfig
-    , defaultBoundaryConfig
     , div
     , text
     , keyed
@@ -37,14 +33,6 @@ module Neat exposing
 @docs apply
 
 
-# Boundary
-
-@docs setBoundary
-@docs setBoundaryWith
-@docs BoundaryConfig
-@docs defaultBoundaryConfig
-
-
 # Alternatives to Html nodes
 
 @docs div
@@ -64,8 +52,7 @@ import Html.Attributes as Attributes
 import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
 import Neat.Internal as Internal
-import Neat.Padding.FullPadding exposing (FullPadding)
-import Neat.Padding.NoPadding exposing (NoPadding)
+import Neat.Padding exposing (NoPadding)
 
 
 
@@ -187,99 +174,6 @@ apply f (Internal.View html) =
     Internal.fromHtml <|
         \attrs ->
             f <| html <| Mixin.fromAttributes attrs
-
-
-
--- Boundary
-
-
-{-| Set boundary to full-padding views.
--}
-setBoundaryWith : BoundaryConfig -> List (Mixin msg) -> List (View FullPadding msg) -> View NoPadding msg
-setBoundaryWith boundary mixins children =
-    Internal.coerce <|
-        setOffset boundary.outerOffset <|
-            div mixins
-                [ div
-                    [ fullPaddingWithOffset boundary.innerOffset
-                    ]
-                    children
-                ]
-
-
-{-| Shorthands for `setBoundaryWith defaultBoundaryConfig`.
--}
-setBoundary : List (Mixin msg) -> List (View FullPadding msg) -> View NoPadding msg
-setBoundary =
-    setBoundaryWith defaultBoundaryConfig
-
-
-{-| Boundary config.
-Available value for `innerOffset` and `outerOffset` is CSS value for length.
-e.g., `Just "2px"`, `Just "-3em"`,...
--}
-type alias BoundaryConfig =
-    { innerOffset : Maybe String
-    , outerOffset : Maybe String
-    }
-
-
-{-| Default `BoundaryConfig`.
-
-    { innerOffset = Nothing
-    , outerOffset = Nothing
-    }
-
--}
-defaultBoundaryConfig : BoundaryConfig
-defaultBoundaryConfig =
-    { innerOffset = Nothing
-    , outerOffset = Nothing
-    }
-
-
-fullPadding : Mixin msg
-fullPadding =
-    Mixin.fromAttribute <|
-        Attributes.style "padding" fullPaddingValue
-
-
-fullPaddingWithOffset : Maybe String -> Mixin msg
-fullPaddingWithOffset moffset =
-    case moffset of
-        Nothing ->
-            fullPadding
-
-        Just offset ->
-            Mixin.fromAttribute <|
-                Attributes.style "padding" <|
-                    String.concat
-                        [ "calc("
-                        , offset
-                        , " + "
-                        , fullPaddingValue
-                        , ")"
-                        ]
-
-
-setOffset : Maybe String -> View p msg -> View p msg
-setOffset moffset v =
-    case moffset of
-        Nothing ->
-            v
-
-        Just offset ->
-            div
-                [ Mixin.fromAttribute <|
-                    Attributes.style "padding" offset
-                ]
-                [ v
-                ]
-
-
-fullPaddingValue : String
-fullPaddingValue =
-    "0.5rem"
 
 
 
