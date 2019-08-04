@@ -31,7 +31,8 @@ module Neat.Layout exposing
 
 -}
 
-import Mixin exposing (Mixin, style)
+import Html.Attributes as Attributes
+import Mixin exposing (Mixin)
 import Neat.Internal exposing (View)
 import Neat.Layout.Column as Column exposing (Column)
 import Neat.Layout.Internal as Layout
@@ -42,6 +43,7 @@ import Neat.Layout.Row as Row exposing (Row)
 -- Core
 
 
+{-| -}
 type alias Layout msg =
     Layout.Layout msg
 
@@ -107,3 +109,12 @@ fillBy n =
         , style "-ms-flex-positive" <| String.fromInt n
         , style "flex-grow" <| String.fromInt n
         ]
+
+
+
+-- Helper functions
+
+
+style : String -> String -> Mixin msg
+style name val =
+    Mixin.fromAttribute <| Attributes.style name val

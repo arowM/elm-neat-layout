@@ -48,9 +48,7 @@ You can introduce custom paddings by just declaring their types and `IsPadding` 
 
 -}
 
-import Html
-import Html.Attributes as Attributes
-import Neat.Appearance exposing (Appearance)
+import Mixin exposing (Mixin)
 import Neat.Internal as Internal exposing (View, div)
 import Neat.Layout.Internal as Layout exposing (Layout)
 
@@ -130,7 +128,7 @@ defaultBoundary =
 
 {-| Set boundary to convert into `NoPadding`.
 -}
-setBoundaryWith : IsPadding p -> Boundary -> List (Appearance msg) -> List (View p msg) -> View NoPadding msg
+setBoundaryWith : IsPadding p -> Boundary -> List (Mixin msg) -> List (View p msg) -> View NoPadding msg
 setBoundaryWith config boundary appearance children =
     Internal.coerce <|
         Internal.setLayout (outerPadding boundary.outerOffset) <|
@@ -144,7 +142,7 @@ setBoundaryWith config boundary appearance children =
 
 {-| Shorthands for `setBoundaryWith` with defaultBoundary.
 -}
-setBoundary : IsPadding p -> List (Appearance msg) -> List (View p msg) -> View NoPadding msg
+setBoundary : IsPadding p -> List (Mixin msg) -> List (View p msg) -> View NoPadding msg
 setBoundary config =
     setBoundaryWith config defaultBoundary
 

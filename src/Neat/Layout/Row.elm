@@ -19,7 +19,7 @@ module Neat.Layout.Row exposing
 -}
 
 import Neat.Internal as Internal exposing (View)
-import Neat.Layout.Internal as Layout exposing (Layout, style)
+import Neat.Layout.Internal as Layout exposing (Layout)
 
 
 

@@ -4,8 +4,8 @@ module Neat exposing
     , lift
     , batch
     , none
-    , setAppearance
-    , setAppearances
+    , setMixin
+    , setMixins
     , setLayout
     , div
     , text
@@ -28,8 +28,8 @@ module Neat exposing
 @docs lift
 @docs batch
 @docs none
-@docs setAppearance
-@docs setAppearances
+@docs setMixin
+@docs setMixins
 @docs setLayout
 
 
@@ -48,9 +48,8 @@ module Neat exposing
 -}
 
 import Html exposing (Attribute, Html)
-import Html.Attributes as Attributes
 import Html.Keyed as Keyed
-import Neat.Appearance as Appearance exposing (Appearance)
+import Mixin exposing (Mixin)
 import Neat.Internal as Internal
 import Neat.Layout.Internal as Layout exposing (Layout)
 import Neat.Padding exposing (NoPadding)
@@ -60,7 +59,7 @@ import Neat.Padding exposing (NoPadding)
 -- Core
 
 
-{-| Html alternative with type level paddings.
+{-| Html alternative it can manage paddings in type level.
 -}
 type alias View padding msg =
     Internal.View padding msg
@@ -83,7 +82,7 @@ toPage : View NoPadding msg -> Html msg
 toPage v =
     Html.div []
         [ resetCss
-        , Internal.toHtml Layout.none Appearance.none v
+        , Internal.toHtml Layout.none Mixin.none v
         ]
 
 
@@ -112,21 +111,22 @@ resetCss =
 {-| Lift `Html` nodes into `View`.
 
     import Html exposing (div)
-    import Mixin
-    import View.NoPadding as NoPadding exposing (NoPadding)
+    import Mixin exposing (Mixin)
+    import Neat exposing (View)
+    import Neat.Padding as Padding exposing (NoPadding)
 
     view1 : View NoPadding msg
     view1 =
-        View.div
+        Neat.div
             []
-            [ NoPadding.text "view1"
+            [ Neat.text "view1"
             ]
 
     view2 : View NoPadding msg
     view2 =
-        View.div
+        Neat.div
             []
-            [ NoPadding.text "view2"
+            [ Neat.text "view2"
             ]
 
     composed : View NoPadding msg
@@ -139,7 +139,7 @@ resetCss =
             ]
 
 -}
-lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Appearance msg) -> List (View p msg) -> View p msg
+lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
 lift =
     Internal.lift
 
@@ -158,15 +158,15 @@ none =
 
 
 {-| -}
-setAppearance : Appearance msg -> View p msg -> View p msg
-setAppearance =
-    Internal.setAppearance
+setMixin : Mixin msg -> View p msg -> View p msg
+setMixin =
+    Internal.setMixin
 
 
 {-| -}
-setAppearances : List (Appearance msg) -> View p msg -> View p msg
-setAppearances =
-    Internal.setAppearance << Appearance.batch
+setMixins : List (Mixin msg) -> View p msg -> View p msg
+setMixins =
+    Internal.setMixin << Mixin.batch
 
 
 {-| -}
@@ -181,7 +181,7 @@ setLayout =
 
 {-| `View` version of `Html.div`.
 -}
-div : List (Appearance msg) -> List (View p msg) -> View p msg
+div : List (Mixin msg) -> List (View p msg) -> View p msg
 div =
     Internal.div
 
@@ -196,11 +196,11 @@ text str =
 {-| -}
 keyed :
     String
-    -> List (Appearance msg)
+    -> List (Mixin msg)
     -> List ( String, View p msg )
     -> View p msg
 keyed tag mixin =
-    keyedLazy tag mixin << List.map (Tuple.mapSecond (Internal.toHtml Layout.none Appearance.none))
+    keyedLazy tag mixin << List.map (Tuple.mapSecond (Internal.toHtml Layout.none Mixin.none))
 
 
 {-|
@@ -230,7 +230,7 @@ keyed tag mixin =
 -}
 keyedLazy :
     String
-    -> List (Appearance msg)
+    -> List (Mixin msg)
     -> List ( String, Html msg )
     -> View p msg
 keyedLazy tag appearances children =
@@ -238,7 +238,7 @@ keyedLazy tag appearances children =
         \layout extra ->
             Internal.wrapper layout <|
                 Keyed.node tag
-                    (Appearance.toAttributes <| Appearance.batch (appearances ++ [ extra ]))
+                    (Mixin.toAttributes <| Mixin.batch (appearances ++ [ extra ]))
                     children
 
 
@@ -250,4 +250,4 @@ See `keyedLazy` for real usage.
 -}
 toHtmlForLazy : View p a -> Html a
 toHtmlForLazy =
-    Internal.toHtml Layout.none Appearance.none
+    Internal.toHtml Layout.none Mixin.none
