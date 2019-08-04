@@ -1,4 +1,4 @@
-module Neat.Alignment.Column exposing
+module Neat.Layout.Column exposing
     ( columnWith
     , Column
     , defaultColumn
@@ -18,8 +18,8 @@ module Neat.Alignment.Column exposing
 
 -}
 
-import Mixin exposing (Mixin, style)
 import Neat.Internal as Internal exposing (View)
+import Neat.Layout.Internal as Layout exposing (Layout, style)
 
 
 
@@ -29,20 +29,23 @@ import Neat.Internal as Internal exposing (View)
 {-| -}
 columnWith : Column -> List (View p msg) -> View p msg
 columnWith align =
-    Internal.div
-        [ inlineStyle <|
-            List.concat
-                [ flex
-                , horizontal align.horizontal
-                , vertical align.vertical
-                , flexWrap align.wrap
+    Internal.div []
+        >> Internal.setLayout
+            (Layout.batch
+                [ inlineStyle <|
+                    List.concat
+                        [ flex
+                        , horizontal align.horizontal
+                        , vertical align.vertical
+                        , flexWrap align.wrap
+                        ]
                 ]
-        ]
+            )
 
 
-inlineStyle : List ( String, String ) -> Mixin msg
+inlineStyle : List ( String, String ) -> Layout msg
 inlineStyle ls =
-    Mixin.attribute "style" <|
+    Layout.attribute "style" <|
         String.join ";" <|
             List.map (\( key, val ) -> key ++ ": " ++ val) ls
 

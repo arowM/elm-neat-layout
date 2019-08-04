@@ -6,10 +6,11 @@
     "version": "1.0.0",
     "exposed-modules": [
         "Neat",
+        "Neat.Appearance",
         "Neat.Padding",
-        "Neat.Alignment",
-        "Neat.Alignment.Row",
-        "Neat.Alignment.Column"
+        "Neat.Layout",
+        "Neat.Layout.Row",
+        "Neat.Layout.Column"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

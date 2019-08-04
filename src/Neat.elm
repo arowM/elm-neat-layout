@@ -4,9 +4,9 @@ module Neat exposing
     , lift
     , batch
     , none
-    , setMixin
-    , setMixins
-    , apply
+    , setAppearance
+    , setAppearances
+    , setLayout
     , div
     , text
     , keyed
@@ -28,9 +28,9 @@ module Neat exposing
 @docs lift
 @docs batch
 @docs none
-@docs setMixin
-@docs setMixins
-@docs apply
+@docs setAppearance
+@docs setAppearances
+@docs setLayout
 
 
 # Alternatives to Html nodes
@@ -50,8 +50,9 @@ module Neat exposing
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Keyed as Keyed
-import Mixin exposing (Mixin)
+import Neat.Appearance as Appearance exposing (Appearance)
 import Neat.Internal as Internal
+import Neat.Layout.Internal as Layout exposing (Layout)
 import Neat.Padding exposing (NoPadding)
 
 
@@ -82,7 +83,7 @@ toPage : View NoPadding msg -> Html msg
 toPage v =
     Html.div []
         [ resetCss
-        , Internal.toHtml [] v
+        , Internal.toHtml Layout.none Appearance.none v
         ]
 
 
@@ -138,7 +139,7 @@ resetCss =
             ]
 
 -}
-lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
+lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Appearance msg) -> List (View p msg) -> View p msg
 lift =
     Internal.lift
 
@@ -146,34 +147,32 @@ lift =
 {-| -}
 batch : List (View p a) -> View p a
 batch =
-    div []
+    Internal.batch
 
 
 {-| Alias for `text ""`.
 -}
-none : View p a
+none : View NoPadding a
 none =
-    Internal.fromHtml <| \_ -> Html.text ""
+    text ""
 
 
 {-| -}
-setMixin : Mixin msg -> View p msg -> View p msg
-setMixin =
-    Internal.setMixin
+setAppearance : Appearance msg -> View p msg -> View p msg
+setAppearance =
+    Internal.setAppearance
 
 
 {-| -}
-setMixins : List (Mixin msg) -> View p msg -> View p msg
-setMixins mixins =
-    Internal.setMixin <| Mixin.batch mixins
+setAppearances : List (Appearance msg) -> View p msg -> View p msg
+setAppearances =
+    Internal.setAppearance << Appearance.batch
 
 
 {-| -}
-apply : (Html a -> Html a) -> View p a -> View p a
-apply f (Internal.View html) =
-    Internal.fromHtml <|
-        \attrs ->
-            f <| html <| Mixin.fromAttributes attrs
+setLayout : Layout msg -> View p msg -> View p msg
+setLayout =
+    Internal.setLayout
 
 
 
@@ -182,7 +181,7 @@ apply f (Internal.View html) =
 
 {-| `View` version of `Html.div`.
 -}
-div : List (Mixin msg) -> List (View p msg) -> View p msg
+div : List (Appearance msg) -> List (View p msg) -> View p msg
 div =
     Internal.div
 
@@ -191,17 +190,17 @@ div =
 -}
 text : String -> View NoPadding msg
 text str =
-    Internal.fromHtml <| \_ -> Html.text str
+    Internal.fromHtml <| \_ _ -> Html.text str
 
 
 {-| -}
 keyed :
     String
-    -> List (Mixin msg)
+    -> List (Appearance msg)
     -> List ( String, View p msg )
     -> View p msg
 keyed tag mixin =
-    keyedLazy tag mixin << List.map (Tuple.mapSecond (Internal.toHtml []))
+    keyedLazy tag mixin << List.map (Tuple.mapSecond (Internal.toHtml Layout.none Appearance.none))
 
 
 {-|
@@ -231,19 +230,24 @@ keyed tag mixin =
 -}
 keyedLazy :
     String
-    -> List (Mixin msg)
+    -> List (Appearance msg)
     -> List ( String, Html msg )
     -> View p msg
-keyedLazy tag mixin children =
+keyedLazy tag appearances children =
     Internal.fromHtml <|
-        \extra ->
-            Keyed.node tag (List.concatMap Mixin.toAttributes mixin ++ extra) <| children
+        \layout extra ->
+            Internal.wrapper layout <|
+                Keyed.node tag
+                    (Appearance.toAttributes <| Appearance.batch (appearances ++ [ extra ]))
+                    children
 
 
-{-| DO NOT overuse.
+{-| DO NOT overuse. It can break layouts.
+
 This is only supposed to be used in order to make `Html.Lazy.lazy` work.
 See `keyedLazy` for real usage.
+
 -}
 toHtmlForLazy : View p a -> Html a
 toHtmlForLazy =
-    Internal.toHtml []
+    Internal.toHtml Layout.none Appearance.none

@@ -1,5 +1,6 @@
-module Neat.Alignment exposing
-    ( row
+module Neat.Layout exposing
+    ( Layout
+    , row
     , rowWith
     , column
     , columnWith
@@ -8,6 +9,11 @@ module Neat.Alignment exposing
     )
 
 {-| Alignment functions.
+
+
+# Core
+
+@docs Layout
 
 
 # Rows and Columns
@@ -26,9 +32,18 @@ module Neat.Alignment exposing
 -}
 
 import Mixin exposing (Mixin, style)
-import Neat.Alignment.Column as Column exposing (Column)
-import Neat.Alignment.Row as Row exposing (Row)
 import Neat.Internal exposing (View)
+import Neat.Layout.Column as Column exposing (Column)
+import Neat.Layout.Internal as Layout
+import Neat.Layout.Row as Row exposing (Row)
+
+
+
+-- Core
+
+
+type alias Layout msg =
+    Layout.Layout msg
 
 
 
