@@ -48,6 +48,7 @@ You can introduce custom paddings by just declaring their types and `IsPadding` 
 
 -}
 
+import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat.Internal as Internal exposing (View, div)
 import Neat.Layout.Internal as Layout exposing (Layout)
@@ -131,12 +132,20 @@ defaultBoundary =
 setBoundaryWith : IsPadding p -> Boundary -> List (Mixin msg) -> List (View p msg) -> View NoPadding msg
 setBoundaryWith config boundary appearance children =
     Internal.coerce <|
-        Internal.setLayout (outerPadding boundary.outerOffset) <|
-            div appearance
-                [ Internal.setLayout
-                    (innerPaddingWithOffset config boundary.innerOffset)
-                  <|
-                    Internal.batch children
+            div
+                ( appearance ++ [ outerPadding boundary.outerOffset ])
+                [ case children of
+                    [ child ] ->
+                        Internal.setMixin
+                            ( innerPaddingWithOffset config boundary.innerOffset )
+                            child
+
+                    _ ->
+                        Internal.div
+                            [ innerPaddingWithOffset config boundary.innerOffset
+                            , Mixin.attribute "data-innerPadding" ""
+                            ]
+                            children
                 ]
 
 
@@ -147,26 +156,26 @@ setBoundary config =
     setBoundaryWith config defaultBoundary
 
 
-innerPaddingWithOffset : IsPadding p -> Maybe String -> Layout msg
+innerPaddingWithOffset : IsPadding p -> Maybe String -> Mixin msg
 innerPaddingWithOffset config moffset =
-    Layout.style "padding" <|
+    Mixin.attribute "style" <| "padding: " ++
         String.concat
             [ "calc("
-            , Maybe.withDefault "0" moffset
+            , Maybe.withDefault "0px" moffset
             , " + "
             , innerPaddingValue config
             , ")"
             ]
 
 
-outerPadding : Maybe String -> Layout msg
+outerPadding : Maybe String -> Mixin msg
 outerPadding moffset =
     case moffset of
         Nothing ->
-            Layout.none
+            Mixin.none
 
         Just offset ->
-            Layout.style "padding" offset
+            Mixin.attribute "style" <| "padding: " ++ offset
 
 
 innerPaddingValue : IsPadding p -> String
