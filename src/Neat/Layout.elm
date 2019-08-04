@@ -32,7 +32,6 @@ module Neat.Layout exposing
 -}
 
 import Html.Attributes as Attributes
-import Mixin exposing (Mixin)
 import Neat.Internal exposing (View)
 import Neat.Layout.Column as Column exposing (Column)
 import Neat.Layout.Internal as Layout
@@ -95,16 +94,16 @@ columnWith =
 Shorthands for `fillBy 1`.
 
 -}
-fill : Mixin msg
+fill : Layout msg
 fill =
     fillBy 1
 
 
 {-| Specifies how much of the remaining space in the row/column should be assigned to the item.
 -}
-fillBy : Int -> Mixin msg
+fillBy : Int -> Layout msg
 fillBy n =
-    Mixin.batch
+    Layout.batch
         [ style "-webkit-box-flex" <| String.fromInt n
         , style "-ms-flex-positive" <| String.fromInt n
         , style "flex-grow" <| String.fromInt n
@@ -115,6 +114,6 @@ fillBy n =
 -- Helper functions
 
 
-style : String -> String -> Mixin msg
+style : String -> String -> Layout msg
 style name val =
-    Mixin.fromAttribute <| Attributes.style name val
+    Layout.fromAttribute <| Attributes.style name val

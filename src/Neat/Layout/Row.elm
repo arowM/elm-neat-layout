@@ -18,8 +18,8 @@ module Neat.Layout.Row exposing
 
 -}
 
+import Mixin exposing (Mixin)
 import Neat.Internal as Internal exposing (View)
-import Neat.Layout.Internal as Layout exposing (Layout)
 
 
 
@@ -28,24 +28,25 @@ import Neat.Layout.Internal as Layout exposing (Layout)
 
 {-| -}
 rowWith : Row -> List (View p msg) -> View p msg
-rowWith align =
-    Internal.div []
-        >> Internal.setLayout
-            (Layout.batch
-                [ inlineStyle <|
-                    List.concat
-                        [ flex
-                        , horizontal align.horizontal
-                        , vertical align.vertical
-                        , flexWrap align.wrap
-                        ]
-                ]
-            )
+rowWith align children =
+    Internal.div
+        []
+        [ Internal.div
+            [ inlineStyle <|
+                List.concat
+                    [ flex
+                    , horizontal align.horizontal
+                    , vertical align.vertical
+                    , flexWrap align.wrap
+                    ]
+            ]
+            children
+        ]
 
 
-inlineStyle : List ( String, String ) -> Layout msg
+inlineStyle : List ( String, String ) -> Mixin msg
 inlineStyle ls =
-    Layout.attribute "style" <|
+    Mixin.attribute "style" <|
         String.join ";" <|
             List.map (\( key, val ) -> key ++ ": " ++ val) ls
 
