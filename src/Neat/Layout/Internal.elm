@@ -2,6 +2,7 @@ module Neat.Layout.Internal exposing
     ( Layout
     , setInner
     , setOuter
+    , fromInner
     , fromOuter
     , toInner
     , toOuter
@@ -18,6 +19,7 @@ module Neat.Layout.Internal exposing
 @docs Layout
 @docs setInner
 @docs setOuter
+@docs fromInner
 @docs fromOuter
 @docs toInner
 @docs toOuter
@@ -48,6 +50,11 @@ setOuter extra (Layout i o) =
 setInner : Mixin msg -> Layout msg -> Layout msg
 setInner extra (Layout i o) =
     Layout (Mixin.batch [ i, extra ]) o
+
+
+fromInner : Mixin msg -> Layout msg
+fromInner i =
+    Layout i Mixin.none
 
 
 fromOuter : Mixin msg -> Layout msg

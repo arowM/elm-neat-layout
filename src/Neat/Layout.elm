@@ -108,6 +108,8 @@ fillBy n =
         [ outerStyle "-webkit-box-flex" <| String.fromInt n
         , outerStyle "-ms-flex-positive" <| String.fromInt n
         , outerStyle "flex-grow" <| String.fromInt n
+        , innerStyle "width" "100%"
+        , innerStyle "height" "100%"
         ]
 
 
@@ -118,3 +120,8 @@ fillBy n =
 outerStyle : String -> String -> Layout msg
 outerStyle name val =
     Layout.fromOuter <| Mixin.fromAttribute <| Attributes.style name val
+
+
+innerStyle : String -> String -> Layout msg
+innerStyle name val =
+    Layout.fromInner <| Mixin.fromAttribute <| Attributes.style name val

@@ -20,6 +20,7 @@ module Neat.Layout.Row exposing
 
 import Mixin exposing (Mixin)
 import Neat exposing (View)
+import Neat.Layout.Internal as Layout
 
 
 
@@ -41,8 +42,21 @@ rowWith align children =
                     , flexWrap align.wrap
                     ]
             ]
-            children
+          <|
+            List.map (expandV align.vertical) children
         ]
+
+
+expandV : Vertical -> View p msg -> View p msg
+expandV v =
+    case v of
+        Stretch ->
+            Neat.setLayout <|
+                Layout.fromOuter <|
+                    Mixin.attribute "style" "height: 100%"
+
+        _ ->
+            identity
 
 
 inlineStyle : List ( String, String ) -> Mixin msg
@@ -129,7 +143,6 @@ type Horizontal
     | HCenter
     | SpaceBetween
     | SpaceAround
-    | HStretch
 
 
 horizontal : Horizontal -> List ( String, String )
@@ -164,12 +177,6 @@ horizontal hor =
             , ( "justify-content", "space-around" )
             ]
 
-        HStretch ->
-            [ ( "-webkit-box-pack", "stretch" )
-            , ( "-ms-flex-pack", "stretch" )
-            , ( "justify-content", "stretch" )
-            ]
-
 
 
 -- Vertical alignment
@@ -180,7 +187,7 @@ type Vertical
     = Top
     | Bottom
     | VCenter
-    | VStretch
+    | Stretch
 
 
 vertical : Vertical -> List ( String, String )
@@ -204,7 +211,7 @@ vertical ver =
             , ( "align-items", "center" )
             ]
 
-        VStretch ->
+        Stretch ->
             [ ( "-webkit-box-align", "stretch" )
             , ( "-ms-flex-align", "stretch" )
             , ( "align-items", "stretch" )

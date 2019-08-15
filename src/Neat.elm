@@ -358,9 +358,8 @@ setBoundary config child =
 
 innerPadding : IsPadding p -> Mixin msg
 innerPadding config =
-    Mixin.attribute "style" <|
-        "padding: "
-            ++ innerPaddingValue config
+    Mixin.fromAttribute <| Attributes.style "padding" <|
+            innerPaddingValue config
 
 
 innerPaddingValue : IsPadding p -> String
@@ -399,27 +398,23 @@ liftHelper node appearances children =
     fromHtml <|
         \layout extra ->
             wrapHtml (Layout.toOuter layout) <|
-                \extraAttrs ->
-                    node
-                        (Mixin.toAttributes <|
-                            Mixin.batch
-                                [ Mixin.batch appearances
-                                , extra
-                                , Layout.toInner layout
-                                , Mixin.fromAttributes extraAttrs
-                                ]
-                        )
-                        children
+                node
+                    (Mixin.toAttributes <|
+                        Mixin.batch
+                            [ Mixin.batch appearances
+                            , extra
+                            , Layout.toInner layout
+                            ]
+                    )
+                    children
 
 
-wrapHtml : Mixin msg -> (List (Attribute msg) -> Html msg) -> Html msg
-wrapHtml outer f =
+wrapHtml : Mixin msg -> Html msg -> Html msg
+wrapHtml outer c =
     if outer == Mixin.none then
-        f []
+        c
 
     else
         Html.div (Mixin.toAttributes outer)
-            [ f
-                [ Attributes.attribute "style" <| "width: 100%; height: 100%;"
-                ]
+            [ c
             ]
