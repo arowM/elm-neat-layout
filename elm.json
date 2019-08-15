@@ -6,7 +6,6 @@
     "version": "1.0.0",
     "exposed-modules": [
         "Neat",
-        "Neat.Padding",
         "Neat.Layout",
         "Neat.Layout.Row",
         "Neat.Layout.Column"
