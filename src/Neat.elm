@@ -158,13 +158,13 @@ none =
 
 
 {-| -}
-setMixin : Mixin msg -> View p msg -> View p msg
+setMixin : Mixin msg -> View NoPadding msg -> View NoPadding msg
 setMixin =
     Internal.setMixin
 
 
 {-| -}
-setMixins : List (Mixin msg) -> View p msg -> View p msg
+setMixins : List (Mixin msg) -> View NoPadding msg -> View NoPadding msg
 setMixins =
     Internal.setMixin << Mixin.batch
 
