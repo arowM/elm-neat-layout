@@ -3,10 +3,7 @@ module Neat.Padding exposing
     , IsPadding(..)
     , fromNoPadding
     , expand
-    , setBoundaryWith
     , setBoundary
-    , Boundary
-    , defaultBoundary
     )
 
 {-|
@@ -37,18 +34,11 @@ You can introduce custom paddings by just declaring their types and `IsPadding` 
 
 @docs fromNoPadding
 @docs expand
-
-
-# Boundary
-
-@docs setBoundaryWith
 @docs setBoundary
-@docs Boundary
-@docs defaultBoundary
 
 -}
 
-import Html.Attributes as Attributes
+import Html exposing (Html)
 import Mixin exposing (Mixin)
 import Neat.Internal as Internal exposing (View, div)
 import Neat.Layout.Internal as Layout exposing (Layout)
@@ -89,93 +79,43 @@ fromNoPadding =
 The width of `p2` is supposed to be greater than `p1`.
 -}
 expand : IsPadding p1 -> IsPadding p2 -> View p1 msg -> View p2 msg
-expand (IsPadding c1) (IsPadding c2) child =
-    Internal.coerce <|
-        Internal.setLayout
-            (Layout.style "padding" <|
-                String.fromFloat ((c2.rem - c1.rem) / 2)
+expand p1 p2 child =
+    Internal.setLayout (expandPadding p1 p2) child
+        |> Internal.coerce
+
+
+expandPadding : IsPadding p1 -> IsPadding p2 -> Layout msg
+expandPadding (IsPadding c1) (IsPadding c2) =
+    Layout.none
+        |> Layout.setOuter
+            (Mixin.attribute "style" <|
+                "padding:"
+                    ++ String.fromFloat ((c2.rem - c1.rem) / 2)
                     ++ "rem"
             )
-            child
 
 
 
 -- Boundary
 
 
-{-| Boundary config.
-Available value for `innerOffset` and `outerOffset` is CSS value for length.
-e.g., `Just "2px"`, `Just "-3em"`,...
--}
-type alias Boundary =
-    { innerOffset : Maybe String
-    , outerOffset : Maybe String
-    }
-
-
-{-| Default `Boundary`.
-
-    { innerOffset = Nothing
-    , outerOffset = Nothing
-    }
-
--}
-defaultBoundary : Boundary
-defaultBoundary =
-    { innerOffset = Nothing
-    , outerOffset = Nothing
-    }
-
-
 {-| Set boundary to convert into `NoPadding`.
 -}
-setBoundaryWith : IsPadding p -> Boundary -> List (Mixin msg) -> List (View p msg) -> View NoPadding msg
-setBoundaryWith config boundary appearance children =
+setBoundary : IsPadding p -> View p msg -> View NoPadding msg
+setBoundary config child =
     Internal.coerce <|
-            div
-                ( appearance ++ [ outerPadding boundary.outerOffset ])
-                [ case children of
-                    [ child ] ->
-                        Internal.setMixin
-                            ( innerPaddingWithOffset config boundary.innerOffset )
-                            child
-
-                    _ ->
-                        Internal.div
-                            [ innerPaddingWithOffset config boundary.innerOffset
-                            , Mixin.attribute "data-innerPadding" ""
-                            ]
-                            children
-                ]
-
-
-{-| Shorthands for `setBoundaryWith` with defaultBoundary.
--}
-setBoundary : IsPadding p -> List (Mixin msg) -> List (View p msg) -> View NoPadding msg
-setBoundary config =
-    setBoundaryWith config defaultBoundary
-
-
-innerPaddingWithOffset : IsPadding p -> Maybe String -> Mixin msg
-innerPaddingWithOffset config moffset =
-    Mixin.attribute "style" <| "padding: " ++
-        String.concat
-            [ "calc("
-            , Maybe.withDefault "0px" moffset
-            , " + "
-            , innerPaddingValue config
-            , ")"
+        Internal.div
+            [ innerPadding config
+            ]
+            [ child
             ]
 
 
-outerPadding : Maybe String -> Mixin msg
-outerPadding moffset =
-    case moffset of
-        Nothing ->
-            Mixin.none
-
-        Just offset ->
-            Mixin.attribute "style" <| "padding: " ++ offset
+innerPadding : IsPadding p -> Mixin msg
+innerPadding config =
+    Mixin.attribute "style" <|
+        "padding: "
+            ++ innerPaddingValue config
 
 
 innerPaddingValue : IsPadding p -> String
