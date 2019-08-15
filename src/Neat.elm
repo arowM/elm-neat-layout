@@ -186,11 +186,14 @@ div =
     Internal.div
 
 
-{-| `View` version of `Html.text`.
+{-| `View` version of `Html.span [] [ Html.text ]`.
 -}
 text : String -> View NoPadding msg
 text str =
-    Internal.fromHtml <| \_ _ -> Html.text str
+    lift Html.span
+        []
+        [ Internal.fromHtml <| \_ _ -> Html.text str
+        ]
 
 
 {-| -}
