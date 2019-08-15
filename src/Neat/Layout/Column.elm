@@ -35,6 +35,7 @@ columnWith align children =
             [ inlineStyle <|
                 List.concat
                     [ flex
+                    , flexDirection
                     , horizontal align.horizontal
                     , vertical align.vertical
                     , flexWrap align.wrap
@@ -92,6 +93,15 @@ flex =
     [ ( "display", "flex" )
     , ( "display", "-webkit-box" )
     , ( "display", "-ms-flexbox" )
+    ]
+
+
+flexDirection : List ( String, String )
+flexDirection =
+    [ ( "-webkit-box-orient", "vertical" )
+    , ( "-webkit-box-direction", "normal" )
+    , ( "-ms-flex-direction", "column" )
+    , ( "flex-direction", "column" )
     ]
 
 
