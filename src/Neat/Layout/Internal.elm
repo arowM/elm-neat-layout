@@ -1,13 +1,13 @@
 module Neat.Layout.Internal exposing
     ( Layout
-    , fromAttributes
-    , toAttributes
+    , setInner
+    , setOuter
+    , fromOuter
+    , toInner
+    , toOuter
     , batch
     , none
     , isNone
-    , fromAttribute
-    , style
-    , attribute
     )
 
 {-| A brief module for Layouts.
@@ -16,87 +16,75 @@ module Neat.Layout.Internal exposing
 # Core
 
 @docs Layout
-@docs fromAttributes
-@docs toAttributes
+@docs setInner
+@docs setOuter
+@docs fromOuter
+@docs toInner
+@docs toOuter
 @docs batch
 @docs none
 @docs isNone
-
-
-# Attributes
-
-@docs fromAttribute
-
-
-## Common attributes
-
-@docs style
 
 -}
 
 import Html exposing (Attribute)
 import Html.Attributes as Attributes
+import Mixin exposing (Mixin)
 
 
 
 -- Core
 
 
-{-| Similar to `Html.Attribute msg` but more flexible and reusable.
--}
 type Layout msg
-    = Layout (List (Attribute msg))
+    = Layout (Mixin msg) (Mixin msg)
 
 
-{-| -}
-fromAttributes : List (Attribute msg) -> Layout msg
-fromAttributes =
-    Layout
+setOuter : Mixin msg -> Layout msg -> Layout msg
+setOuter extra (Layout i o) =
+    Layout i (Mixin.batch [ o, extra ])
 
 
-{-| -}
-toAttributes : Layout msg -> List (Attribute msg)
-toAttributes (Layout attrs) =
-    attrs
+setInner : Mixin msg -> Layout msg -> Layout msg
+setInner extra (Layout i o) =
+    Layout (Mixin.batch [ i, extra ]) o
+
+
+fromOuter : Mixin msg -> Layout msg
+fromOuter o =
+    Layout Mixin.none o
+
+
+toInner : Layout msg -> Mixin msg
+toInner (Layout i o) =
+    i
+
+
+toOuter : Layout msg -> Mixin msg
+toOuter (Layout i o) =
+    o
 
 
 {-| -}
 batch : List (Layout msg) -> Layout msg
 batch ls =
-    fromAttributes <| List.concatMap toAttributes ls
+    let
+        inner =
+            Mixin.batch <| List.map toInner ls
+
+        outer =
+            Mixin.batch <| List.map toOuter ls
+    in
+    Layout inner outer
 
 
 {-| -}
 none : Layout msg
 none =
-    Layout []
+    Layout Mixin.none Mixin.none
 
 
 {-| -}
 isNone : Layout msg -> Bool
-isNone (Layout ls) =
-    List.isEmpty ls
-
-
-
--- Attributes
-
-
-{-| -}
-fromAttribute : Attribute msg -> Layout msg
-fromAttribute attr =
-    Layout [ attr ]
-
-
-{-| -}
-style : String -> String -> Layout msg
-style name val =
-    fromAttribute <|
-        Attributes.style name val
-
-
-{-| -}
-attribute : String -> String -> Layout msg
-attribute name val =
-    fromAttribute <|
-        Attributes.attribute name val
+isNone (Layout i o) =
+    i == Mixin.none && o == Mixin.none

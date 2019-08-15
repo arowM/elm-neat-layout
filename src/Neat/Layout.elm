@@ -32,6 +32,7 @@ module Neat.Layout exposing
 -}
 
 import Html.Attributes as Attributes
+import Mixin
 import Neat.Internal exposing (View)
 import Neat.Layout.Column as Column exposing (Column)
 import Neat.Layout.Internal as Layout
@@ -104,9 +105,9 @@ fill =
 fillBy : Int -> Layout msg
 fillBy n =
     Layout.batch
-        [ style "-webkit-box-flex" <| String.fromInt n
-        , style "-ms-flex-positive" <| String.fromInt n
-        , style "flex-grow" <| String.fromInt n
+        [ outerStyle "-webkit-box-flex" <| String.fromInt n
+        , outerStyle "-ms-flex-positive" <| String.fromInt n
+        , outerStyle "flex-grow" <| String.fromInt n
         ]
 
 
@@ -114,6 +115,6 @@ fillBy n =
 -- Helper functions
 
 
-style : String -> String -> Layout msg
-style name val =
-    Layout.fromAttribute <| Attributes.style name val
+outerStyle : String -> String -> Layout msg
+outerStyle name val =
+    Layout.fromOuter <| Mixin.fromAttribute <| Attributes.style name val
