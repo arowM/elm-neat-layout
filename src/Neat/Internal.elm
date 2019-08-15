@@ -3,14 +3,16 @@ module Neat.Internal exposing
     , coerce
     , div
     , fromHtml
+    , keyedLazy
     , lift
     , setLayout
     , setMixin
     , toHtml
-    , wrapper
     )
 
 import Html exposing (Attribute, Html, div)
+import Html.Attributes as Attributes
+import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
 import Neat.Layout.Internal as Layout exposing (Layout)
 
@@ -50,25 +52,48 @@ coerce (View f) =
 
 lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
 lift node appearances children =
+    liftHelper node appearances <|
+        List.map (toHtml Layout.none Mixin.none) children
+
+
+keyedLazy :
+    String
+    -> List (Mixin msg)
+    -> List ( String, Html msg )
+    -> View p msg
+keyedLazy tag =
+    liftHelper (Keyed.node tag)
+
+
+liftHelper : (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> List a -> View p msg
+liftHelper node appearances children =
     fromHtml <|
         \layout extra ->
-            wrapper layout <|
-                node
-                    (Mixin.toAttributes <|
-                        Mixin.batch
-                            (appearances ++ [ extra ])
-                    )
-                <|
-                    List.map (toHtml Layout.none Mixin.none) children
+            wrapHtml (Layout.toOuter layout) <|
+                \extraAttrs ->
+                    node
+                        (Mixin.toAttributes <|
+                            Mixin.batch
+                                [ Mixin.batch appearances
+                                , extra
+                                , Layout.toInner layout
+                                , Mixin.fromAttributes extraAttrs
+                                ]
+                        )
+                        children
 
 
-wrapper : Layout msg -> Html msg -> Html msg
-wrapper layout =
-    if Layout.isNone layout then
-        identity
+wrapHtml : Mixin msg -> (List (Attribute msg) -> Html msg) -> Html msg
+wrapHtml outer f =
+    if outer == Mixin.none then
+        f []
 
     else
-        Html.div (Layout.toAttributes layout) << List.singleton
+        Html.div (Mixin.toAttributes outer)
+            [ f
+                [ Attributes.attribute "style" <| "width: 100%; height: 100%;"
+                ]
+            ]
 
 
 div : List (Mixin msg) -> List (View p msg) -> View p msg

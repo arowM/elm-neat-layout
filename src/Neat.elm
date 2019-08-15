@@ -228,13 +228,8 @@ keyedLazy :
     -> List (Mixin msg)
     -> List ( String, Html msg )
     -> View p msg
-keyedLazy tag appearances children =
-    Internal.fromHtml <|
-        \layout extra ->
-            Internal.wrapper layout <|
-                Keyed.node tag
-                    (Mixin.toAttributes <| Mixin.batch (appearances ++ [ extra ]))
-                    children
+keyedLazy =
+    Internal.keyedLazy
 
 
 {-| DO NOT overuse. It can break layouts.
