@@ -231,8 +231,9 @@ keyed :
     -> List (Mixin msg)
     -> List ( String, View p msg )
     -> View p msg
-keyed tag mixin =
-    keyedLazy tag mixin << List.map (Tuple.mapSecond (toHtml Layout.none Mixin.none))
+keyed tag mixins children =
+    liftHelper (Keyed.node tag) mixins <|
+        List.map (Tuple.mapSecond (toHtml Layout.none Mixin.none)) children
 
 
 {-|
@@ -249,7 +250,7 @@ keyed tag mixin =
     child _ =
         Debug.todo "child"
 
-    child_ : Int -> Html msg
+    child_ : Int -> Html (Protected p msg)
     child_ =
         toHtmlForLazy << child
 
@@ -257,27 +258,35 @@ keyed tag mixin =
     v ns =
         keyedLazy "div"
             []
-            (\n -> ( String.fromInt n, lazy child n ))
+            (\n -> ( String.fromInt n, lazy child_ n ))
 
 -}
 keyedLazy :
     String
     -> List (Mixin msg)
-    -> List ( String, Html msg )
+    -> List ( String, Html (Protected p msg) )
     -> View p msg
-keyedLazy tag =
-    liftHelper (Keyed.node tag)
+keyedLazy tag mixins children =
+    liftHelper (Keyed.node tag) mixins <|
+        List.map (Tuple.mapSecond (Html.map unProtect)) children
 
 
-{-| DO NOT overuse. It can break layouts.
-
-This is only supposed to be used in order to make `Html.Lazy.lazy` work.
+{-| This is supposed to be used in order to make `Html.Lazy.lazyN` work.
 See `keyedLazy` for real usage.
-
 -}
-toHtmlForLazy : View p a -> Html a
-toHtmlForLazy =
-    toHtml Layout.none Mixin.none
+toHtmlForLazy : View p a -> Html (Protected p a)
+toHtmlForLazy v =
+    Html.map Protected <| toHtml Layout.none Mixin.none v
+
+
+{-| -}
+type Protected p a
+    = Protected a
+
+
+unProtect : Protected p a -> a
+unProtect (Protected a) =
+    a
 
 
 
