@@ -1,6 +1,5 @@
 module Neat.Internal exposing
     ( View(..)
-    , batch
     , coerce
     , div
     , fromHtml
@@ -75,8 +74,3 @@ wrapper layout =
 div : List (Mixin msg) -> List (View p msg) -> View p msg
 div =
     lift Html.div
-
-
-batch : List (View p a) -> View p a
-batch =
-    div []

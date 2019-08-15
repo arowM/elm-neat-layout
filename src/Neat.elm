@@ -2,7 +2,6 @@ module Neat exposing
     ( View
     , toPage
     , lift
-    , batch
     , none
     , setMixin
     , setMixins
@@ -26,7 +25,6 @@ module Neat exposing
 # Constructors and Modifiers for View
 
 @docs lift
-@docs batch
 @docs none
 @docs setMixin
 @docs setMixins
@@ -142,12 +140,6 @@ resetCss =
 lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
 lift =
     Internal.lift
-
-
-{-| -}
-batch : List (View p a) -> View p a
-batch =
-    Internal.batch
 
 
 {-| Alias for `text ""`.
