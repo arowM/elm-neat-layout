@@ -19,7 +19,7 @@ module Neat.Layout.Column exposing
 -}
 
 import Mixin exposing (Mixin)
-import Neat.Internal as Internal exposing (View)
+import Neat exposing (View)
 
 
 
@@ -29,9 +29,9 @@ import Neat.Internal as Internal exposing (View)
 {-| -}
 columnWith : Column -> List (View p msg) -> View p msg
 columnWith align children =
-    Internal.div
+    Neat.div
         []
-        [ Internal.div
+        [ Neat.div
             [ inlineStyle <|
                 List.concat
                     [ flex

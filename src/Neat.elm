@@ -79,9 +79,9 @@ You can introduce custom paddings by just declaring their types and `IsPadding` 
 -}
 
 import Html exposing (Attribute, Html)
+import Html.Attributes as Attributes
 import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
-import Neat.Internal as Internal
 import Neat.Layout.Internal as Layout exposing (Layout)
 
 
@@ -91,8 +91,8 @@ import Neat.Layout.Internal as Layout exposing (Layout)
 
 {-| Html alternative it can manage paddings in type level.
 -}
-type alias View padding msg =
-    Internal.View padding msg
+type View padding msg
+    = View (Layout msg -> Mixin msg -> Html msg)
 
 
 {-| Call this function **only once** on root view function.
@@ -112,7 +112,7 @@ toPage : View NoPadding msg -> Html msg
 toPage v =
     Html.div []
         [ resetCss
-        , Internal.toHtml Layout.none Mixin.none v
+        , toHtml Layout.none Mixin.none v
         ]
 
 
@@ -170,8 +170,9 @@ resetCss =
 
 -}
 lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
-lift =
-    Internal.lift
+lift node appearances children =
+    liftHelper node appearances <|
+        List.map (toHtml Layout.none Mixin.none) children
 
 
 {-| Alias for `text ""`.
@@ -183,20 +184,24 @@ none =
 
 {-| -}
 setMixin : Mixin msg -> View NoPadding msg -> View NoPadding msg
-setMixin =
-    Internal.setMixin
+setMixin appearance (View f) =
+    View <|
+        \layout extra ->
+            f layout (Mixin.batch [ appearance, extra ])
 
 
 {-| -}
 setMixins : List (Mixin msg) -> View NoPadding msg -> View NoPadding msg
 setMixins =
-    Internal.setMixin << Mixin.batch
+    setMixin << Mixin.batch
 
 
 {-| -}
 setLayout : Layout msg -> View p msg -> View p msg
-setLayout =
-    Internal.setLayout
+setLayout layout (View f) =
+    View <|
+        \extra appearance ->
+            f (Layout.batch [ layout, extra ]) appearance
 
 
 
@@ -207,7 +212,7 @@ setLayout =
 -}
 div : List (Mixin msg) -> List (View p msg) -> View p msg
 div =
-    Internal.div
+    lift Html.div
 
 
 {-| `View` version of `Html.span [] [ Html.text ]`.
@@ -216,7 +221,7 @@ text : String -> View NoPadding msg
 text str =
     lift Html.span
         []
-        [ Internal.fromHtml <| \_ _ -> Html.text str
+        [ fromHtml <| \_ _ -> Html.text str
         ]
 
 
@@ -227,7 +232,7 @@ keyed :
     -> List ( String, View p msg )
     -> View p msg
 keyed tag mixin =
-    keyedLazy tag mixin << List.map (Tuple.mapSecond (Internal.toHtml Layout.none Mixin.none))
+    keyedLazy tag mixin << List.map (Tuple.mapSecond (toHtml Layout.none Mixin.none))
 
 
 {-|
@@ -260,8 +265,8 @@ keyedLazy :
     -> List (Mixin msg)
     -> List ( String, Html msg )
     -> View p msg
-keyedLazy =
-    Internal.keyedLazy
+keyedLazy tag =
+    liftHelper (Keyed.node tag)
 
 
 {-| DO NOT overuse. It can break layouts.
@@ -272,7 +277,7 @@ See `keyedLazy` for real usage.
 -}
 toHtmlForLazy : View p a -> Html a
 toHtmlForLazy =
-    Internal.toHtml Layout.none Mixin.none
+    toHtml Layout.none Mixin.none
 
 
 
@@ -311,8 +316,8 @@ The width of `p2` is supposed to be greater than `p1`.
 -}
 expand : IsPadding p1 -> IsPadding p2 -> View p1 msg -> View p2 msg
 expand p1 p2 child =
-    Internal.setLayout (expandPadding p1 p2) child
-        |> Internal.coerce
+    setLayout (expandPadding p1 p2) child
+        |> coerce
 
 
 expandPadding : IsPadding p1 -> IsPadding p2 -> Layout msg
@@ -334,8 +339,8 @@ expandPadding (IsPadding c1) (IsPadding c2) =
 -}
 setBoundary : IsPadding p -> View p msg -> View NoPadding msg
 setBoundary config child =
-    Internal.coerce <|
-        Internal.div
+    coerce <|
+        div
             [ innerPadding config
             ]
             [ child
@@ -363,3 +368,49 @@ noPadding =
     IsPadding
         { rem = 0
         }
+
+
+toHtml : Layout msg -> Mixin msg -> View padding msg -> Html msg
+toHtml layout appearance (View f) =
+    f layout appearance
+
+
+fromHtml : (Layout msg -> Mixin msg -> Html msg) -> View padding msg
+fromHtml =
+    View
+
+
+coerce : View p1 a -> View p2 a
+coerce (View f) =
+    View f
+
+
+liftHelper : (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> List a -> View p msg
+liftHelper node appearances children =
+    fromHtml <|
+        \layout extra ->
+            wrapHtml (Layout.toOuter layout) <|
+                \extraAttrs ->
+                    node
+                        (Mixin.toAttributes <|
+                            Mixin.batch
+                                [ Mixin.batch appearances
+                                , extra
+                                , Layout.toInner layout
+                                , Mixin.fromAttributes extraAttrs
+                                ]
+                        )
+                        children
+
+
+wrapHtml : Mixin msg -> (List (Attribute msg) -> Html msg) -> Html msg
+wrapHtml outer f =
+    if outer == Mixin.none then
+        f []
+
+    else
+        Html.div (Mixin.toAttributes outer)
+            [ f
+                [ Attributes.attribute "style" <| "width: 100%; height: 100%;"
+                ]
+            ]

@@ -33,7 +33,7 @@ module Neat.Layout exposing
 
 import Html.Attributes as Attributes
 import Mixin
-import Neat.Internal exposing (View)
+import Neat exposing (View)
 import Neat.Layout.Column as Column exposing (Column)
 import Neat.Layout.Internal as Layout
 import Neat.Layout.Row as Row exposing (Row)
