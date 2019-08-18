@@ -105,8 +105,7 @@ fill =
 fillBy : Int -> Layout msg
 fillBy n =
     Layout.batch
-        [ outerStyle "-webkit-box-flex" <| String.fromInt n
-        , outerStyle "-ms-flex-positive" <| String.fromInt n
+        [ outerStyle "-ms-flex-positive" <| String.fromInt n
         , outerStyle "flex-grow" <| String.fromInt n
         , innerStyle "width" "100%"
         , innerStyle "height" "100%"

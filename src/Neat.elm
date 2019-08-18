@@ -106,6 +106,10 @@ Make sure that your own CSS is partially overwritten by following CSS.
       padding: 0;
       box-sizing: border-box;
     }
+    [data-elm-neat-layout~=flex]{
+        display:-ms-flexbox;
+        display:flex
+    }
 
 -}
 toPage : View NoPadding msg -> Html msg
@@ -129,6 +133,10 @@ resetCss =
               border: 0;
               padding: 0;
               box-sizing: border-box;
+            }
+            [data-elm-neat-layout~=flex]{
+                display:-ms-flexbox;
+                display:flex
             }
             """
         ]
@@ -358,7 +366,8 @@ setBoundary config child =
 
 innerPadding : IsPadding p -> Mixin msg
 innerPadding config =
-    Mixin.fromAttribute <| Attributes.style "padding" <|
+    Mixin.fromAttribute <|
+        Attributes.style "padding" <|
             innerPaddingValue config
 
 
@@ -397,16 +406,19 @@ liftHelper : (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) ->
 liftHelper node appearances children =
     fromHtml <|
         \layout extra ->
-            wrapHtml (Layout.toOuter layout) <|
-                node
-                    (Mixin.toAttributes <|
-                        Mixin.batch
-                            [ Mixin.batch appearances
-                            , extra
-                            , Layout.toInner layout
-                            ]
-                    )
-                    children
+            node
+                (Mixin.toAttributes <|
+                    Mixin.batch
+                        [ Mixin.batch appearances
+                        , extra
+                        , if (Layout.toOuter layout == Mixin.none) then
+                            Mixin.none
+                          else
+                            Layout.toInner layout
+                        ]
+                )
+                children
+                |> wrapHtml (Layout.toOuter layout)
 
 
 wrapHtml : Mixin msg -> Html msg -> Html msg

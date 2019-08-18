@@ -18,6 +18,7 @@ module Neat.Layout.Row exposing
 
 -}
 
+import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat exposing (View)
 import Neat.Layout.Internal as Layout
@@ -33,14 +34,11 @@ rowWith align children =
     Neat.div
         []
         [ Neat.div
-            [ inlineStyle <|
-                List.concat
-                    [ flex
-                    , flexDirection
-                    , horizontal align.horizontal
-                    , vertical align.vertical
-                    , flexWrap align.wrap
-                    ]
+            [ flex
+            , flexDirection
+            , horizontal align.horizontal
+            , vertical align.vertical
+            , flexWrap align.wrap
             ]
           <|
             List.map (expandV align.vertical) children
@@ -52,18 +50,11 @@ expandV v =
     case v of
         Stretch ->
             Neat.setLayout <|
-                Layout.fromOuter <|
-                    Mixin.attribute "style" "height: 100%"
+                Layout.fromInner <|
+                    style "height" "100%"
 
         _ ->
             identity
-
-
-inlineStyle : List ( String, String ) -> Mixin msg
-inlineStyle ls =
-    Mixin.attribute "style" <|
-        String.join ";" <|
-            List.map (\( key, val ) -> key ++ ": " ++ val) ls
 
 
 {-| An alias for `rowWith defaultRow`.
@@ -102,34 +93,33 @@ defaultRow =
 -- Mixins
 
 
-flex : List ( String, String )
+flex : Mixin msg
 flex =
-    [ ( "display", "flex" )
-    , ( "display", "-webkit-box" )
-    , ( "display", "-ms-flexbox" )
-    ]
+    Mixin.fromAttribute <|
+        Attributes.attribute "data-elm-neat-layout" "flex"
 
 
-flexDirection : List ( String, String )
+flexDirection : Mixin msg
 flexDirection =
-    [ ( "-webkit-box-orient", "horizontal" )
-    , ( "-webkit-box-direction", "normal" )
-    , ( "-ms-flex-direction", "row" )
-    , ( "flex-direction", "row" )
-    ]
+    Mixin.batch
+        [ style "-ms-flex-direction" "row"
+        , style "flex-direction" "row"
+        ]
 
 
-flexWrap : Bool -> List ( String, String )
+flexWrap : Bool -> Mixin msg
 flexWrap b =
     if b then
-        [ ( "-ms-flex-wrap", "wrap" )
-        , ( "flex-wrap", "wrap" )
-        ]
+        Mixin.batch
+            [ style "-ms-flex-wrap" "wrap"
+            , style "flex-wrap" "wrap"
+            ]
 
     else
-        [ ( "-ms-flex-wrap", "nowrap" )
-        , ( "flex-wrap", "nowrap" )
-        ]
+        Mixin.batch
+            [ style "-ms-flex-wrap" "nowrap"
+            , style "flex-wrap" "nowrap"
+            ]
 
 
 
@@ -145,37 +135,34 @@ type Horizontal
     | SpaceAround
 
 
-horizontal : Horizontal -> List ( String, String )
+horizontal : Horizontal -> Mixin msg
 horizontal hor =
-    case hor of
-        Left ->
-            [ ( "-webkit-box-pack", "start" )
-            , ( "-ms-flex-pack", "start" )
-            , ( "justify-content", "flex-start" )
-            ]
+    Mixin.batch <|
+        case hor of
+            Left ->
+                [ style "-ms-flex-pack" "start"
+                , style "justify-content" "flex-start"
+                ]
 
-        Right ->
-            [ ( "-webkit-box-pack", "end" )
-            , ( "-ms-flex-pack", "end" )
-            , ( "justify-content", "flex-end" )
-            ]
+            Right ->
+                [ style "-ms-flex-pack" "end"
+                , style "justify-content" "flex-end"
+                ]
 
-        HCenter ->
-            [ ( "-webkit-box-pack", "center" )
-            , ( "-ms-flex-pack", "center" )
-            , ( "justify-content", "center" )
-            ]
+            HCenter ->
+                [ style "-ms-flex-pack" "center"
+                , style "justify-content" "center"
+                ]
 
-        SpaceBetween ->
-            [ ( "-webkit-box-pack", "justify" )
-            , ( "-ms-flex-pack", "justify" )
-            , ( "justify-content", "space-between" )
-            ]
+            SpaceBetween ->
+                [ style "-ms-flex-pack" "justify"
+                , style "justify-content" "space-between"
+                ]
 
-        SpaceAround ->
-            [ ( "-ms-flex-pack", "distribute" )
-            , ( "justify-content", "space-around" )
-            ]
+            SpaceAround ->
+                [ style "-ms-flex-pack" "distribute"
+                , style "justify-content" "space-around"
+                ]
 
 
 
@@ -190,29 +177,35 @@ type Vertical
     | Stretch
 
 
-vertical : Vertical -> List ( String, String )
+vertical : Vertical -> Mixin msg
 vertical ver =
-    case ver of
-        Top ->
-            [ ( "-webkit-box-align", "start" )
-            , ( "-ms-flex-align", "start" )
-            , ( "align-items", "flex-start" )
-            ]
+    Mixin.batch <|
+        case ver of
+            Top ->
+                [ style "-ms-flex-align" "start"
+                , style "align-items" "flex-start"
+                ]
 
-        Bottom ->
-            [ ( "-webkit-box-align", "end" )
-            , ( "-ms-flex-align", "end" )
-            , ( "align-items", "flex-end" )
-            ]
+            Bottom ->
+                [ style "-ms-flex-align" "end"
+                , style "align-items" "flex-end"
+                ]
 
-        VCenter ->
-            [ ( "-webkit-box-align", "center" )
-            , ( "-ms-flex-align", "center" )
-            , ( "align-items", "center" )
-            ]
+            VCenter ->
+                [ style "-ms-flex-align" "center"
+                , style "align-items" "center"
+                ]
 
-        Stretch ->
-            [ ( "-webkit-box-align", "stretch" )
-            , ( "-ms-flex-align", "stretch" )
-            , ( "align-items", "stretch" )
-            ]
+            Stretch ->
+                [ style "-ms-flex-align" "stretch"
+                , style "align-items" "stretch"
+                ]
+
+
+
+-- Helper functions
+
+
+style : String -> String -> Mixin msg
+style k v =
+    Mixin.fromAttribute <| Attributes.style k v
