@@ -32,17 +32,14 @@ import Neat.Layout.Internal as Layout
 rowWith : Row -> List (View p msg) -> View p msg
 rowWith align children =
     Neat.div
-        []
-        [ Neat.div
-            [ flex
-            , flexDirection
-            , horizontal align.horizontal
-            , vertical align.vertical
-            , flexWrap align.wrap
-            ]
-          <|
-            List.map (expandV align.vertical) children
+        [ flex
+        , flexDirection
+        , horizontal align.horizontal
+        , vertical align.vertical
+        , flexWrap align.wrap
         ]
+    <|
+        List.map (expandV align.vertical) children
 
 
 expandV : Vertical -> View p msg -> View p msg

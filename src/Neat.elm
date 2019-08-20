@@ -3,6 +3,7 @@ module Neat exposing
     , toPage
     , lift
     , none
+    , empty
     , setMixin
     , setMixins
     , setLayout
@@ -31,6 +32,7 @@ module Neat exposing
 
 @docs lift
 @docs none
+@docs empty
 @docs setMixin
 @docs setMixins
 @docs setLayout
@@ -183,11 +185,18 @@ lift node appearances children =
         List.map (toHtml Layout.none Mixin.none) children
 
 
-{-| Alias for `text ""`.
+{-| View version of `Html.text ""`.
 -}
-none : View NoPadding a
+none : View p a
 none =
-    text ""
+    fromHtml <| \_ _ -> Html.text ""
+
+
+{-| An alias for `div [] []`.
+-}
+empty : View NoPadding a
+empty =
+    div [] []
 
 
 {-| -}
@@ -223,7 +232,7 @@ div =
     lift Html.div
 
 
-{-| `View` version of `Html.span [] [ Html.text ]`.
+{-| `View` version of `Html.div [] [ Html.text ]`.
 -}
 text : String -> View NoPadding msg
 text str =

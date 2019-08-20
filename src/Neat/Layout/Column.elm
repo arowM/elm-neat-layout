@@ -32,17 +32,14 @@ import Neat.Layout.Internal as Layout
 columnWith : Column -> List (View p msg) -> View p msg
 columnWith align children =
     Neat.div
-        []
-        [ Neat.div
-            [ flex
-            , flexDirection
-            , horizontal align.horizontal
-            , vertical align.vertical
-            , flexWrap align.wrap
-            ]
-          <|
-            List.map (expandH align.horizontal) children
+        [ flex
+        , flexDirection
+        , horizontal align.horizontal
+        , vertical align.vertical
+        , flexWrap align.wrap
         ]
+    <|
+        List.map (expandH align.horizontal) children
 
 
 expandH : Horizontal -> View p msg -> View p msg
@@ -77,7 +74,7 @@ type alias Column =
 
     { vertical = Top
     , horizontal = Left
-    , wrap = True
+    , wrap = False
     }
 
 -}
@@ -85,7 +82,7 @@ defaultColumn : Column
 defaultColumn =
     { vertical = Top
     , horizontal = Left
-    , wrap = True
+    , wrap = False
     }
 
 
