@@ -1,0 +1,231 @@
+@import 'variables';
+
+$menu-font-size: 1.4em;
+$border-width: 0.4px;
+
+.wrapper {
+  background-color: $main-color2;
+  color: white;
+}
+
+.center {
+  width: 80%;
+  height: 100vh;
+}
+
+.menu {
+  font-size: $menu-font-size;
+}
+
+.menuItem {
+  border-radius: 1000em;
+  cursor: pointer;
+
+  &::before, &::after {
+    content: '';
+    display: block;
+    width: 1em;
+  }
+
+  &_icon {
+    width: 1.2em;
+
+    &::after {
+      content: '';
+      display: block;
+      width: 100%;
+      padding-top: 100%;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+    }
+  }
+
+  .menuItem-home::after {
+    background-image: url('img/home.svg');
+  }
+
+  .menuItem-explore::after {
+    background-image: url('img/explore.svg');
+  }
+
+  .menuItem-notifications::after {
+    background-image: url('img/notifications.svg');
+  }
+
+  .menuItem-messages::after {
+    background-image: url('img/messages.svg');
+  }
+
+  .menuItem-bookmarks::after {
+    background-image: url('img/bookmarks.svg');
+  }
+
+  .menuItem-bookmarks::after {
+    background-image: url('img/bookmarks.svg');
+  }
+
+  .menuItem-lists::after {
+    background-image: url('img/lists.svg');
+  }
+
+  .menuItem-more::after {
+    background-image: url('img/more.svg');
+  }
+
+  &:hover {
+    background-color: rgba(29, 161, 242, 0.1);
+
+    .menuItem_label {
+      color: rgb(29, 161, 242);
+    }
+
+    .menuItem-home::after {
+      background-image: url('img/home-active.svg');
+    }
+
+    .menuItem-explore::after {
+      background-image: url('img/explore-active.svg');
+    }
+
+    .menuItem-notifications::after {
+      background-image: url('img/notifications-active.svg');
+    }
+
+    .menuItem-messages::after {
+      background-image: url('img/messages-active.svg');
+    }
+
+    .menuItem-bookmarks::after {
+      background-image: url('img/bookmarks-active.svg');
+    }
+
+    .menuItem-bookmarks::after {
+      background-image: url('img/bookmarks-active.svg');
+    }
+
+    .menuItem-lists::after {
+      background-image: url('img/lists-active.svg');
+    }
+
+    .menuItem-more::after {
+      background-image: url('img/more-active.svg');
+    }
+  }
+}
+
+/* ======================
+ *  Body
+ * ======================
+ */
+
+.bodyTitle {
+  font-size: $menu-font-size;
+  border: $border-width solid $main-color0;
+}
+
+.bodyContent {
+  border-left: $border-width solid $main-color0;
+  border-right: $border-width solid $main-color0;
+}
+
+.message {
+  border-top: $border-width solid $main-color0;
+  border-bottom: $border-width solid $main-color0;
+}
+
+.messageIcon {
+  width: 3.2em;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 100%;
+    padding-top: 100%;
+    border-radius: 100%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+  }
+
+  &-icon1::after {
+    background-image: url('img/icon-goat1.jpg');
+  }
+
+  &-icon2::after {
+    background-image: url('img/icon-goat2.jpg');
+  }
+}
+
+.messageName {
+  line-height: 1;
+  font-weight: 600;
+}
+
+.messageScreenName {
+  line-height: 1;
+  font-size: 0.9;
+  color: rgb(136, 153, 166);
+}
+
+/* ======================
+ *  Right Pane
+ * ======================
+ */
+
+.rightPane {
+  min-width: 20em;
+}
+
+.search {
+
+  &Field {
+    background-color: $main-color1;
+    border-radius: 100em;
+
+    &:hover {
+      border: solid $border-width $sub-color0;
+      background-color: $main-color2;
+
+      .search {
+        &Icon::after {
+          background-image: url('img/search-active.svg');
+        }
+
+        &Input {
+          background-color: $main-color2;
+        }
+      }
+    }
+  }
+
+  &Icon {
+    width: 1.4em;
+
+    &::after {
+      content: '';
+      display: block;
+      width: 100%;
+      padding-top: 100%;
+      border-radius: 100%;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      background-image: url('img/search.svg');
+    }
+  }
+
+  &Input {
+    background-color: $main-color1;
+    border: none;
+    width: 100%;
+  }
+}
+
+/* ======================
+ *  Common
+ * ======================
+ */
+.scrollAreaY {
+  overflow-y: auto;
+}
