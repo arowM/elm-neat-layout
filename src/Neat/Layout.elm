@@ -6,6 +6,8 @@ module Neat.Layout exposing
     , columnWith
     , fill
     , fillBy
+    , noShrink
+    , shrinkBy
     )
 
 {-| Alignment functions.
@@ -28,11 +30,13 @@ module Neat.Layout exposing
 
 @docs fill
 @docs fillBy
+@docs noShrink
+@docs shrinkBy
 
 -}
 
 import Html.Attributes as Attributes
-import Mixin
+import Mixin exposing (Mixin)
 import Neat exposing (View)
 import Neat.Layout.Column as Column exposing (Column)
 import Neat.Layout.Internal as Layout
@@ -104,23 +108,48 @@ fill =
 -}
 fillBy : Int -> Layout msg
 fillBy n =
-    Layout.batch
-        [ outerStyle "-ms-flex-positive" <| String.fromInt n
-        , outerStyle "flex-grow" <| String.fromInt n
-        , innerStyle "width" "100%"
-        , innerStyle "height" "100%"
-        ]
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "-ms-flex-positive" <| String.fromInt n
+                , style "flex-grow" <| String.fromInt n
+                ]
+        , inner =
+            Mixin.batch
+                [ style "width" "100%"
+                , style "height" "100%"
+                ]
+        }
+
+
+{-| Prohibit to shrink the item in row/column.
+
+Shorthands for `fillBy 0`.
+
+-}
+noShrink : Layout msg
+noShrink =
+    shrinkBy 0
+
+
+{-| If the size of all flex items in row/column is larger than the container, items shrink to fit according to `shrinkBy`.
+-}
+shrinkBy : Int -> Layout msg
+shrinkBy n =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "-ms-flex-negative" <| String.fromInt n
+                , style "flex-shrink" <| String.fromInt n
+                ]
+        , inner = Mixin.none
+        }
 
 
 
 -- Helper functions
 
 
-outerStyle : String -> String -> Layout msg
-outerStyle name val =
-    Layout.fromOuter <| Mixin.fromAttribute <| Attributes.style name val
-
-
-innerStyle : String -> String -> Layout msg
-innerStyle name val =
-    Layout.fromInner <| Mixin.fromAttribute <| Attributes.style name val
+style : String -> String -> Mixin msg
+style k v =
+    Mixin.fromAttribute <| Attributes.style k v
