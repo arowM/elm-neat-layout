@@ -5,9 +5,14 @@ module Neat.Layout.Column exposing
     , column
     , Vertical(..)
     , Horizontal(..)
+    , optimized
+    , toProtected
     )
 
-{-| Columns
+{-|
+
+
+# Columns
 
 @docs columnWith
 @docs Column
@@ -16,11 +21,18 @@ module Neat.Layout.Column exposing
 @docs Vertical
 @docs Horizontal
 
+
+# Optimization
+
+@docs optimized
+@docs toProtected
+
 -}
 
+import Html exposing (Html)
 import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
-import Neat exposing (View)
+import Neat exposing (Protected, View)
 import Neat.Layout.Internal as Layout
 
 
@@ -32,14 +44,19 @@ import Neat.Layout.Internal as Layout
 columnWith : Column -> List (View p msg) -> View p msg
 columnWith align children =
     Neat.div
-        [ flex
-        , flexDirection
-        , horizontal align.horizontal
-        , vertical align.vertical
-        , flexWrap align.wrap
-        ]
+        (columnMixins align)
     <|
         List.map (expandH align.horizontal) children
+
+
+columnMixins : Column -> List (Mixin msg)
+columnMixins align =
+    [ flex
+    , flexDirection
+    , horizontal align.horizontal
+    , vertical align.vertical
+    , flexWrap align.wrap
+    ]
 
 
 expandH : Horizontal -> View p msg -> View p msg
@@ -47,8 +64,10 @@ expandH h =
     case h of
         Stretch ->
             Neat.setLayout <|
-                Layout.fromInner <|
-                    style "width" "100%"
+                Layout.fromRecord
+                    { inner = style "width" "100%"
+                    , outer = Mixin.none
+                    }
 
         _ ->
             identity
@@ -197,6 +216,67 @@ vertical ver =
                 [ style "-ms-flex-pack" "distribute"
                 , style "justify-content" "space-around"
                 ]
+
+
+
+-- Optimization
+
+
+{-| Optimized column.
+
+  - First argument: identifier for each element
+      - the return value must be unique among all elements
+
+  - Second argument: apply `lazyN` on the resulting function of `toProtected`.
+
+```
+v1 : View p msg
+v1 =
+    Debug.todo "v1"
+
+v2 : View p msg
+v2 =
+    Debug.todo "v2"
+
+child : Int -> View p msg
+child _ =
+    Debug.todo "child"
+
+-- Make sure to declare this top level in order to `lazy` works well.
+child_ : Int -> Horizontal -> Html (Protected p msg)
+child_ n =
+    toProtected <| child n
+
+v : List Int -> View p msg
+v =
+    optimized
+        String.fromInt
+        (\n -> lazy2 child_ n)
+        defaultColumn
+```
+
+-}
+optimized :
+    (x -> String)
+    -> (x -> Horizontal -> Html (Protected p msg))
+    -> Column
+    -> List x
+    -> View p msg
+optimized identifier f align =
+    Neat.optimized
+        identifier
+        (\x -> f x align.horizontal)
+        "div"
+        (columnMixins align)
+
+
+{-| This is supposed to be used in order to make `Html.lazy.lazyN` work.
+See `optimized` for real usage.
+-}
+toProtected : View p a -> Horizontal -> Html (Protected p a)
+toProtected v hor =
+    Neat.toProtected <|
+        expandH hor v
 
 
 

@@ -5,9 +5,14 @@ module Neat.Layout.Row exposing
     , row
     , Vertical(..)
     , Horizontal(..)
+    , optimized
+    , toProtected
     )
 
-{-| Rows
+{-|
+
+
+# Row
 
 @docs rowWith
 @docs Row
@@ -16,11 +21,18 @@ module Neat.Layout.Row exposing
 @docs Vertical
 @docs Horizontal
 
+
+# Optimization
+
+@docs optimized
+@docs toProtected
+
 -}
 
+import Html exposing (Html)
 import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
-import Neat exposing (View)
+import Neat exposing (Protected, View)
 import Neat.Layout.Internal as Layout
 
 
@@ -31,15 +43,18 @@ import Neat.Layout.Internal as Layout
 {-| -}
 rowWith : Row -> List (View p msg) -> View p msg
 rowWith align children =
-    Neat.div
-        [ flex
-        , flexDirection
-        , horizontal align.horizontal
-        , vertical align.vertical
-        , flexWrap align.wrap
-        ]
-    <|
+    Neat.div (rowMixins align) <|
         List.map (expandV align.vertical) children
+
+
+rowMixins : Row -> List (Mixin msg)
+rowMixins align =
+    [ flex
+    , flexDirection
+    , horizontal align.horizontal
+    , vertical align.vertical
+    , flexWrap align.wrap
+    ]
 
 
 expandV : Vertical -> View p msg -> View p msg
@@ -47,8 +62,10 @@ expandV v =
     case v of
         Stretch ->
             Neat.setLayout <|
-                Layout.fromInner <|
-                    style "height" "100%"
+                Layout.fromRecord <|
+                    { inner = style "height" "100%"
+                    , outer = Mixin.none
+                    }
 
         _ ->
             identity
@@ -74,7 +91,7 @@ type alias Row =
 
     { vertical = Top
     , horizontal = Left
-    , wrap = True
+    , wrap = False
     }
 
 -}
@@ -82,7 +99,7 @@ defaultRow : Row
 defaultRow =
     { vertical = Top
     , horizontal = Left
-    , wrap = True
+    , wrap = False
     }
 
 
@@ -197,6 +214,67 @@ vertical ver =
                 [ style "-ms-flex-align" "stretch"
                 , style "align-items" "stretch"
                 ]
+
+
+
+-- Optimization
+
+
+{-| Optimized row.
+
+  - First argument: identifier for each element
+      - the return value must be unique among all elements
+
+  - Second argument: apply `lazyN` on the resulting function of `toProtected`.
+
+```
+v1 : View p msg
+v1 =
+    Debug.todo "v1"
+
+v2 : View p msg
+v2 =
+    Debug.todo "v2"
+
+child : Int -> View p msg
+child _ =
+    Debug.todo "child"
+
+-- Make sure to declare this top level in order to `lazy` works well.
+child_ : Int -> Vertical -> Html (Protected p msg)
+child_ n =
+    toProtected <| child n
+
+v : List Int -> View p msg
+v =
+    optimized
+        String.fromInt
+        (\n -> lazy2 child_ n)
+        defaultRow
+```
+
+-}
+optimized :
+    (x -> String)
+    -> (x -> Vertical -> Html (Protected p msg))
+    -> Row
+    -> List x
+    -> View p msg
+optimized identifier f align =
+    Neat.optimized
+        identifier
+        (\x -> f x align.vertical)
+        "div"
+        (rowMixins align)
+
+
+{-| This is supposed to be used in order to make `Html.lazy.lazyN` work.
+See `optimized` for real usage.
+-}
+toProtected : View p a -> Vertical -> Html (Protected p a)
+toProtected v vert =
+    Neat.toProtected <|
+        expandV vert v
 
 
 

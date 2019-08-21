@@ -1,14 +1,12 @@
 module Neat.Layout.Internal exposing
-    ( Layout
+    ( Layout(..)
+    , Layout_
     , setInner
     , setOuter
-    , fromInner
-    , fromOuter
-    , toInner
-    , toOuter
+    , fromRecord
+    , toRecord
     , batch
     , none
-    , isNone
     )
 
 {-| A brief module for Layouts.
@@ -17,20 +15,18 @@ module Neat.Layout.Internal exposing
 # Core
 
 @docs Layout
+@docs Layout_
 @docs setInner
 @docs setOuter
 @docs fromInner
 @docs fromOuter
-@docs toInner
-@docs toOuter
+@docs fromRecord
+@docs toRecord
 @docs batch
 @docs none
-@docs isNone
 
 -}
 
-import Html exposing (Attribute)
-import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 
 
@@ -39,59 +35,63 @@ import Mixin exposing (Mixin)
 
 
 type Layout msg
-    = Layout (Mixin msg) (Mixin msg)
+    = Layout (Layout_ msg)
+
+
+type alias Layout_ msg =
+    { inner : Mixin msg
+    , outer : Mixin msg
+    }
 
 
 setOuter : Mixin msg -> Layout msg -> Layout msg
-setOuter extra (Layout i o) =
-    Layout i (Mixin.batch [ o, extra ])
+setOuter extra (Layout layout_) =
+    Layout <|
+        { layout_
+            | outer =
+                Mixin.batch
+                    [ layout_.outer
+                    , extra
+                    ]
+        }
 
 
 setInner : Mixin msg -> Layout msg -> Layout msg
-setInner extra (Layout i o) =
-    Layout (Mixin.batch [ i, extra ]) o
+setInner extra (Layout layout_) =
+    Layout <|
+        { layout_
+            | inner =
+                Mixin.batch
+                    [ layout_.inner
+                    , extra
+                    ]
+        }
 
 
-fromInner : Mixin msg -> Layout msg
-fromInner i =
-    Layout i Mixin.none
+fromRecord : Layout_ msg -> Layout msg
+fromRecord =
+    Layout
 
 
-fromOuter : Mixin msg -> Layout msg
-fromOuter o =
-    Layout Mixin.none o
-
-
-toInner : Layout msg -> Mixin msg
-toInner (Layout i o) =
-    i
-
-
-toOuter : Layout msg -> Mixin msg
-toOuter (Layout i o) =
-    o
+toRecord : Layout msg -> Layout_ msg
+toRecord (Layout layout_) =
+    layout_
 
 
 {-| -}
 batch : List (Layout msg) -> Layout msg
 batch ls =
-    let
-        inner =
-            Mixin.batch <| List.map toInner ls
-
-        outer =
-            Mixin.batch <| List.map toOuter ls
-    in
-    Layout inner outer
+    fromRecord <|
+        { inner =
+            Mixin.batch <| List.map (.inner << toRecord) ls
+        , outer = Mixin.batch <| List.map (.outer << toRecord) ls
+        }
 
 
 {-| -}
 none : Layout msg
 none =
-    Layout Mixin.none Mixin.none
-
-
-{-| -}
-isNone : Layout msg -> Bool
-isNone (Layout i o) =
-    i == Mixin.none && o == Mixin.none
+    Layout <|
+        { inner = Mixin.none
+        , outer = Mixin.none
+        }
