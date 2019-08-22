@@ -7,6 +7,8 @@ module Neat exposing
     , emptyNode
     , setMixin
     , setMixins
+    , setAttribute
+    , setAttributes
     , setLayout
     , div
     , text
@@ -38,6 +40,8 @@ module Neat exposing
 @docs emptyNode
 @docs setMixin
 @docs setMixins
+@docs setAttribute
+@docs setAttributes
 @docs setLayout
 
 
@@ -228,6 +232,18 @@ setMixin appearance (View f) =
 setMixins : List (Mixin msg) -> View NoPadding msg -> View NoPadding msg
 setMixins =
     setMixin << Mixin.batch
+
+
+{-| -}
+setAttribute : Attribute msg -> View NoPadding msg -> View NoPadding msg
+setAttribute =
+    setMixin << Mixin.fromAttribute
+
+
+{-| -}
+setAttributes : List (Attribute msg) -> View NoPadding msg -> View NoPadding msg
+setAttributes =
+    setMixin << Mixin.fromAttributes
 
 
 {-| -}
