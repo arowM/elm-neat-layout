@@ -129,12 +129,11 @@ Make sure that your own CSS is partially overwritten by following CSS.
     }
 
 -}
-toPage : View NoPadding msg -> Html msg
+toPage : View NoPadding msg -> List (Html msg)
 toPage v =
-    Html.div []
-        [ resetCss
-        , toHtml 0 Layout.none Mixin.none v
-        ]
+    [ resetCss
+    , toHtml 0 Layout.none Mixin.none v
+    ]
 
 
 resetCss : Html msg

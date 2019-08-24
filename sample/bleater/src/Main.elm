@@ -126,6 +126,7 @@ view model =
         |> alignHCenter
         |> setClass "wrapper"
         |> Neat.toPage
+        |> Html.div []
 
 
 alignHCenter : View NoPadding msg -> View NoPadding msg
