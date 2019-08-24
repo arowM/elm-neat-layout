@@ -43,10 +43,18 @@ import Neat.Layout.Internal as Layout
 {-| -}
 columnWith : Column -> List (View p msg) -> View p msg
 columnWith align children =
-    Neat.div
-        (columnMixins align)
-    <|
+    wrapper align (columnMixins align) <|
         List.map (expandH align.horizontal) children
+
+
+wrapper : Column -> List (Mixin msg) -> List (View p msg) -> View p msg
+wrapper align =
+    case align.nodeName of
+        "div" ->
+            Neat.div
+
+        a ->
+            Neat.lift (Html.node a)
 
 
 columnMixins : Column -> List (Mixin msg)
@@ -86,6 +94,7 @@ type alias Column =
     { vertical : Vertical
     , horizontal : Horizontal
     , wrap : Bool
+    , nodeName : String
     }
 
 
@@ -94,6 +103,7 @@ type alias Column =
     { vertical = Top
     , horizontal = Left
     , wrap = False
+    , nodeName = "div"
     }
 
 -}
@@ -102,6 +112,7 @@ defaultColumn =
     { vertical = Top
     , horizontal = Left
     , wrap = False
+    , nodeName = "div"
     }
 
 
@@ -266,7 +277,7 @@ optimized identifier f align =
     Neat.optimized
         identifier
         (\x -> f x align.horizontal)
-        "div"
+        align.nodeName
         (columnMixins align)
 
 

@@ -43,8 +43,18 @@ import Neat.Layout.Internal as Layout
 {-| -}
 rowWith : Row -> List (View p msg) -> View p msg
 rowWith align children =
-    Neat.div (rowMixins align) <|
+    wrapper align (rowMixins align) <|
         List.map (expandV align.vertical) children
+
+
+wrapper : Row -> List (Mixin msg) -> List (View p msg) -> View p msg
+wrapper align =
+    case align.nodeName of
+        "div" ->
+            Neat.div
+
+        a ->
+            Neat.lift (Html.node a)
 
 
 rowMixins : Row -> List (Mixin msg)
@@ -84,6 +94,7 @@ type alias Row =
     { vertical : Vertical
     , horizontal : Horizontal
     , wrap : Bool
+    , nodeName : String
     }
 
 
@@ -92,6 +103,7 @@ type alias Row =
     { vertical = Top
     , horizontal = Left
     , wrap = False
+    , nodeName = "div"
     }
 
 -}
@@ -100,6 +112,7 @@ defaultRow =
     { vertical = Top
     , horizontal = Left
     , wrap = False
+    , nodeName = "div"
     }
 
 
@@ -264,7 +277,7 @@ optimized identifier f align =
     Neat.optimized
         identifier
         (\x -> f x align.vertical)
-        "div"
+        align.nodeName
         (rowMixins align)
 
 
