@@ -16,7 +16,7 @@
   },
   "scripts": {
     "start": "parcel src/index.html",
-    "build": "rimraf ../../docs/bleater && parcel build src/*.html -d ../../docs/bleater --public-url /elm-neat-layout/bleater",
+    "build": "rimraf ../../docs/slide && parcel build src/*.html -d ../../docs/slide --public-url /elm-neat-layout/slide",
     "format": "elm-format src",
     "test": "elm-analyse && elm-format --validate src/"
   },

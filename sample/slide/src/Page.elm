@@ -121,6 +121,8 @@ self =
 * 気吹堂 (出版) 代表
     * さくらちゃんの写真集がでるよ
 * 株式会社UZUZ (人材紹介) CXO (Chief eXperience Officer)
+
+最近つくった elm-form-decoder もよろしくね！
     """
 
 
@@ -440,7 +442,7 @@ last =
 もっと詳しく知りたくなったら、
 
 * [パッケージ](https://package.elm-lang.org/packages/arowM/elm-neat-layout/latest/)
-* [GitHubリポジトリのサンプル](https://github.com/arowM/elm-neat-layout/tree/slide/sample)
+* [GitHubリポジトリのサンプル](https://github.com/arowM/elm-neat-layout/tree/master/sample)
     """
 
 

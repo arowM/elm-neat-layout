@@ -10,7 +10,7 @@ import Neat exposing (NoPadding, View, setMixin)
 import Page exposing (Page)
 import Url exposing (Url)
 import Url.Builder
-import Url.Parser as Url
+import Url.Parser as Url exposing ((</>))
 
 
 
@@ -57,11 +57,14 @@ parseUrl url =
 
 parser : Url.Parser (Int -> a) a
 parser =
-    Url.fragment <|
-        \ma ->
-            ma
-                |> Maybe.andThen String.toInt
-                |> Maybe.withDefault 0
+    Url.s "elm-neat-layout"
+        </> Url.s "slide"
+        </> (Url.fragment <|
+                \ma ->
+                    ma
+                        |> Maybe.andThen String.toInt
+                        |> Maybe.withDefault 0
+            )
 
 
 
