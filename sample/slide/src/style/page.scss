@@ -1,0 +1,126 @@
+@import 'variables';
+
+.page {
+  background: linear-gradient(#F5E6DE 0%, #DCEAEF 100%) no-repeat 50% 50% / 100% 100%;
+  background-size: cover;
+}
+
+.title {
+  font-weight: 600;
+  text-align: center;
+}
+
+.titleBoundary {
+  width: 100%;
+  background: #ffdfdf;
+}
+
+.contentBoundary {
+  width: 100%;
+}
+
+/* ===============
+ *  Common
+ * ===============
+ */
+
+.subText {
+  font-size: 0.6em;
+}
+
+.markdown {
+  &>* {
+    padding: 0.7rem;
+  }
+
+  code {
+    font-size: 0.8em;
+  }
+
+  ul>li {
+    padding: 0.7rem;
+
+    &::before {
+      content: '・';
+      display: inline-block;
+    }
+  }
+
+  .sakura {
+    width: 80%;
+
+    &::after {
+      content: '';
+      display: block;
+      width: 100%;
+      padding-top: calc(100% * 338 / 600);
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      background-image: url('img/sakura.jpg');
+    }
+  }
+
+  .row-space-between {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .row-center {
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+
+  .padding1 {
+    padding: 0.6em;
+    border: dashed 2px #f3f;
+
+    &-noLeft {
+      padding-left: 0;
+    }
+  }
+
+  .space1 {
+    width: 0.6em;
+  }
+
+  .viewWrapper {
+    width: 8em;
+  }
+
+  .view1 {
+    background-color: #f8f;
+    font-size: 0.8em;
+    width: 4em;
+    height: 3em;
+
+    &::after {
+      content: 'View 1';
+      display: block;
+      padding: 0.4em;
+    }
+  }
+
+  .view2 {
+    background-color: #ff8;
+    font-size: 0.8em;
+    width: 4em;
+    height: 3em;
+
+    &::after {
+      content: 'View 2';
+      display: block;
+      padding: 0.4em;
+    }
+  }
+}
+
+/* ===============
+ *  Pages
+ * ===============
+ */
+
+.titlePage {
+  height: 100%;
+}

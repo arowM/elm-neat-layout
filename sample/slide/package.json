@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "dependencies": {
+    "autoprefixer": "^9.4.2",
+    "elm": "^0.19.0-bugfix2",
+    "elm-analyse": "^0.16.0",
+    "elm-format": "^0.8.1",
+    "highlight.js": "9.15.10",
+    "parcel": "^1.12.3",
+    "parcel-bundler": "https://github.com/arowM/parcel/archive/parcel-bundler@1.12.4.tar.gz",
+    "postcss": "^7.0.6",
+    "postcss-flexbugs-fixes": "^4.1.0",
+    "postcss-modules": "^1.4.1",
+    "rimraf": "3.0.0",
+    "sass": "^1.15.2"
+  },
+  "scripts": {
+    "start": "parcel src/index.html",
+    "build": "rimraf ../../docs/bleater && parcel build src/*.html -d ../../docs/bleater --public-url /elm-neat-layout/bleater",
+    "format": "elm-format src",
+    "test": "elm-analyse && elm-format --validate src/"
+  },
+  "browserslist": [
+    "> 1%",
+    "ie 10"
+  ],
+  "author": "Kadzuya Okamoto",
+  "license": "MIT",
+  "devDependencies": {
+    "elm-hot": "^1.0.1"
+  }
+}
