@@ -18,6 +18,7 @@ module Neat exposing
     , fromNoPadding
     , expand
     , setBoundary
+    , unsafeFromHtml
     , optimized
     , toProtected
     , Protected
@@ -82,6 +83,13 @@ You can introduce custom paddings by just declaring their types and `IsPadding` 
 @docs fromNoPadding
 @docs expand
 @docs setBoundary
+
+
+# Unsafe functions
+
+These can break neat paddings, so use them carefully.
+
+@docs unsafeFromHtml
 
 
 # Lower level functions for performance optimization
@@ -402,8 +410,15 @@ setBoundary : IsPadding p -> View p msg -> View NoPadding msg
 setBoundary config child =
     liftHelper (innerPadding config)
         Html.div
-        [ Mixin.none ]
-        [ toHtml 0 Layout.none Mixin.none child
+        []
+        [ toHtml 0
+            (Layout.fromRecord
+                { inner = Mixin.none
+                , outer = Mixin.fromAttribute <| Attributes.style "height" "100%"
+                }
+            )
+            Mixin.none
+            child
         ]
 
 
@@ -413,6 +428,18 @@ innerPadding (IsPadding { rem }) =
         Attributes.style "padding" <|
             String.fromFloat (rem / 2)
                 ++ "rem"
+
+
+
+-- Unsafe functions
+
+
+{-| -}
+unsafeFromHtml : Html msg -> View p msg
+unsafeFromHtml h =
+    div []
+        [ fromHtml <| \_ _ _ -> h
+        ]
 
 
 

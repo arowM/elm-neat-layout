@@ -3,10 +3,10 @@ module Neat.Layout.Internal exposing
     , Layout_
     , setInner
     , setOuter
-    , fromRecord
     , toRecord
     , batch
     , none
+    , fromRecord
     )
 
 {-| A brief module for Layouts.
@@ -19,8 +19,6 @@ module Neat.Layout.Internal exposing
 @docs setInner
 @docs setOuter
 @docs fromInner
-@docs fromOuter
-@docs fromRecord
 @docs toRecord
 @docs batch
 @docs none
