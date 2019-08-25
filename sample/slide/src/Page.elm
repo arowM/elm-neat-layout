@@ -437,10 +437,10 @@ Layout.columnWith
 last : View PagePadding msg
 last =
     md """
-もっと詳しくしりたくなったら、
+もっと詳しく知りたくなったら、
 
-* [パッケージ]()
-* [GitHubリポジトリ]()
+* [パッケージ](https://package.elm-lang.org/packages/arowM/elm-neat-layout/latest/)
+* [GitHubリポジトリのサンプル](https://github.com/arowM/elm-neat-layout/tree/slide/sample)
     """
 
 
