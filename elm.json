@@ -1,7 +1,7 @@
 {
     "type": "package",
     "name": "arowM/elm-neat-layout",
-    "summary": "Elm layout library that helps to keep paddings neat.",
+    "summary": "Elm layout framework that helps to keep paddings neat.",
     "license": "MIT",
     "version": "1.0.0",
     "exposed-modules": [
