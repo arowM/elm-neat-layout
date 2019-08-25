@@ -6,11 +6,11 @@ import Html.Attributes.Classname exposing (classMixinWith)
 import Html.Lazy as Html
 import Markdown
 import Mixin exposing (Mixin)
-import Neat exposing (NoPadding, Protected, View, fromNoPadding, setBoundary, setLayout, setMixin)
+import Neat exposing (NoPadding, View, fromNoPadding, setBoundary, setLayout, setMixin)
 import Neat.Layout as Layout
-import Neat.Layout.Column as Column exposing (Column, defaultColumn)
+import Neat.Layout.Column as Column exposing (defaultColumn)
 import Neat.Layout.Row as Row exposing (defaultRow)
-import Padding exposing (PagePadding, SubPadding, pagePadding, subPadding)
+import Padding exposing (PagePadding, pagePadding, subPadding)
 
 
 type alias Page msg =

@@ -3,18 +3,10 @@ module Main exposing (main)
 import Browser
 import Browser.Events
 import Browser.Navigation as Nav
-import Html exposing (Attribute, Html, button, div, text)
-import Html.Attributes as Attributes
 import Html.Attributes.Classname exposing (classMixinWith)
-import Html.Events as Events
-import Html.Lazy as Html
 import Json.Decode as Json
-import MenuItem exposing (MenuItem)
 import Mixin exposing (Mixin)
-import Neat exposing (NoPadding, Protected, View, fromNoPadding, setAttribute, setBoundary, setLayout, setMixin)
-import Neat.Layout as Layout
-import Neat.Layout.Column as Column exposing (Column, defaultColumn)
-import Neat.Layout.Row as Row exposing (defaultRow)
+import Neat exposing (NoPadding, View, setMixin)
 import Page exposing (Page)
 import Url exposing (Url)
 import Url.Builder
@@ -48,7 +40,7 @@ type alias Model =
 
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init flags url key =
+init _ url key =
     ( { key = key
       , currentPage =
             parseUrl url
@@ -115,7 +107,7 @@ update msg model =
                     )
 
                 _ ->
-                    ( Debug.log key model
+                    ( model
                     , Cmd.none
                     )
 
@@ -175,8 +167,3 @@ class =
 setClass : String -> View NoPadding msg -> View NoPadding msg
 setClass =
     setMixin << class
-
-
-setType_ : String -> View NoPadding msg -> View NoPadding msg
-setType_ =
-    setMixin << Mixin.fromAttribute << Attributes.type_
