@@ -11,9 +11,9 @@ import MenuItem exposing (MenuItem)
 import Mixin exposing (Mixin)
 import Neat exposing (NoPadding, Protected, View, fromNoPadding, setBoundary, setLayout, setMixin)
 import Neat.Layout as Layout
-import Neat.Layout.Row as Row exposing (defaultRow)
 import Neat.Layout.Column as Column exposing (Column, defaultColumn)
-import Padding exposing (IconPadding, MenuPadding, MessagePadding, HeaderPadding, iconPadding, menuPadding, BodyPadding, bodyPadding, messagePadding, headerPadding)
+import Neat.Layout.Row as Row exposing (defaultRow)
+import Padding exposing (BodyPadding, HeaderPadding, IconPadding, MenuPadding, MessagePadding, bodyPadding, headerPadding, iconPadding, menuPadding, messagePadding)
 
 
 
@@ -58,20 +58,21 @@ messageIconClass icon =
         MessageIcon2 ->
             "messageIcon-icon2"
 
+
 init : ( Model, Cmd Msg )
 init =
     ( { searchText = ""
       , messages =
-          [ message1 1
-          , message1 2
-          , message2 3
-          , message1 4
-          , message2 5
-          , message2 6
-          , message1 7
-          , message2 8
-          , message1 9
-          ]
+            [ message1 1
+            , message1 2
+            , message2 3
+            , message1 4
+            , message2 5
+            , message2 6
+            , message1 7
+            , message2 8
+            , message1 9
+            ]
       }
     , Cmd.none
     )
@@ -212,17 +213,20 @@ bodyContent messages =
             | horizontal = Column.Stretch
         }
         messages
-    |> setClass "bodyContent"
+        |> setClass "bodyContent"
 
 
 message_ : MessageIcon -> String -> String -> Column.Horizontal -> Html (Protected NoPadding msg)
-message_ icon name screenName = Column.toProtected <| message icon name screenName
+message_ icon name screenName =
+    Column.toProtected <| message icon name screenName
+
 
 message : MessageIcon -> String -> String -> View NoPadding msg
 message icon name screenName =
     Layout.row
         [ Neat.empty
-            |> setClass (Debug.log "This functions is only rendered at first" "messageIcon")
+            |> setClass "messageIcon"
+            -- (Debug.log "This functions is only rendered at first" "messageIcon")
             |> setClass (messageIconClass icon)
             |> fromNoPadding bodyPadding
         , Layout.column
@@ -245,10 +249,10 @@ message icon name screenName =
                 |> setClass "messageBody"
                 |> Neat.fromNoPadding messagePadding
             ]
-          |> Neat.expand messagePadding bodyPadding
+            |> Neat.expand messagePadding bodyPadding
         ]
-    |> setBoundary bodyPadding
-    |> setClass "message"
+        |> setBoundary bodyPadding
+        |> setClass "message"
 
 
 
@@ -263,9 +267,9 @@ rightPane =
         }
         [ searchField
         ]
-            |> setBoundary menuPadding
-            |> setClass "rightPane"
-            |> setLayout Layout.fill
+        |> setBoundary menuPadding
+        |> setClass "rightPane"
+        |> setLayout Layout.fill
 
 
 searchField : View MenuPadding Msg
@@ -281,14 +285,15 @@ searchField =
             |> setClass "searchInput"
             |> setType_ "text"
             |> setMixin
-                ( Mixin.fromAttribute <| Attributes.placeholder "Search Bleater" )
+                (Mixin.fromAttribute <| Attributes.placeholder "Search Bleater")
             |> setMixin
-                ( Mixin.fromAttribute <| Events.onChange ChangeSearchText )
+                (Mixin.fromAttribute <| Events.onChange ChangeSearchText)
             |> fromNoPadding iconPadding
         ]
         |> setBoundary iconPadding
         |> setClass "searchField"
         |> fromNoPadding menuPadding
+
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
