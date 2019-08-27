@@ -12,5 +12,5 @@ Check `sample` directory of this repository.
 
 Resulting apps:
 
-* [bleater](http://localhost:1234/elm-neat-layout/bleater/)
+* [bleater](https://arowm.github.io/elm-neat-layout/bleater/)
 * [slide](https://arowm.github.io/elm-neat-layout/slide/)
