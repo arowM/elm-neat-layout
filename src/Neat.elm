@@ -278,7 +278,7 @@ div =
     lift Html.div
 
 
-{-| `View` version of `Html.div [] [ Html.text ]`.
+{-| `View` version of `\str -> Html.div [] [ Html.text str ]`.
 -}
 text : String -> View NoPadding msg
 text str =
