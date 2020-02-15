@@ -3,7 +3,7 @@
     "name": "arowM/elm-neat-layout",
     "summary": "Elm layout framework that helps to keep paddings neat.",
     "license": "MIT",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "exposed-modules": [
         "Neat",
         "Neat.Layout",
