@@ -144,8 +144,6 @@ shrinkBy n =
             Mixin.batch
                 [ style "-ms-flex-negative" <| String.fromInt n
                 , style "flex-shrink" <| String.fromInt n
-                , style "-ms-flex-preferred-size" "0%"
-                , style "flex-basis" "0%"
                 ]
         , inner = Mixin.none
         }
