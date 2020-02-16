@@ -19,6 +19,9 @@ module Neat exposing
     , expand
     , setBoundary
     , setBoundaryWith
+    , setRole
+    , setAria
+    , setBoolAria
     , unsafeFromHtml
     , optimized
     , toProtected
@@ -87,6 +90,13 @@ You can introduce custom paddings by just declaring their types and `IsPadding` 
 @docs setBoundaryWith
 
 
+# Accessibility
+
+@docs setRole
+@docs setAria
+@docs setBoolAria
+
+
 # Unsafe functions
 
 These can break neat paddings, so use them carefully.
@@ -106,11 +116,11 @@ Do not worry even if you cannot understand how to use these functions.
 
 -}
 
-import Neat.Boundary as Boundary exposing (Boundary)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
+import Neat.Boundary as Boundary exposing (Boundary)
 import Neat.Flex as Flex exposing (Flex)
 import Neat.Layout.Internal as Layout exposing (Layout(..))
 
@@ -233,7 +243,12 @@ emptyNode node =
 
 {-| -}
 setMixin : Mixin msg -> View NoPadding msg -> View NoPadding msg
-setMixin appearance (View f) =
+setMixin =
+    setMixinHelper
+
+
+setMixinHelper : Mixin msg -> View p msg -> View p msg
+setMixinHelper appearance (View f) =
     View <|
         \p layout extra ->
             f p layout (Mixin.batch [ appearance, extra ])
@@ -263,6 +278,45 @@ setLayout layout (View f) =
     View <|
         \p extra appearance ->
             f p (Layout.batch [ layout, extra ]) appearance
+
+
+
+-- Accessibility
+
+
+{-| Set "role" value for WAI-ARIA.
+-}
+setRole : String -> View p msg -> View p msg
+setRole v =
+    setMixinHelper <| Mixin.attribute "role" v
+
+
+{-| Set "aria-\*" value for WAI-ARIA.
+
+e.g., `setAria "required" "true"` stands for "aria-required" is "true".
+
+-}
+setAria : String -> String -> View p msg -> View p msg
+setAria name v =
+    setMixinHelper <| Mixin.attribute ("aria-" ++ name) v
+
+
+{-| Set boolean "aria-\*" value for WAI-ARIA.
+
+i.e.,
+
+  - `setBoolAria name True` is equivalent to `setAria name "true"`
+  - `setBoolAria name False` is equivalent to `setAria name "false"`
+
+-}
+setBoolAria : String -> Bool -> View p msg -> View p msg
+setBoolAria name p =
+    setAria name <|
+        if p then
+            "true"
+
+        else
+            "false"
 
 
 modifyPadding : (Float -> Float) -> View p1 msg -> View p2 msg
@@ -411,6 +465,7 @@ newPadding (IsPadding c1) (IsPadding c2) curr =
 {-| Wrap a view with boundary without padding.
 
     This is an alias for `setBoundary defaultBoundary`.
+
 -}
 setBoundary : IsPadding p -> View p msg -> View NoPadding msg
 setBoundary =
@@ -427,11 +482,15 @@ setBoundaryWith align config child =
         [ toHtml 0 (Flex.childLayout <| toFlex align) Mixin.none child
         ]
 
+
 nodeNameToNode : String -> List (Attribute msg) -> List (Html msg) -> Html msg
 nodeNameToNode name =
-    if name == "div"
-        then Html.div
-        else Html.node name
+    if name == "div" then
+        Html.div
+
+    else
+        Html.node name
+
 
 expandChild : Boundary -> View p msg -> View p msg
 expandChild align =
@@ -449,19 +508,33 @@ toFlex align =
 toFlexHorizontal : Boundary.Horizontal -> Flex.Horizontal
 toFlexHorizontal align =
     case align of
-    Boundary.Left -> Flex.Left
-    Boundary.Right -> Flex.Right
-    Boundary.HCenter -> Flex.HCenter
-    Boundary.HStretch -> Flex.HStretch
+        Boundary.Left ->
+            Flex.Left
+
+        Boundary.Right ->
+            Flex.Right
+
+        Boundary.HCenter ->
+            Flex.HCenter
+
+        Boundary.HStretch ->
+            Flex.HStretch
 
 
 toFlexVertical : Boundary.Vertical -> Flex.Vertical
 toFlexVertical align =
     case align of
-        Boundary.Top -> Flex.Top
-        Boundary.Bottom -> Flex.Bottom
-        Boundary.VCenter -> Flex.VCenter
-        Boundary.VStretch -> Flex.VStretch
+        Boundary.Top ->
+            Flex.Top
+
+        Boundary.Bottom ->
+            Flex.Bottom
+
+        Boundary.VCenter ->
+            Flex.VCenter
+
+        Boundary.VStretch ->
+            Flex.VStretch
 
 
 innerPadding : IsPadding p -> Mixin msg

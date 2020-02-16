@@ -1,22 +1,20 @@
 module Neat.Flex exposing
     ( Flex
-    , Vertical(..)
     , Horizontal(..)
+    , Vertical(..)
     , childLayout
-    , rowMixins
     , flex
     , flexWrap
+    , rowMixins
     )
 
-{-|
-
-Internal module exposing helper functions for flexbox.
-
+{-| Internal module exposing helper functions for flexbox.
 -}
 
 import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat.Layout.Internal as Layout exposing (Layout)
+
 
 rowMixins : Flex -> List (Mixin msg)
 rowMixins align =
@@ -34,6 +32,7 @@ childLayout align =
         [ childLayoutV align.vertical
         , childLayoutH align.horizontal
         ]
+
 
 childLayoutH : Horizontal -> Layout msg
 childLayoutH h =
@@ -68,6 +67,7 @@ type alias Flex =
     , horizontal : Horizontal
     , wrap : Bool
     }
+
 
 
 -- Mixins
@@ -113,7 +113,8 @@ type Horizontal
     | HCenter
     | HSpaceBetween
     | HSpaceAround
-    | HStretch
+      -- | HSpaceEvenly {- Not supported on IE and Edge -}
+      | HStretch {- Not supported as flex layout on IE and Edge, but works well on them. -}
 
 
 horizontal : Horizontal -> Mixin msg
@@ -152,7 +153,6 @@ horizontal hor =
 
 
 
-
 -- Vertical alignment
 
 
@@ -163,7 +163,8 @@ type Vertical
     | VCenter
     | VSpaceBetween
     | VSpaceAround
-    | VStretch
+      -- | VSpaceEvenly {- Not supported on IE and Edge -}
+    | VStretch {- Not supported as flex layout on IE and Edge, but works well on them. -}
 
 
 vertical : Vertical -> Mixin msg
@@ -195,6 +196,7 @@ vertical ver =
 
             VSpaceAround ->
                 []
+
 
 
 -- Helper functions
