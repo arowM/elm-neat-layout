@@ -2,6 +2,8 @@ module Neat exposing
     ( View
     , toPage
     , lift
+    , textBlock
+    , textNode
     , none
     , empty
     , emptyNode
@@ -11,7 +13,6 @@ module Neat exposing
     , setAttributes
     , setLayout
     , div
-    , text
     , keyed
     , NoPadding
     , IsPadding(..)
@@ -37,12 +38,18 @@ module Neat exposing
 @docs toPage
 
 
-# Constructors and Modifiers for View
+# Constructors
 
 @docs lift
+@docs textBlock
+@docs textNode
 @docs none
 @docs empty
 @docs emptyNode
+
+
+# Modifiers
+
 @docs setMixin
 @docs setMixins
 @docs setAttribute
@@ -53,7 +60,6 @@ module Neat exposing
 # Alternatives to Html nodes
 
 @docs div
-@docs text
 
 
 # Keyed
@@ -305,8 +311,8 @@ setAria name v =
 
 i.e.,
 
-  - `setBoolAria name True` is equivalent to `setAria name "true"`
-  - `setBoolAria name False` is equivalent to `setAria name "false"`
+  - `setBoolAria name True` is equal to `setAria name "true"`
+  - `setBoolAria name False` is equal to `setAria name "false"`
 
 -}
 setBoolAria : String -> Bool -> View p msg -> View p msg
@@ -336,14 +342,30 @@ div =
     lift Html.div
 
 
-{-| `View` version of `\str -> Html.div [] [ Html.text str ]`.
+{-| Create a View which only contains a text node.
+
+`textNode Html.option "Item1"` is equivalent to `Html.option [] [ Html.text "Item1" ]` in Html world.
+
 -}
-text : String -> View NoPadding msg
-text str =
-    lift Html.div
+textNode : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> View NoPadding msg
+textNode f str =
+    lift f
         []
         [ fromHtml <| \_ _ _ -> Html.text str
         ]
+
+
+{-| Create a text block.
+
+`textBlock "foo"` is equivalent to `Html.div [] [ Html.text "foo" ]` in Html world.
+
+    textBlock =
+        textNode Html.div
+
+-}
+textBlock : String -> View NoPadding msg
+textBlock =
+    textNode Html.div
 
 
 {-| -}
