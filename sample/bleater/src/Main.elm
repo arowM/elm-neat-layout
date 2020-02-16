@@ -170,7 +170,7 @@ menuItem m =
         , Neat.div
             [ class "menuItem_label"
             ]
-            [ Neat.text <| MenuItem.toLabel m
+            [ Neat.textBlock <| MenuItem.toLabel m
             ]
             |> fromNoPadding iconPadding
             |> setLayout Layout.fill
@@ -198,7 +198,7 @@ body model =
 
 bodyTitle : View NoPadding msg
 bodyTitle =
-    Neat.text "Home"
+    Neat.textBlock "Home"
         |> Neat.fromNoPadding headerPadding
         |> setBoundary headerPadding
         |> setClass "bodyTitle"
@@ -231,18 +231,18 @@ message icon name screenName =
             |> fromNoPadding bodyPadding
         , Layout.column
             [ Layout.row
-                [ Neat.text name
+                [ Neat.textBlock name
                     |> setClass "messageName"
                     |> fromNoPadding messagePadding
-                , Neat.text ("@" ++ screenName)
+                , Neat.textBlock ("@" ++ screenName)
                     |> setClass "messageScreenName"
                     |> fromNoPadding messagePadding
                 ]
             , Layout.column
-                [ Neat.text """
+                [ Neat.textBlock """
                     Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                     """
-                , Neat.text """
+                , Neat.textBlock """
                     Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                     """
                 ]
