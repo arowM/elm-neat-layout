@@ -52,7 +52,7 @@ wrapper : Row -> List (Mixin msg) -> List (View p msg) -> View p msg
 wrapper align =
     case align.nodeName of
         "div" ->
-            Neat.div
+            Neat.lift Html.div
 
         a ->
             Neat.lift (Html.node a)

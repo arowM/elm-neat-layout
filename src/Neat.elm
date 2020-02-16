@@ -7,12 +7,14 @@ module Neat exposing
     , none
     , empty
     , emptyNode
+    , input
+    , textarea
+    , select
     , setMixin
     , setMixins
     , setAttribute
     , setAttributes
     , setLayout
-    , div
     , keyed
     , NoPadding
     , IsPadding(..)
@@ -48,6 +50,13 @@ module Neat exposing
 @docs emptyNode
 
 
+# Special nodes
+
+@docs input
+@docs textarea
+@docs select
+
+
 # Modifiers
 
 @docs setMixin
@@ -55,11 +64,6 @@ module Neat exposing
 @docs setAttribute
 @docs setAttributes
 @docs setLayout
-
-
-# Alternatives to Html nodes
-
-@docs div
 
 
 # Keyed
@@ -221,8 +225,13 @@ resetCss =
 
 -}
 lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
-lift node appearances children =
-    liftHelper Mixin.none node appearances <|
+lift =
+    lift_ False
+
+
+lift_ : Bool -> (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
+lift_ allowPadding node appearances children =
+    liftHelper allowPadding Mixin.none node appearances <|
         List.map (toHtml 0 Layout.none Mixin.none) children
 
 
@@ -332,14 +341,31 @@ modifyPadding g (View f) =
 
 
 
--- Alternatives to Html nodes
+-- Special Html nodes
 
 
-{-| `View` version of `Html.div`.
+{-| `View` version of `Html.select`.
+Differ from `lift Html.select`, it can accept "padding" style property.
 -}
-div : List (Mixin msg) -> List (View p msg) -> View p msg
-div =
-    lift Html.div
+select : List (Mixin msg) -> List (View p msg) -> View p msg
+select =
+    lift_ True Html.select
+
+
+{-| `View` version of `Html.input`.
+Differ from `lift Html.input [] []`, it can accept "padding" style property.
+-}
+input : View p msg
+input =
+    lift_ True Html.input [] []
+
+
+{-| `View` version of `Html.textarea`.
+Differ from `lift Html.textarea [] []`, it can accept "padding" style property.
+-}
+textarea : View p msg
+textarea =
+    lift_ True Html.textarea [] []
 
 
 {-| Create a View which only contains a text node.
@@ -375,7 +401,7 @@ keyed :
     -> List ( String, View p msg )
     -> View p msg
 keyed tag mixins children =
-    liftHelper Mixin.none (Keyed.node tag) mixins <|
+    liftHelper False Mixin.none (Keyed.node tag) mixins <|
         List.map (Tuple.mapSecond (toHtml 0 Layout.none Mixin.none)) children
 
 
@@ -414,7 +440,7 @@ optimized :
     -> List x
     -> View p msg
 optimized identifier f tag mixins ls =
-    liftHelper Mixin.none (Keyed.node tag) mixins <|
+    liftHelper False Mixin.none (Keyed.node tag) mixins <|
         List.map (\x -> ( identifier x, Html.map unProtect <| f x )) ls
 
 
@@ -498,7 +524,8 @@ setBoundary =
 -}
 setBoundaryWith : Boundary -> IsPadding p -> View p msg -> View NoPadding msg
 setBoundaryWith align config child =
-    liftHelper (innerPadding config)
+    liftHelper False
+        (innerPadding config)
         (nodeNameToNode align.nodeName)
         (Flex.rowMixins <| toFlex align)
         [ toHtml 0 (Flex.childLayout <| toFlex align) Mixin.none child
@@ -583,6 +610,11 @@ unsafeFromHtml h =
 -- Helper functions
 
 
+div : List (Mixin msg) -> List (View p msg) -> View p msg
+div =
+    lift Html.div
+
+
 noPadding : IsPadding NoPadding
 noPadding =
     IsPadding
@@ -600,8 +632,8 @@ fromHtml =
     View
 
 
-liftHelper : Mixin msg -> (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> List a -> View p msg
-liftHelper special node appearances children =
+liftHelper : Bool -> Mixin msg -> (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> List a -> View p msg
+liftHelper allowPadding special node appearances children =
     fromHtml <|
         \pad (Layout layout_) extra ->
             node
@@ -609,7 +641,7 @@ liftHelper special node appearances children =
                     Mixin.batch
                         [ Mixin.batch appearances
                         , extra
-                        , prohibited
+                        , prohibited allowPadding
                         , special
                         , if pad == 0 then
                             layout_.outer
@@ -622,12 +654,17 @@ liftHelper special node appearances children =
                 |> wrapHtml pad layout_.outer
 
 
-prohibited : Mixin mgs
-prohibited =
-    Mixin.fromAttributes
-        [ Attributes.style "padding" "0"
-        , Attributes.style "margin" "0"
-        ]
+prohibited : Bool -> Mixin mgs
+prohibited allowPadding =
+    Mixin.fromAttributes <|
+        if allowPadding then
+            [ Attributes.style "margin" "0"
+            ]
+
+        else
+            [ Attributes.style "padding" "0"
+            , Attributes.style "margin" "0"
+            ]
 
 
 wrapHtml : Float -> Mixin msg -> Html msg -> Html msg
