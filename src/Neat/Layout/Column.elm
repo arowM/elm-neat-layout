@@ -33,6 +33,7 @@ import Html exposing (Html)
 import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat exposing (Protected, View)
+import Neat.Flex as Flex exposing (Flex, flex, flexWrap)
 import Neat.Layout.Internal as Layout
 
 
@@ -44,7 +45,7 @@ import Neat.Layout.Internal as Layout
 columnWith : Column -> List (View p msg) -> View p msg
 columnWith align children =
     wrapper align (columnMixins align) <|
-        List.map (expandH align.horizontal) children
+        List.map (expandChild align) children
 
 
 wrapper : Column -> List (Mixin msg) -> List (View p msg) -> View p msg
@@ -67,18 +68,9 @@ columnMixins align =
     ]
 
 
-expandH : Horizontal -> View p msg -> View p msg
-expandH h =
-    case h of
-        Stretch ->
-            Neat.setLayout <|
-                Layout.fromRecord
-                    { inner = style "width" "100%"
-                    , outer = Mixin.none
-                    }
-
-        _ ->
-            identity
+expandChild : Column -> View p msg -> View p msg
+expandChild align =
+    Neat.setLayout <| Flex.childLayout <| toFlex align
 
 
 {-| An alias for `columnWith defaultColumn`.
@@ -97,6 +89,13 @@ type alias Column =
     , nodeName : String
     }
 
+
+toFlex : Column -> Flex
+toFlex align =
+    { vertical = toFlexVertical align.vertical
+    , horizontal = toFlexHorizontal align.horizontal
+    , wrap = align.wrap
+    }
 
 {-| Default `Column` configuration.
 
@@ -120,33 +119,12 @@ defaultColumn =
 -- Mixins
 
 
-flex : Mixin msg
-flex =
-    Mixin.fromAttribute <|
-        Attributes.attribute "data-elm-neat-layout" "flex"
-
-
 flexDirection : Mixin msg
 flexDirection =
     Mixin.batch
         [ style "-ms-flex-direction" "column"
         , style "flex-direction" "column"
         ]
-
-
-flexWrap : Bool -> Mixin msg
-flexWrap b =
-    if b then
-        Mixin.batch
-            [ style "-ms-flex-wrap" "wrap"
-            , style "flex-wrap" "wrap"
-            ]
-
-    else
-        Mixin.batch
-            [ style "-ms-flex-wrap" "nowrap"
-            , style "flex-wrap" "nowrap"
-            ]
 
 
 
@@ -159,6 +137,15 @@ type Horizontal
     | Right
     | HCenter
     | Stretch
+
+
+toFlexHorizontal : Horizontal -> Flex.Horizontal
+toFlexHorizontal h =
+    case h of
+        Left -> Flex.Left
+        Right -> Flex.Right
+        HCenter -> Flex.HCenter
+        Stretch -> Flex.HStretch
 
 
 horizontal : Horizontal -> Mixin msg
@@ -197,6 +184,16 @@ type Vertical
     | VCenter
     | SpaceBetween
     | SpaceAround
+
+
+toFlexVertical : Vertical -> Flex.Vertical
+toFlexVertical v =
+    case v of
+        Top -> Flex.Top
+        Bottom -> Flex.Bottom
+        VCenter -> Flex.VCenter
+        SpaceBetween -> Flex.VSpaceBetween
+        SpaceAround -> Flex.VSpaceAround
 
 
 vertical : Vertical -> Mixin msg
@@ -254,7 +251,7 @@ child _ =
     Debug.todo "child"
 
 -- Make sure to declare this top level in order to `lazy` works well.
-child_ : Int -> Horizontal -> Html (Protected p msg)
+child_ : Int -> Column -> Html (Protected p msg)
 child_ n =
     toProtected <| child n
 
@@ -269,14 +266,14 @@ v =
 -}
 optimized :
     (x -> String)
-    -> (x -> Horizontal -> Html (Protected p msg))
+    -> (x -> Column -> Html (Protected p msg))
     -> Column
     -> List x
     -> View p msg
 optimized identifier f align =
     Neat.optimized
         identifier
-        (\x -> f x align.horizontal)
+        (\x -> f x align)
         align.nodeName
         (columnMixins align)
 
@@ -284,10 +281,10 @@ optimized identifier f align =
 {-| This is supposed to be used in order to make `Html.lazy.lazyN` work.
 See `optimized` for real usage.
 -}
-toProtected : View p a -> Horizontal -> Html (Protected p a)
-toProtected v hor =
+toProtected : View p a -> Column -> Html (Protected p a)
+toProtected v align =
     Neat.toProtected <|
-        expandH hor v
+        expandChild align v
 
 
 

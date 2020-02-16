@@ -18,6 +18,7 @@ module Neat exposing
     , fromNoPadding
     , expand
     , setBoundary
+    , setBoundaryWith
     , unsafeFromHtml
     , optimized
     , toProtected
@@ -83,6 +84,7 @@ You can introduce custom paddings by just declaring their types and `IsPadding` 
 @docs fromNoPadding
 @docs expand
 @docs setBoundary
+@docs setBoundaryWith
 
 
 # Unsafe functions
@@ -104,10 +106,12 @@ Do not worry even if you cannot understand how to use these functions.
 
 -}
 
+import Neat.Boundary as Boundary exposing (Boundary)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
+import Neat.Flex as Flex exposing (Flex)
 import Neat.Layout.Internal as Layout exposing (Layout(..))
 
 
@@ -404,22 +408,60 @@ newPadding (IsPadding c1) (IsPadding c2) curr =
 -- Boundary
 
 
-{-| Set boundary to convert into `NoPadding`.
+{-| Wrap a view with boundary without padding.
+
+    This is an alias for `setBoundary defaultBoundary`.
 -}
 setBoundary : IsPadding p -> View p msg -> View NoPadding msg
-setBoundary config child =
+setBoundary =
+    setBoundaryWith Boundary.defaultBoundary
+
+
+{-| Set boundary to convert into `NoPadding`.
+-}
+setBoundaryWith : Boundary -> IsPadding p -> View p msg -> View NoPadding msg
+setBoundaryWith align config child =
     liftHelper (innerPadding config)
-        Html.div
-        []
-        [ toHtml 0
-            (Layout.fromRecord
-                { inner = Mixin.none
-                , outer = Mixin.fromAttribute <| Attributes.style "height" "100%"
-                }
-            )
-            Mixin.none
-            child
+        (nodeNameToNode align.nodeName)
+        (Flex.rowMixins <| toFlex align)
+        [ toHtml 0 (Flex.childLayout <| toFlex align) Mixin.none child
         ]
+
+nodeNameToNode : String -> List (Attribute msg) -> List (Html msg) -> Html msg
+nodeNameToNode name =
+    if name == "div"
+        then Html.div
+        else Html.node name
+
+expandChild : Boundary -> View p msg -> View p msg
+expandChild align =
+    setLayout <| Flex.childLayout <| toFlex align
+
+
+toFlex : Boundary -> Flex
+toFlex align =
+    { vertical = toFlexVertical align.vertical
+    , horizontal = toFlexHorizontal align.horizontal
+    , wrap = False
+    }
+
+
+toFlexHorizontal : Boundary.Horizontal -> Flex.Horizontal
+toFlexHorizontal align =
+    case align of
+    Boundary.Left -> Flex.Left
+    Boundary.Right -> Flex.Right
+    Boundary.HCenter -> Flex.HCenter
+    Boundary.HStretch -> Flex.HStretch
+
+
+toFlexVertical : Boundary.Vertical -> Flex.Vertical
+toFlexVertical align =
+    case align of
+        Boundary.Top -> Flex.Top
+        Boundary.Bottom -> Flex.Bottom
+        Boundary.VCenter -> Flex.VCenter
+        Boundary.VStretch -> Flex.VStretch
 
 
 innerPadding : IsPadding p -> Mixin msg
