@@ -216,7 +216,7 @@ bodyContent messages =
         |> setClass "bodyContent"
 
 
-message_ : MessageIcon -> String -> String -> Column.Horizontal -> Html (Protected NoPadding msg)
+message_ : MessageIcon -> String -> String -> Column -> Html (Protected NoPadding msg)
 message_ icon name screenName =
     Column.toProtected <| message icon name screenName
 
