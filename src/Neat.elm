@@ -168,19 +168,14 @@ type View padding msg
 This inserts following CSS.
 
     <style>
-    .elm-neat-layout-root,
-    .elm-neat-layout-root::before,
-    .elm-neat-layout-root::after,
-    .elm-neat-layout-root *,
-    .elm-neat-layout-root *::before,
-    .elm-neat-layout-root *::after {
-      margin: 0;
-      padding: 0;
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
     }
-    [data-elm-neat-layout~=flex]{
-        display:-ms-flexbox;
-        display:flex
+    [data-elm-neat-layout~=flex] {
+      display:-ms-flexbox;
+      display:flex
     }
     </style>
 
@@ -198,8 +193,10 @@ sandbox o =
         , view =
             \model ->
                 Html.div
-                    [ Attributes.class "elm-neat-layout-root" ]
-                    [ resetCssScoped
+                    [ Attributes.style "padding" "0"
+                    , Attributes.style "margin" "0"
+                    ]
+                    [ resetCss
                     , toHtml 0 Layout.none Mixin.none (o.view model)
                     ]
         }
@@ -209,19 +206,14 @@ sandbox o =
 This also inserts following style tag.
 
     <style>
-    .elm-neat-layout-root,
-    .elm-neat-layout-root::before,
-    .elm-neat-layout-root::after,
-    .elm-neat-layout-root *,
-    .elm-neat-layout-root *::before,
-    .elm-neat-layout-root *::after {
-      margin: 0;
-      padding: 0;
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
     }
-    [data-elm-neat-layout~=flex]{
-        display:-ms-flexbox;
-        display:flex
+    [data-elm-neat-layout~=flex] {
+      display:-ms-flexbox;
+      display:flex
     }
     </style>
 
@@ -239,8 +231,10 @@ element o =
         , view =
             \model ->
                 Html.div
-                    [ Attributes.class "elm-neat-layout-root" ]
-                    [ resetCssScoped
+                    [ Attributes.style "padding" "0"
+                    , Attributes.style "margin" "0"
+                    ]
+                    [ resetCss
                     , toHtml 0 Layout.none Mixin.none (o.view model)
                     ]
         , update = o.update
@@ -255,13 +249,11 @@ This also inserts following style tag.
     *,
     *::before,
     *::after {
-      margin: 0;
-      padding: 0;
       box-sizing: border-box;
     }
-    [data-elm-neat-layout~=flex]{
-        display:-ms-flexbox;
-        display:flex
+    [data-elm-neat-layout~=flex] {
+      display:-ms-flexbox;
+      display:flex
     }
     </style>
 
@@ -293,6 +285,8 @@ document o =
         }
 
 
+{-| Alternative to `Browser.Document`.
+-}
 type alias Document msg =
     { title : String
     , body : View NoPadding msg
@@ -348,29 +342,6 @@ application o =
         }
 
 
-{-| Call this function **only once** on root view function.
-Make sure that your own CSS is partially overwritten by following CSS.
-
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    [data-elm-neat-layout~=flex]{
-        display:-ms-flexbox;
-        display:flex
-    }
-
--}
-toPage : View NoPadding msg -> List (Html msg)
-toPage v =
-    [ resetCss
-    , toHtml 0 Layout.none Mixin.none v
-    ]
-
-
 resetCss : Html msg
 resetCss =
     Html.node "style"
@@ -380,37 +351,11 @@ resetCss =
 *,
 *::before,
 *::after {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
-[data-elm-neat-layout~=flex]{
-    display:-ms-flexbox;
-    display:flex
-}
-            """
-        ]
-
-
-resetCssScoped : Html msg
-resetCssScoped =
-    Html.node "style"
-        []
-        [ Html.text <|
-            """
-elm-neat-layout-root,
-elm-neat-layout-root::before,
-elm-neat-layout-root::after,
-elm-neat-layout-root *,
-elm-neat-layout-root *::before,
-elm-neat-layout-root *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-[data-elm-neat-layout~=flex]{
-    display:-ms-flexbox;
-    display:flex
+[data-elm-neat-layout~=flex] {
+  display:-ms-flexbox;
+  display:flex
 }
             """
         ]
@@ -878,7 +823,12 @@ liftHelper allowPadding special node appearances children =
                         ]
                 )
                 children
-                |> wrapHtml pad layout_.outer
+                |> wrapHtml pad
+                    (Mixin.batch
+                        [ prohibited allowPadding
+                        , layout_.outer
+                        ]
+                    )
 
 
 prohibited : Bool -> Mixin mgs
@@ -901,6 +851,8 @@ wrapHtml pad outer c =
 
     else
         Html.div
-            ((Attributes.style "padding" <| String.fromFloat pad ++ "rem") :: Mixin.toAttributes outer)
+            (Mixin.toAttributes outer
+                ++ [ Attributes.style "padding" <| String.fromFloat pad ++ "rem" ]
+            )
             [ c
             ]
