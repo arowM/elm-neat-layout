@@ -1,6 +1,10 @@
 module Neat exposing
     ( View
-    , toPage
+    , sandbox
+    , element
+    , document
+    , Document
+    , application
     , lift
     , textBlock
     , textNode
@@ -37,7 +41,15 @@ module Neat exposing
 # Core
 
 @docs View
-@docs toPage
+
+
+# `Browser.*` alternatives
+
+@docs sandbox
+@docs element
+@docs document
+@docs Document
+@docs application
 
 
 # Constructors
@@ -126,6 +138,8 @@ Do not worry even if you cannot understand how to use these functions.
 
 -}
 
+import Browser exposing (UrlRequest)
+import Browser.Navigation exposing (Key)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Keyed as Keyed
@@ -133,6 +147,7 @@ import Mixin exposing (Mixin)
 import Neat.Boundary as Boundary exposing (Boundary)
 import Neat.Flex as Flex exposing (Flex)
 import Neat.Layout.Internal as Layout exposing (Layout(..))
+import Url exposing (Url)
 
 
 
@@ -143,6 +158,194 @@ import Neat.Layout.Internal as Layout exposing (Layout(..))
 -}
 type View padding msg
     = View (Float -> Layout msg -> Mixin msg -> Html msg)
+
+
+
+-- `Browser.*` alternatives
+
+
+{-| Alternative to `Browser.sandbox`.
+This inserts following CSS.
+
+    <style>
+    .elm-neat-layout-root,
+    .elm-neat-layout-root::before,
+    .elm-neat-layout-root::after,
+    .elm-neat-layout-root *,
+    .elm-neat-layout-root *::before,
+    .elm-neat-layout-root *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    [data-elm-neat-layout~=flex]{
+        display:-ms-flexbox;
+        display:flex
+    }
+    </style>
+
+-}
+sandbox :
+    { init : model
+    , view : model -> View NoPadding msg
+    , update : msg -> model -> model
+    }
+    -> Program () model msg
+sandbox o =
+    Browser.sandbox
+        { init = o.init
+        , update = o.update
+        , view =
+            \model ->
+                Html.div
+                    [ Attributes.class "elm-neat-layout-root" ]
+                    [ resetCssScoped
+                    , toHtml 0 Layout.none Mixin.none (o.view model)
+                    ]
+        }
+
+
+{-| Alternative to `Browser.element`.
+This also inserts following style tag.
+
+    <style>
+    .elm-neat-layout-root,
+    .elm-neat-layout-root::before,
+    .elm-neat-layout-root::after,
+    .elm-neat-layout-root *,
+    .elm-neat-layout-root *::before,
+    .elm-neat-layout-root *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    [data-elm-neat-layout~=flex]{
+        display:-ms-flexbox;
+        display:flex
+    }
+    </style>
+
+-}
+element :
+    { init : flags -> ( model, Cmd msg )
+    , view : model -> View NoPadding msg
+    , update : msg -> model -> ( model, Cmd msg )
+    , subscriptions : model -> Sub msg
+    }
+    -> Program flags model msg
+element o =
+    Browser.element
+        { init = o.init
+        , view =
+            \model ->
+                Html.div
+                    [ Attributes.class "elm-neat-layout-root" ]
+                    [ resetCssScoped
+                    , toHtml 0 Layout.none Mixin.none (o.view model)
+                    ]
+        , update = o.update
+        , subscriptions = o.subscriptions
+        }
+
+
+{-| Alternative to `Browser.document`.
+This also inserts following style tag.
+
+    <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    [data-elm-neat-layout~=flex]{
+        display:-ms-flexbox;
+        display:flex
+    }
+    </style>
+
+-}
+document :
+    { init : flags -> ( model, Cmd msg )
+    , view : model -> Document msg
+    , update : msg -> model -> ( model, Cmd msg )
+    , subscriptions : model -> Sub msg
+    }
+    -> Program flags model msg
+document o =
+    Browser.document
+        { init = o.init
+        , view =
+            \model ->
+                let
+                    view =
+                        o.view model
+                in
+                { title = view.title
+                , body =
+                    [ resetCss
+                    , toHtml 0 Layout.none Mixin.none view.body
+                    ]
+                }
+        , update = o.update
+        , subscriptions = o.subscriptions
+        }
+
+
+type alias Document msg =
+    { title : String
+    , body : View NoPadding msg
+    }
+
+
+{-| Alternative to `Browser.application`.
+This also inserts following style tag.
+
+    <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    [data-elm-neat-layout~=flex]{
+        display:-ms-flexbox;
+        display:flex
+    }
+    </style>
+
+-}
+application :
+    { init : flags -> Url -> Key -> ( model, Cmd msg )
+    , view : model -> Document msg
+    , update : msg -> model -> ( model, Cmd msg )
+    , subscriptions : model -> Sub msg
+    , onUrlRequest : UrlRequest -> msg
+    , onUrlChange : Url -> msg
+    }
+    -> Program flags model msg
+application o =
+    Browser.application
+        { init = o.init
+        , view =
+            \model ->
+                let
+                    view =
+                        o.view model
+                in
+                { title = view.title
+                , body =
+                    [ resetCss
+                    , toHtml 0 Layout.none Mixin.none view.body
+                    ]
+                }
+        , update = o.update
+        , subscriptions = o.subscriptions
+        , onUrlRequest = o.onUrlRequest
+        , onUrlChange = o.onUrlChange
+        }
 
 
 {-| Call this function **only once** on root view function.
@@ -174,17 +377,41 @@ resetCss =
         []
         [ Html.text <|
             """
-            *,
-            *::before,
-            *::after {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            [data-elm-neat-layout~=flex]{
-                display:-ms-flexbox;
-                display:flex
-            }
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+[data-elm-neat-layout~=flex]{
+    display:-ms-flexbox;
+    display:flex
+}
+            """
+        ]
+
+
+resetCssScoped : Html msg
+resetCssScoped =
+    Html.node "style"
+        []
+        [ Html.text <|
+            """
+elm-neat-layout-root,
+elm-neat-layout-root::before,
+elm-neat-layout-root::after,
+elm-neat-layout-root *,
+elm-neat-layout-root *::before,
+elm-neat-layout-root *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+[data-elm-neat-layout~=flex]{
+    display:-ms-flexbox;
+    display:flex
+}
             """
         ]
 

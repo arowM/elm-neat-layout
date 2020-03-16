@@ -23,3 +23,4 @@
     * Change `.vertical` from `Row.Top` to `Row.Stretch`
 * Change `Column.defaultColumn`
     * Change `.vertical` from `Column.Top` to `Column.Stretch`
+* Remove `toPage` and add `sandbox`, `element`, `document`, and `application`, instead
