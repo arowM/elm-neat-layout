@@ -20,9 +20,9 @@ module Neat exposing
     , setAttributes
     , setLayout
     , keyed
-    , NoPadding
-    , IsPadding(..)
-    , fromNoPadding
+    , NoGap
+    , IsGap(..)
+    , fromNoGap
     , expand
     , setBoundary
     , setBoundaryWith
@@ -85,28 +85,28 @@ module Neat exposing
 
 # Primitive
 
-@docs NoPadding
+@docs NoGap
 
 
-# Custom paddings
+# Custom gaps
 
-You can introduce custom paddings by just declaring their types and `IsPadding` values.
+You can introduce custom gaps by just declaring their types and `IsGap` values.
 
-    type MyPadding
-        = MyPadding
+    type MyGap
+        = MyGap
 
-    myPadding : IsPadding MyPadding
-    myPadding =
-        IsPadding
+    myGap : IsGap MyGap
+    myGap =
+        IsGap
             { rem = 0.6
             }
 
-@docs IsPadding
+@docs IsGap
 
 
-# Convert between paddings
+# Convert between gaps
 
-@docs fromNoPadding
+@docs fromNoGap
 @docs expand
 @docs setBoundary
 @docs setBoundaryWith
@@ -121,7 +121,7 @@ You can introduce custom paddings by just declaring their types and `IsPadding` 
 
 # Unsafe functions
 
-These can break neat paddings, so use them carefully.
+These can break neat gaps, so use them carefully.
 
 @docs unsafeFromHtml
 
@@ -154,9 +154,9 @@ import Url exposing (Url)
 -- Core
 
 
-{-| Html alternative that has type level padding.
+{-| Html alternative that has type level gap.
 -}
-type View padding msg
+type View gap msg
     = View (Float -> Layout msg -> Mixin msg -> Html msg)
 
 
@@ -182,7 +182,7 @@ This inserts following CSS.
 -}
 sandbox :
     { init : model
-    , view : model -> View NoPadding msg
+    , view : model -> View NoGap msg
     , update : msg -> model -> model
     }
     -> Program () model msg
@@ -220,7 +220,7 @@ This also inserts following style tag.
 -}
 element :
     { init : flags -> ( model, Cmd msg )
-    , view : model -> View NoPadding msg
+    , view : model -> View NoGap msg
     , update : msg -> model -> ( model, Cmd msg )
     , subscriptions : model -> Sub msg
     }
@@ -289,7 +289,7 @@ document o =
 -}
 type alias Document msg =
     { title : String
-    , body : View NoPadding msg
+    , body : View NoGap msg
     }
 
 
@@ -370,23 +370,23 @@ resetCss =
     import Html exposing (div)
     import Mixin exposing (Mixin)
     import Neat exposing (View)
-    import Neat.Padding as Padding exposing (NoPadding)
+    import Neat.Gap as Gap exposing (NoGap)
 
-    view1 : View NoPadding msg
+    view1 : View NoGap msg
     view1 =
         Neat.div
             []
             [ Neat.text "view1"
             ]
 
-    view2 : View NoPadding msg
+    view2 : View NoGap msg
     view2 =
         Neat.div
             []
             [ Neat.text "view2"
             ]
 
-    composed : View NoPadding msg
+    composed : View NoGap msg
     composed =
         lift div
             [ Mixin.class "parent"
@@ -402,8 +402,8 @@ lift =
 
 
 lift_ : Bool -> (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
-lift_ allowPadding node appearances children =
-    liftHelper allowPadding Mixin.none node appearances <|
+lift_ allowGap node appearances children =
+    liftHelper allowGap Mixin.none node appearances <|
         List.map (toHtml 0 Layout.none Mixin.none) children
 
 
@@ -416,20 +416,20 @@ none =
 
 {-| An alias for `div [] []`.
 -}
-empty : View NoPadding a
+empty : View NoGap a
 empty =
     div [] []
 
 
 {-| An alias for `\node -> lift node [] []`.
 -}
-emptyNode : (List (Attribute msg) -> List (Html msg) -> Html msg) -> View NoPadding msg
+emptyNode : (List (Attribute msg) -> List (Html msg) -> Html msg) -> View NoGap msg
 emptyNode node =
     lift node [] []
 
 
 {-| -}
-setMixin : Mixin msg -> View NoPadding msg -> View NoPadding msg
+setMixin : Mixin msg -> View NoGap msg -> View NoGap msg
 setMixin =
     setMixinHelper
 
@@ -442,19 +442,19 @@ setMixinHelper appearance (View f) =
 
 
 {-| -}
-setMixins : List (Mixin msg) -> View NoPadding msg -> View NoPadding msg
+setMixins : List (Mixin msg) -> View NoGap msg -> View NoGap msg
 setMixins =
     setMixin << Mixin.batch
 
 
 {-| -}
-setAttribute : Attribute msg -> View NoPadding msg -> View NoPadding msg
+setAttribute : Attribute msg -> View NoGap msg -> View NoGap msg
 setAttribute =
     setMixin << Mixin.fromAttribute
 
 
 {-| -}
-setAttributes : List (Attribute msg) -> View NoPadding msg -> View NoPadding msg
+setAttributes : List (Attribute msg) -> View NoGap msg -> View NoGap msg
 setAttributes =
     setMixin << Mixin.fromAttributes
 
@@ -506,8 +506,8 @@ setBoolAria name p =
             "false"
 
 
-modifyPadding : (Float -> Float) -> View p1 msg -> View p2 msg
-modifyPadding g (View f) =
+modifyGap : (Float -> Float) -> View p1 msg -> View p2 msg
+modifyGap g (View f) =
     View <|
         \p -> f (g p)
 
@@ -545,7 +545,7 @@ textarea =
 `textNode Html.option "Item1"` is equivalent to `Html.option [] [ Html.text "Item1" ]` in Html world.
 
 -}
-textNode : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> View NoPadding msg
+textNode : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> View NoGap msg
 textNode f str =
     lift f
         []
@@ -561,7 +561,7 @@ textNode f str =
         textNode Html.div
 
 -}
-textBlock : String -> View NoPadding msg
+textBlock : String -> View NoGap msg
 textBlock =
     textNode Html.div
 
@@ -638,43 +638,43 @@ unProtect (Protected a) =
 -- Primitives
 
 
-{-| Primitive type representing no padding on a view.
+{-| Primitive type representing no gap on a view.
 -}
-type NoPadding
-    = NoPadding
+type NoGap
+    = NoGap
 
 
-{-| Information about your custom paddings.
+{-| Information about your custom gaps.
 
-  - rem : padding width in units of `rem`
+  - rem : gap width in units of `rem`
 
 -}
-type IsPadding p
-    = IsPadding
+type IsGap p
+    = IsGap
         { rem : Float
         }
 
 
 
--- Convert between paddings
+-- Convert between gaps
 
 
 {-| -}
-fromNoPadding : IsPadding p -> View NoPadding msg -> View p msg
-fromNoPadding =
-    expand noPadding
+fromNoGap : IsGap p -> View NoGap msg -> View p msg
+fromNoGap =
+    expand noGap
 
 
-{-| Expand padding from `p1` to `p2`.
+{-| Expand gap from `p1` to `p2`.
 The width of `p2` is supposed to be greater than `p1`.
 -}
-expand : IsPadding p1 -> IsPadding p2 -> View p1 msg -> View p2 msg
+expand : IsGap p1 -> IsGap p2 -> View p1 msg -> View p2 msg
 expand p1 p2 child =
-    modifyPadding (newPadding p1 p2) child
+    modifyGap (newGap p1 p2) child
 
 
-newPadding : IsPadding p1 -> IsPadding p2 -> Float -> Float
-newPadding (IsPadding c1) (IsPadding c2) curr =
+newGap : IsGap p1 -> IsGap p2 -> Float -> Float
+newGap (IsGap c1) (IsGap c2) curr =
     ((c2.rem - c1.rem) / 2) + curr
 
 
@@ -682,22 +682,22 @@ newPadding (IsPadding c1) (IsPadding c2) curr =
 -- Boundary
 
 
-{-| Wrap a view with boundary without padding.
+{-| Wrap a view with boundary without gap.
 
     This is an alias for `setBoundary defaultBoundary`.
 
 -}
-setBoundary : IsPadding p -> View p msg -> View NoPadding msg
+setBoundary : IsGap p -> View p msg -> View NoGap msg
 setBoundary =
     setBoundaryWith Boundary.defaultBoundary
 
 
-{-| Set boundary to convert into `NoPadding`.
+{-| Set boundary to convert into `NoGap`.
 -}
-setBoundaryWith : Boundary -> IsPadding p -> View p msg -> View NoPadding msg
+setBoundaryWith : Boundary -> IsGap p -> View p msg -> View NoGap msg
 setBoundaryWith align config child =
     liftHelper False
-        (innerPadding config)
+        (innerGap config)
         (nodeNameToNode align.nodeName)
         (Flex.rowMixins <| toFlex align)
         [ toHtml 0 (Flex.childLayout <| toFlex align) Mixin.none child
@@ -758,8 +758,8 @@ toFlexVertical align =
             Flex.VStretch
 
 
-innerPadding : IsPadding p -> Mixin msg
-innerPadding (IsPadding { rem }) =
+innerGap : IsGap p -> Mixin msg
+innerGap (IsGap { rem }) =
     Mixin.fromAttribute <|
         Attributes.style "padding" <|
             String.fromFloat (rem / 2)
@@ -787,25 +787,25 @@ div =
     lift Html.div
 
 
-noPadding : IsPadding NoPadding
-noPadding =
-    IsPadding
+noGap : IsGap NoGap
+noGap =
+    IsGap
         { rem = 0
         }
 
 
-toHtml : Float -> Layout msg -> Mixin msg -> View padding msg -> Html msg
+toHtml : Float -> Layout msg -> Mixin msg -> View gap msg -> Html msg
 toHtml p layout appearance (View f) =
     f p layout appearance
 
 
-fromHtml : (Float -> Layout msg -> Mixin msg -> Html msg) -> View padding msg
+fromHtml : (Float -> Layout msg -> Mixin msg -> Html msg) -> View gap msg
 fromHtml =
     View
 
 
 liftHelper : Bool -> Mixin msg -> (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> List a -> View p msg
-liftHelper allowPadding special node appearances children =
+liftHelper allowGap special node appearances children =
     fromHtml <|
         \pad (Layout layout_) extra ->
             node
@@ -813,7 +813,7 @@ liftHelper allowPadding special node appearances children =
                     Mixin.batch
                         [ Mixin.batch appearances
                         , extra
-                        , prohibited allowPadding
+                        , prohibited allowGap
                         , special
                         , if pad == 0 then
                             layout_.outer
@@ -825,16 +825,16 @@ liftHelper allowPadding special node appearances children =
                 children
                 |> wrapHtml pad
                     (Mixin.batch
-                        [ prohibited allowPadding
+                        [ prohibited allowGap
                         , layout_.outer
                         ]
                     )
 
 
 prohibited : Bool -> Mixin mgs
-prohibited allowPadding =
+prohibited allowGap =
     Mixin.fromAttributes <|
-        if allowPadding then
+        if allowGap then
             [ Attributes.style "margin" "0"
             ]
 
