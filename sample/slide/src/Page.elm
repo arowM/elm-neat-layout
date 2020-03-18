@@ -1,20 +1,20 @@
 module Page exposing (Page, pages)
 
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Attributes.Classname exposing (classMixinWith)
 import Html.Lazy as Html
 import Markdown
 import Mixin exposing (Mixin)
-import Neat exposing (NoPadding, View, fromNoPadding, setBoundary, setLayout, setMixin)
+import Neat exposing (NoGap, View, fromNoGap, setBoundary, setLayout, setMixin)
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (defaultColumn)
 import Neat.Layout.Row as Row exposing (defaultRow)
-import Padding exposing (PagePadding, pagePadding, subPadding)
+import Gap exposing (PageGap, pageGap, subGap)
 
 
 type alias Page msg =
-    View NoPadding msg
+    View NoGap msg
 
 
 pages : List (Page msg)
@@ -23,11 +23,11 @@ pages =
     , template (Just "自己紹介") self
     , template (Just "概要") abstPage
     , template (Just "に〜と とは") aboutNeatPage
-    , template (Just "に〜と には余白が必要") paddingAndNeatPage
+    , template (Just "に〜と には余白が必要") gapAndNeatPage
     , template (Just "に〜と でいることの難しさ") difficultyOfNeat
-    , template (Just "elm-neat-layoutなら に〜と！") neatPadding
-    , template (Just "elm-neat-layoutなら に〜と！") neatPadding2
-    , template (Just "型安全に〜と！") typesafePadding
+    , template (Just "elm-neat-layoutなら に〜と！") neatGap
+    , template (Just "elm-neat-layoutなら に〜と！") neatGap2
+    , template (Just "型安全に〜と！") typesafeGap
     , template (Just "概要ふたたび ネコにまたたび") abstPage2
     , template (Just "レイアウト専用とは") aboutLayout
     , template (Just "Row") aboutRow
@@ -39,7 +39,7 @@ pages =
 
 {-| Return current page view.
 -}
-template : Maybe String -> View PagePadding msg -> Page msg
+template : Maybe String -> View PageGap msg -> Page msg
 template mtitle c =
     Layout.columnWith
         { defaultColumn
@@ -47,24 +47,24 @@ template mtitle c =
         }
         [ titleBoundary mtitle
         , c
-            |> setBoundary pagePadding
+            |> setBoundary pageGap
             |> setClass "contentBoundary"
             |> setLayout Layout.fill
         ]
         |> setClass "page"
 
 
-titleBoundary : Maybe String -> View NoPadding msg
+titleBoundary : Maybe String -> View NoGap msg
 titleBoundary mtitle =
     case mtitle of
         Nothing ->
             Neat.none
 
         Just title ->
-            Neat.text title
+            Neat.textBlock title
                 |> setClass "title"
-                |> fromNoPadding pagePadding
-                |> setBoundary pagePadding
+                |> fromNoGap pageGap
+                |> setBoundary pageGap
                 |> setClass "titleBoundary"
                 |> setLayout Layout.noShrink
 
@@ -73,40 +73,40 @@ titleBoundary mtitle =
 -- Content
 
 
-titlePage : View PagePadding msg
+titlePage : View PageGap msg
 titlePage =
     Layout.columnWith
         { defaultColumn
             | horizontal = Column.Stretch
         }
-        [ Neat.text "に〜と のためのキマるスタイリング🐐"
+        [ Neat.textBlock "に〜と のためのキマるスタイリング🐐"
             |> centerize
-            |> fromNoPadding pagePadding
+            |> fromNoGap pageGap
             |> setLayout Layout.fill
-        , Neat.div []
+        , Layout.row
             [ Layout.columnWith
                 { defaultColumn
                     | horizontal = Column.Right
                 }
-                [ Neat.text "2019/8/25 Elm Meetup in Summer"
+                [ Neat.textBlock "2019/8/25 Elm Meetup in Summer"
                     |> setClass "subText"
-                    |> fromNoPadding subPadding
+                    |> fromNoGap subGap
                 , Neat.lift Html.a
                     [ Mixin.fromAttribute <| Attributes.href "https://twitter.com/arowM_"
                     , Mixin.fromAttribute <| Attributes.target "_blank"
                     , Mixin.fromAttribute <| Attributes.rel "noopener"
                     ]
-                    [ Neat.text "arowM_"
+                    [ Neat.textBlock "arowM_"
                     ]
                     |> setClass "subText"
-                    |> fromNoPadding subPadding
+                    |> fromNoGap subGap
                 ]
-                |> Neat.expand subPadding pagePadding
+                |> Neat.expand subGap pageGap
             ]
         ]
 
 
-self : View PagePadding msg
+self : View PageGap msg
 self =
     md """
 ## arowM_
@@ -126,7 +126,7 @@ self =
     """
 
 
-abstPage : View PagePadding msg
+abstPage : View PageGap msg
 abstPage =
     md """
 さっきリリースした elm-neat-layout の紹介
@@ -138,7 +138,7 @@ abstPage =
     """
 
 
-aboutNeatPage : View PagePadding msg
+aboutNeatPage : View PageGap msg
 aboutNeatPage =
     md """
 ## に〜と == Neat
@@ -149,8 +149,8 @@ aboutNeatPage =
     """
 
 
-paddingAndNeatPage : View PagePadding msg
-paddingAndNeatPage =
+gapAndNeatPage : View PageGap msg
+gapAndNeatPage =
     md """
 ## 余白の性質
 
@@ -165,7 +165,7 @@ paddingAndNeatPage =
 """
 
 
-difficultyOfNeat : View PagePadding msg
+difficultyOfNeat : View PageGap msg
 difficultyOfNeat =
     md """
 elm-html や elm-ui では に〜とな余白がむずかしい
@@ -173,40 +173,40 @@ elm-html や elm-ui では に〜とな余白がむずかしい
 複数のビューを組み立てる時に破綻する
 
 <div class="page__row-space-between">
-    <div class="page__padding1"><div class="page__view1"></div></div>
-    <div class="page__padding1"><div class="page__view2"></div></div>
+    <div class="page__gap1"><div class="page__view1"></div></div>
+    <div class="page__gap1"><div class="page__view2"></div></div>
 </div>
 
 この2つを結合すると...
 
 <div class="page__row-center">
-    <div class="page__padding1"><div class="page__view1"></div></div><div class="page__padding1"><div class="page__view2"></div></div>
+    <div class="page__gap1"><div class="page__view1"></div></div><div class="page__gap1"><div class="page__view2"></div></div>
 </div>
 
 真ん中だけ余白が2倍になってしまう😩
     """
 
 
-neatPadding : View PagePadding msg
-neatPadding =
+neatGap : View PageGap msg
+neatGap =
     md """
 ```elm
-view1 : View MyPadding msg
+view1 : View MyGap msg
 view1 =
-    Neat.fromNoPadding myPadding <|
+    Neat.fromNoGap myGap <|
         Neat.div
             [ class "view1"
             ]
-            [ text "View 1"
+            [ textBlock "View 1"
             ]
 
-view2 : View MyPadding msg
+view2 : View MyGap msg
 view2 =
-    Neat.fromNoPadding myPadding <|
+    Neat.fromNoGap myGap <|
         Neat.lift Html.div
             [ class "view2"
             ]
-            [ text "View 2"
+            [ textBlock "View 2"
             ]
 ```
 
@@ -214,11 +214,11 @@ view2 =
     """
 
 
-neatPadding2 : View PagePadding msg
-neatPadding2 =
+neatGap2 : View PageGap msg
+neatGap2 =
     md """
 ```elm
-composed : View MyPadding msg
+composed : View MyGap msg
 composed =
     Layout.row
         [ view1
@@ -227,32 +227,32 @@ composed =
 ```
 
 <div class="page__row-space-between">
-    <div class="page__padding1"><div class="page__view1"></div></div>
-    <div class="page__padding1"><div class="page__view2"></div></div>
+    <div class="page__gap1"><div class="page__view1"></div></div>
+    <div class="page__gap1"><div class="page__view2"></div></div>
 </div>
 
 この2つが...
 
 <div class="page__row-center">
-<div class="page__padding1 page__row-center page__viewWrapper"><div class="page__view1"></div><div class="page__space1"></div><div class="page__view2"></div>
+<div class="page__gap1 page__row-center page__viewWrapper"><div class="page__view1"></div><div class="page__space1"></div><div class="page__view2"></div>
 </div>
 
 うまくくっついた！
     """
 
 
-typesafePadding : View PagePadding msg
-typesafePadding =
+typesafeGap : View PageGap msg
+typesafeGap =
     md """
 自分専用の余白を定義したり
 
 ```elm
-type MyPadding
-    = MyPadding
+type MyGap
+    = MyGap
 
-myPadding : IsPadding MyPadding
-myPadding =
-    IsPadding
+myGap : IsGap MyGap
+myGap =
+    IsGap
         { rem = 1.4
         }
 ```
@@ -260,36 +260,36 @@ myPadding =
 余白を設定したり
 
 ```elm
-fromNoPadding : IsPadding p
-             -> View NoPadding msg
+fromNoGap : IsGap p
+             -> View NoGap msg
              -> View p msg
 ```
 
 例:
 
 ```elm
-view0 : View NoPadding msg
+view0 : View NoGap msg
 view0 =
-    Neat.text "view0"
+    Neat.textBlock "view0"
 
-view1 : View MyPadding msg
+view1 : View MyGap msg
 view1 =
-    fromNoPadding myPadding view0
+    fromNoGap myGap view0
 ```
 
 余白を消したり
 
 ```elm
-setBoundary : IsPadding p
+setBoundary : IsGap p
            -> View p msg
-           -> View NoPadding msg
+           -> View NoGap msg
 ```
 
 余白を増やしたり
 
 ```elm
-expand : IsPadding p1
-      -> IsPadding p2
+expand : IsGap p1
+      -> IsGap p2
       -> View p1 msg
       -> View p2 msg
 ```
@@ -298,7 +298,7 @@ expand : IsPadding p1
     """
 
 
-abstPage2 : View PagePadding msg
+abstPage2 : View PageGap msg
 abstPage2 =
     md """
 elm-neat-layout の特徴
@@ -309,7 +309,7 @@ elm-neat-layout の特徴
     """
 
 
-aboutLayout : View PagePadding msg
+aboutLayout : View PageGap msg
 aboutLayout =
     md """
 elm-neat-layout は、CSSを置き換えるもの **ではない**
@@ -325,15 +325,15 @@ elm-neat-layout は、CSSを置き換えるもの **ではない**
     """
 
 
-aboutRow : View PagePadding msg
+aboutRow : View PageGap msg
 aboutRow =
     md """
 横並び:
 ```elm
-view1 : View MyPadding msg
+view1 : View MyGap msg
 view1 = Debug.todo "省略"
 
-view2 : View MyPadding msg
+view2 : View MyGap msg
 view2 = Debug.todo "省略"
 
 Layout.row
@@ -373,15 +373,15 @@ Layout.rowWith
     """
 
 
-aboutColumn : View PagePadding msg
+aboutColumn : View PageGap msg
 aboutColumn =
     md """
 縦並び:
 ```elm
-view1 : View MyPadding msg
+view1 : View MyGap msg
 view1 = Debug.todo "省略"
 
-view2 : View MyPadding msg
+view2 : View MyGap msg
 view2 = Debug.todo "省略"
 
 Layout.column
@@ -409,7 +409,7 @@ Layout.columnWith
     """
 
 
-others : View PagePadding msg
+others : View PageGap msg
 others =
     md """
 パイプラインスタイルで書きやすい！
@@ -421,7 +421,7 @@ Layout.columnWith
     }
     [ titleBoundary mtitle
     , content
-        |> setBoundary pagePadding
+        |> setBoundary pageGap
         |> setClass "contentBoundary"
         |> setMixin
             ( if isSpecial then
@@ -436,7 +436,7 @@ Layout.columnWith
     """
 
 
-last : View PagePadding msg
+last : View PageGap msg
 last =
     md """
 もっと詳しく知りたくなったら、
@@ -450,7 +450,7 @@ last =
 -- Helper View functions
 
 
-centerize : View NoPadding msg -> View NoPadding msg
+centerize : View NoGap msg -> View NoGap msg
 centerize v =
     Layout.rowWith
         { defaultRow
@@ -460,12 +460,17 @@ centerize v =
         [ v ]
 
 
-md : String -> View PagePadding msg
-md =
-    Neat.unsafeFromHtml << Html.lazy markdown_
+md : String -> View PageGap msg
+md str =
+    Neat.lift
+        (\attrs _ -> Html.lazy2 markdown_ attrs str)
+        [ class "markdown"
+        ]
+        []
+        |> fromNoGap pageGap
 
 
-markdown_ : String -> Html msg
+markdown_ : List (Attribute msg) -> String -> Html msg
 markdown_ =
     Markdown.toHtmlWith
         { githubFlavored = Just { tables = True, breaks = True }
@@ -473,7 +478,6 @@ markdown_ =
         , sanitize = False
         , smartypants = False
         }
-        (Mixin.toAttributes <| class "markdown")
 
 
 
@@ -485,6 +489,6 @@ class =
     classMixinWith <| \name -> "page__" ++ name
 
 
-setClass : String -> View NoPadding msg -> View NoPadding msg
+setClass : String -> View NoGap msg -> View NoGap msg
 setClass =
     setMixin << class

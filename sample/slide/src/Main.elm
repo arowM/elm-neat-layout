@@ -3,10 +3,11 @@ module Main exposing (main)
 import Browser
 import Browser.Events
 import Browser.Navigation as Nav
+import Html
 import Html.Attributes.Classname exposing (classMixinWith)
 import Json.Decode as Json
 import Mixin exposing (Mixin)
-import Neat exposing (NoPadding, View, setMixin)
+import Neat exposing (NoGap, View, setMixin)
 import Page exposing (Page)
 import Url exposing (Url)
 import Url.Builder
@@ -19,7 +20,7 @@ import Url.Parser as Url exposing ((</>))
 
 main : Program () Model Msg
 main =
-    Browser.application
+    Neat.application
         { init = init
         , view = view
         , update = update
@@ -123,18 +124,17 @@ pushPage key n =
         |> Nav.pushUrl key
 
 
-view : Model -> Browser.Document Msg
+view : Model -> Neat.Document Msg
 view model =
     { title = "に〜と のためのキマるスタイリング🐐"
     , body =
-        Neat.div []
+        Neat.lift Html.div []
             (List.reverse <| List.indexedMap (slide model.currentPage) Page.pages)
             |> setClass "app"
-            |> Neat.toPage
     }
 
 
-slide : Int -> Int -> Page Msg -> View NoPadding Msg
+slide : Int -> Int -> Page Msg -> View NoGap Msg
 slide curr n p =
     p
         |> setClass "slide"
@@ -167,6 +167,6 @@ class =
     classMixinWith <| \name -> "app__" ++ name
 
 
-setClass : String -> View NoPadding msg -> View NoPadding msg
+setClass : String -> View NoGap msg -> View NoGap msg
 setClass =
     setMixin << class
