@@ -114,7 +114,8 @@ type Horizontal
     | HSpaceBetween
     | HSpaceAround
       -- | HSpaceEvenly {- Not supported on IE and Edge -}
-      | HStretch {- Not supported as flex layout on IE and Edge, but works well on them. -}
+      {- Not supported as flex layout on IE and Edge, but works well on them. -}
+    | HStretch
 
 
 horizontal : Horizontal -> Mixin msg
@@ -164,7 +165,8 @@ type Vertical
     | VSpaceBetween
     | VSpaceAround
       -- | VSpaceEvenly {- Not supported on IE and Edge -}
-    | VStretch {- Not supported as flex layout on IE and Edge, but works well on them. -}
+      {- Not supported as flex layout on IE and Edge, but works well on them. -}
+    | VStretch
 
 
 vertical : Vertical -> Mixin msg

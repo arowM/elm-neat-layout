@@ -30,11 +30,9 @@ module Neat.Layout.Row exposing
 -}
 
 import Html exposing (Html)
-import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat exposing (Protected, View)
 import Neat.Flex as Flex exposing (Flex)
-import Neat.Layout.Internal as Layout
 
 
 
@@ -84,12 +82,14 @@ type alias Row =
     , nodeName : String
     }
 
+
 toFlex : Row -> Flex
 toFlex align =
     { vertical = toFlexVertical align.vertical
     , horizontal = toFlexHorizontal align.horizontal
     , wrap = align.wrap
     }
+
 
 {-| Default `Row` configuration.
 
@@ -125,11 +125,21 @@ type Horizontal
 toFlexHorizontal : Horizontal -> Flex.Horizontal
 toFlexHorizontal h =
     case h of
-        Left -> Flex.Left
-        Right -> Flex.Right
-        HCenter -> Flex.HCenter
-        SpaceBetween -> Flex.HSpaceBetween
-        SpaceAround -> Flex.HSpaceAround
+        Left ->
+            Flex.Left
+
+        Right ->
+            Flex.Right
+
+        HCenter ->
+            Flex.HCenter
+
+        SpaceBetween ->
+            Flex.HSpaceBetween
+
+        SpaceAround ->
+            Flex.HSpaceAround
+
 
 
 -- Vertical alignment
@@ -146,10 +156,17 @@ type Vertical
 toFlexVertical : Vertical -> Flex.Vertical
 toFlexVertical v =
     case v of
-        Top -> Flex.Top
-        Bottom -> Flex.Bottom
-        VCenter -> Flex.VCenter
-        Stretch -> Flex.VStretch
+        Top ->
+            Flex.Top
+
+        Bottom ->
+            Flex.Bottom
+
+        VCenter ->
+            Flex.VCenter
+
+        Stretch ->
+            Flex.VStretch
 
 
 

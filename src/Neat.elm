@@ -292,8 +292,6 @@ This also inserts following style tag.
     *,
     *::before,
     *::after {
-      margin: 0;
-      padding: 0;
       box-sizing: border-box;
     }
     [data-elm-neat-layout~=flex]{
@@ -703,11 +701,6 @@ nodeNameToNode name =
 
     else
         Html.node name
-
-
-expandChild : Boundary -> View p msg -> View p msg
-expandChild align =
-    setLayout <| Flex.childLayout <| toFlex align
 
 
 toFlex : Boundary -> Flex

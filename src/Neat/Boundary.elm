@@ -1,8 +1,8 @@
 module Neat.Boundary exposing
     ( Boundary
-    , defaultBoundary
     , Vertical(..)
     , Horizontal(..)
+    , defaultBoundary
     )
 
 {-|
@@ -16,12 +16,6 @@ module Neat.Boundary exposing
 @docs Horizontal
 
 -}
-
-
-import Html exposing (Attribute, Html)
-import Html.Attributes as Attributes
-import Mixin exposing (Mixin)
-
 
 
 {-| Configuration about boundary.
@@ -49,6 +43,7 @@ defaultBoundary =
     }
 
 
+
 -- Horizontal alignment
 
 
@@ -58,6 +53,7 @@ type Horizontal
     | Right
     | HCenter
     | HStretch
+
 
 
 -- Vertical alignment

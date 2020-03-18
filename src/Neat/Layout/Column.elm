@@ -34,7 +34,6 @@ import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat exposing (Protected, View)
 import Neat.Flex as Flex exposing (Flex, flex, flexWrap)
-import Neat.Layout.Internal as Layout
 
 
 
@@ -97,6 +96,7 @@ toFlex align =
     , wrap = align.wrap
     }
 
+
 {-| Default `Column` configuration.
 
     { vertical = Top
@@ -142,10 +142,17 @@ type Horizontal
 toFlexHorizontal : Horizontal -> Flex.Horizontal
 toFlexHorizontal h =
     case h of
-        Left -> Flex.Left
-        Right -> Flex.Right
-        HCenter -> Flex.HCenter
-        Stretch -> Flex.HStretch
+        Left ->
+            Flex.Left
+
+        Right ->
+            Flex.Right
+
+        HCenter ->
+            Flex.HCenter
+
+        Stretch ->
+            Flex.HStretch
 
 
 horizontal : Horizontal -> Mixin msg
@@ -189,11 +196,20 @@ type Vertical
 toFlexVertical : Vertical -> Flex.Vertical
 toFlexVertical v =
     case v of
-        Top -> Flex.Top
-        Bottom -> Flex.Bottom
-        VCenter -> Flex.VCenter
-        SpaceBetween -> Flex.VSpaceBetween
-        SpaceAround -> Flex.VSpaceAround
+        Top ->
+            Flex.Top
+
+        Bottom ->
+            Flex.Bottom
+
+        VCenter ->
+            Flex.VCenter
+
+        SpaceBetween ->
+            Flex.VSpaceBetween
+
+        SpaceAround ->
+            Flex.VSpaceAround
 
 
 vertical : Vertical -> Mixin msg
