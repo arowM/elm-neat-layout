@@ -9,11 +9,11 @@ import Html.Events.Extra as Events
 import Html.Lazy as Html
 import MenuItem exposing (MenuItem)
 import Mixin exposing (Mixin)
-import Neat exposing (NoPadding, Protected, View, fromNoPadding, setBoundary, setLayout, setMixin)
+import Neat exposing (NoGap, Protected, View, fromNoGap, setBoundary, setLayout, setMixin, setMixins)
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, defaultColumn)
 import Neat.Layout.Row as Row exposing (defaultRow)
-import Padding exposing (BodyPadding, HeaderPadding, IconPadding, MenuPadding, MessagePadding, bodyPadding, headerPadding, iconPadding, menuPadding, messagePadding)
+import Gap exposing (BodyGap, HeaderGap, IconGap, MenuGap, MessageGap, bodyGap, headerGap, iconGap, menuGap, messageGap)
 
 
 
@@ -22,7 +22,7 @@ import Padding exposing (BodyPadding, HeaderPadding, IconPadding, MenuPadding, M
 
 main : Program () Model Msg
 main =
-    Browser.element
+    Neat.element
         { init = \_ -> init
         , view = view
         , update = update
@@ -111,12 +111,11 @@ update msg model =
             )
 
 
-view : Model -> Html Msg
+view : Model -> View NoGap Msg
 view model =
     Layout.rowWith
         { defaultRow
             | vertical = Row.Stretch
-            , wrap = False
         }
         [ menu
             |> setLayout Layout.noShrink
@@ -126,11 +125,9 @@ view model =
         |> setClass "center"
         |> alignHCenter
         |> setClass "wrapper"
-        |> Neat.toPage
-        |> Html.div []
 
 
-alignHCenter : View NoPadding msg -> View NoPadding msg
+alignHCenter : View NoGap msg -> View NoGap msg
 alignHCenter v =
     Layout.rowWith
         { defaultRow
@@ -143,39 +140,38 @@ alignHCenter v =
 -- Menu
 
 
-menu : View NoPadding msg
+menu : View NoGap msg
 menu =
     MenuItem.enum
-        |> List.map (fromNoPadding menuPadding << menuItem)
+        |> List.map (fromNoGap menuGap << menuItem)
         |> Layout.columnWith
             { defaultColumn
                 | horizontal = Column.Stretch
             }
-        |> setBoundary menuPadding
+        |> setBoundary menuGap
         |> setClass "menu"
 
 
-menuItem : MenuItem -> View NoPadding msg
+menuItem : MenuItem -> View NoGap msg
 menuItem m =
     Layout.rowWith
         { defaultRow
             | vertical = Row.Bottom
         }
-        [ Neat.div
-            [ class <| MenuItem.toClassname m
-            , class "menuItem_icon"
-            ]
-            []
-            |> fromNoPadding iconPadding
-        , Neat.div
-            [ class "menuItem_label"
-            ]
-            [ Neat.textBlock <| MenuItem.toLabel m
-            ]
-            |> fromNoPadding iconPadding
+        [ Neat.empty
+            |> setMixins
+                [ class <| MenuItem.toClassname m
+                , class "menuItem_icon"
+                ]
+            |> fromNoGap iconGap
+        , Neat.textBlock (MenuItem.toLabel m)
+            |> setMixins
+                [ class "menuItem_label"
+                ]
+            |> fromNoGap iconGap
             |> setLayout Layout.fill
         ]
-        |> setBoundary iconPadding
+        |> setBoundary iconGap
         |> setClass "menuItem"
 
 
@@ -183,7 +179,7 @@ menuItem m =
 -- Body
 
 
-body : Model -> View NoPadding msg
+body : Model -> View NoGap msg
 body model =
     Layout.columnWith
         { defaultColumn
@@ -196,15 +192,15 @@ body model =
         ]
 
 
-bodyTitle : View NoPadding msg
+bodyTitle : View NoGap msg
 bodyTitle =
     Neat.textBlock "Home"
-        |> Neat.fromNoPadding headerPadding
-        |> setBoundary headerPadding
+        |> Neat.fromNoGap headerGap
+        |> setBoundary headerGap
         |> setClass "bodyTitle"
 
 
-bodyContent : List Message -> View NoPadding msg
+bodyContent : List Message -> View NoGap msg
 bodyContent messages =
     Column.optimized
         (String.fromInt << .id)
@@ -216,27 +212,27 @@ bodyContent messages =
         |> setClass "bodyContent"
 
 
-message_ : MessageIcon -> String -> String -> Column -> Html (Protected NoPadding msg)
+message_ : MessageIcon -> String -> String -> Column -> Html (Protected NoGap msg)
 message_ icon name screenName =
     Column.toProtected <| message icon name screenName
 
 
-message : MessageIcon -> String -> String -> View NoPadding msg
+message : MessageIcon -> String -> String -> View NoGap msg
 message icon name screenName =
     Layout.row
         [ Neat.empty
             |> setClass "messageIcon"
             -- (Debug.log "This functions is only rendered at first" "messageIcon")
             |> setClass (messageIconClass icon)
-            |> fromNoPadding bodyPadding
+            |> fromNoGap bodyGap
         , Layout.column
             [ Layout.row
                 [ Neat.textBlock name
                     |> setClass "messageName"
-                    |> fromNoPadding messagePadding
+                    |> fromNoGap messageGap
                 , Neat.textBlock ("@" ++ screenName)
                     |> setClass "messageScreenName"
-                    |> fromNoPadding messagePadding
+                    |> fromNoGap messageGap
                 ]
             , Layout.column
                 [ Neat.textBlock """
@@ -247,11 +243,11 @@ message icon name screenName =
                     """
                 ]
                 |> setClass "messageBody"
-                |> Neat.fromNoPadding messagePadding
+                |> Neat.fromNoGap messageGap
             ]
-            |> Neat.expand messagePadding bodyPadding
+            |> Neat.expand messageGap bodyGap
         ]
-        |> setBoundary bodyPadding
+        |> setBoundary bodyGap
         |> setClass "message"
 
 
@@ -259,7 +255,7 @@ message icon name screenName =
 -- Right Pane
 
 
-rightPane : View NoPadding Msg
+rightPane : View NoGap Msg
 rightPane =
     Layout.columnWith
         { defaultColumn
@@ -267,12 +263,12 @@ rightPane =
         }
         [ searchField
         ]
-        |> setBoundary menuPadding
+        |> setBoundary menuGap
         |> setClass "rightPane"
         |> setLayout Layout.fill
 
 
-searchField : View MenuPadding Msg
+searchField : View MenuGap Msg
 searchField =
     Layout.rowWith
         { defaultRow
@@ -280,7 +276,7 @@ searchField =
         }
         [ Neat.empty
             |> setClass "searchIcon"
-            |> fromNoPadding iconPadding
+            |> fromNoGap iconGap
         , Neat.emptyNode Html.input
             |> setClass "searchInput"
             |> setType_ "text"
@@ -288,11 +284,11 @@ searchField =
                 (Mixin.fromAttribute <| Attributes.placeholder "Search Bleater")
             |> setMixin
                 (Mixin.fromAttribute <| Events.onChange ChangeSearchText)
-            |> fromNoPadding iconPadding
+            |> fromNoGap iconGap
         ]
-        |> setBoundary iconPadding
+        |> setBoundary iconGap
         |> setClass "searchField"
-        |> fromNoPadding menuPadding
+        |> fromNoGap menuGap
 
 
 subscriptions : Model -> Sub Msg
@@ -309,11 +305,11 @@ class =
     classMixinWith <| \name -> "app__" ++ name
 
 
-setClass : String -> View NoPadding msg -> View NoPadding msg
+setClass : String -> View NoGap msg -> View NoGap msg
 setClass =
     setMixin << class
 
 
-setType_ : String -> View NoPadding msg -> View NoPadding msg
+setType_ : String -> View NoGap msg -> View NoGap msg
 setType_ =
     setMixin << Mixin.fromAttribute << Attributes.type_
