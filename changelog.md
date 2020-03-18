@@ -19,6 +19,7 @@
 * Change type of `Column.optimized`
 * Rename `text` to `textBlock`
 * Remove `div` for (`lift Html.div`)
+* Remove `unsafeFromHtml`
 * Change `Row.defaultRow`
     * Change `.vertical` from `Row.Top` to `Row.Stretch`
 * Change `Column.defaultColumn`

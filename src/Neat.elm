@@ -29,7 +29,6 @@ module Neat exposing
     , setRole
     , setAria
     , setBoolAria
-    , unsafeFromHtml
     , optimized
     , toProtected
     , Protected
@@ -117,13 +116,6 @@ You can introduce custom gaps by just declaring their types and `IsGap` values.
 @docs setRole
 @docs setAria
 @docs setBoolAria
-
-
-# Unsafe functions
-
-These can break neat gaps, so use them carefully.
-
-@docs unsafeFromHtml
 
 
 # Lower level functions for performance optimization
@@ -764,18 +756,6 @@ innerGap (IsGap { rem }) =
         Attributes.style "padding" <|
             String.fromFloat (rem / 2)
                 ++ "rem"
-
-
-
--- Unsafe functions
-
-
-{-| -}
-unsafeFromHtml : Html msg -> View p msg
-unsafeFromHtml h =
-    div []
-        [ fromHtml <| \_ _ _ -> h
-        ]
 
 
 
