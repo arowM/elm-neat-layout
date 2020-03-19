@@ -31,7 +31,7 @@ module Neat.Layout.Row exposing
 
 import Html exposing (Html)
 import Mixin exposing (Mixin)
-import Neat exposing (Protected, View)
+import Neat exposing (Protected, Renderer, View)
 import Neat.Flex as Flex exposing (Flex)
 
 
@@ -209,7 +209,7 @@ v =
 -}
 optimized :
     (x -> String)
-    -> (x -> Row -> Html (Protected p msg))
+    -> (x -> Row -> Protected p Renderer -> Html (Protected p msg))
     -> Row
     -> List x
     -> View p msg
@@ -224,7 +224,7 @@ optimized identifier f align =
 {-| This is supposed to be used in order to make `Html.lazy.lazyN` work.
 See `optimized` for real usage.
 -}
-toProtected : View p a -> Row -> Html (Protected p a)
+toProtected : View p a -> Row -> Protected p Renderer -> Html (Protected p a)
 toProtected v vert =
     Neat.toProtected <|
         expandChild vert v

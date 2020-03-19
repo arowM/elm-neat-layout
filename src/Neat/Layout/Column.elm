@@ -32,7 +32,7 @@ module Neat.Layout.Column exposing
 import Html exposing (Html)
 import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
-import Neat exposing (Protected, View)
+import Neat exposing (Protected, Renderer, View)
 import Neat.Flex as Flex exposing (Flex, flex, flexWrap)
 
 
@@ -282,7 +282,7 @@ v =
 -}
 optimized :
     (x -> String)
-    -> (x -> Column -> Html (Protected p msg))
+    -> (x -> Column -> Protected p Renderer -> Html (Protected p msg))
     -> Column
     -> List x
     -> View p msg
@@ -297,7 +297,7 @@ optimized identifier f align =
 {-| This is supposed to be used in order to make `Html.lazy.lazyN` work.
 See `optimized` for real usage.
 -}
-toProtected : View p a -> Column -> Html (Protected p a)
+toProtected : View p a -> Column -> Protected p Renderer -> Html (Protected p a)
 toProtected v align =
     Neat.toProtected <|
         expandChild align v

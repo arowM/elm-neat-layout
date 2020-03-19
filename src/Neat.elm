@@ -1,6 +1,8 @@
 module Neat exposing
     ( View
     , sandbox
+    , Renderer
+    , defaultRenderer
     , element
     , document
     , Document
@@ -45,6 +47,8 @@ module Neat exposing
 # `Browser.*` alternatives
 
 @docs sandbox
+@docs Renderer
+@docs defaultRenderer
 @docs element
 @docs document
 @docs Document
@@ -97,7 +101,8 @@ You can introduce custom gaps by just declaring their types and `IsGap` values.
     myGap : IsGap MyGap
     myGap =
         IsGap
-            { rem = 0.6
+            { width = 0.6
+            , height = 0.6
             }
 
 @docs IsGap
@@ -149,7 +154,20 @@ import Url exposing (Url)
 {-| Html alternative that has type level gap.
 -}
 type View gap msg
-    = View (Float -> Layout msg -> Mixin msg -> Html msg)
+    = View (Renderer -> Gap -> Layout msg -> Mixin msg -> Html msg)
+
+
+type alias Gap =
+    { width : Float
+    , height : Float
+    }
+
+
+emptyGap : Gap
+emptyGap =
+    { width = 0
+    , height = 0
+    }
 
 
 
@@ -157,6 +175,7 @@ type View gap msg
 
 
 {-| Alternative to `Browser.sandbox`.
+
 This inserts following CSS.
 
     <style>
@@ -176,6 +195,7 @@ sandbox :
     { init : model
     , view : model -> View NoGap msg
     , update : msg -> model -> model
+    , renderer : Renderer
     }
     -> Program () model msg
 sandbox o =
@@ -189,9 +209,35 @@ sandbox o =
                     , Attributes.style "margin" "0"
                     ]
                     [ resetCss
-                    , toHtml 0 Layout.none Mixin.none (o.view model)
+                    , toHtml o.renderer emptyGap Layout.none Mixin.none (o.view model)
                     ]
         }
+
+
+{-| Settings for rendering `View`.
+
+The `baseGapSize` is base gap size in [<length> CSS data type](https://developer.mozilla.org/en-US/docs/Web/CSS/length).
+All gap sizes are determined relative to this value.
+e.g., `"16px"`, `"1.2rem"`, ...
+The "em" unit is not recommended because it varies with parent node font-size of each gap.
+
+-}
+type alias Renderer =
+    { baseGapSize : String
+    }
+
+
+{-|
+
+    defaultRenderer =
+        { baseGapSize = "1rem"
+        }
+
+-}
+defaultRenderer : Renderer
+defaultRenderer =
+    { baseGapSize = "1rem"
+    }
 
 
 {-| Alternative to `Browser.element`.
@@ -215,6 +261,7 @@ element :
     , view : model -> View NoGap msg
     , update : msg -> model -> ( model, Cmd msg )
     , subscriptions : model -> Sub msg
+    , renderer : Renderer
     }
     -> Program flags model msg
 element o =
@@ -227,7 +274,7 @@ element o =
                     , Attributes.style "margin" "0"
                     ]
                     [ resetCss
-                    , toHtml 0 Layout.none Mixin.none (o.view model)
+                    , toHtml o.renderer emptyGap Layout.none Mixin.none (o.view model)
                     ]
         , update = o.update
         , subscriptions = o.subscriptions
@@ -255,6 +302,7 @@ document :
     , view : model -> Document msg
     , update : msg -> model -> ( model, Cmd msg )
     , subscriptions : model -> Sub msg
+    , renderer : Renderer
     }
     -> Program flags model msg
 document o =
@@ -269,7 +317,7 @@ document o =
                 { title = view.title
                 , body =
                     [ resetCss
-                    , toHtml 0 Layout.none Mixin.none view.body
+                    , toHtml o.renderer emptyGap Layout.none Mixin.none view.body
                     ]
                 }
         , update = o.update
@@ -308,6 +356,7 @@ application :
     , subscriptions : model -> Sub msg
     , onUrlRequest : UrlRequest -> msg
     , onUrlChange : Url -> msg
+    , renderer : Renderer
     }
     -> Program flags model msg
 application o =
@@ -322,7 +371,7 @@ application o =
                 { title = view.title
                 , body =
                     [ resetCss
-                    , toHtml 0 Layout.none Mixin.none view.body
+                    , toHtml o.renderer emptyGap Layout.none Mixin.none view.body
                     ]
                 }
         , update = o.update
@@ -386,22 +435,23 @@ resetCss =
             ]
 
 -}
-lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
+lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View g msg) -> View g msg
 lift =
     lift_ False
 
 
-lift_ : Bool -> (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View p msg) -> View p msg
+lift_ : Bool -> (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View g msg) -> View g msg
 lift_ allowGap node appearances children =
-    liftHelper allowGap Mixin.none node appearances <|
-        List.map (toHtml 0 Layout.none Mixin.none) children
+    liftHelper allowGap (\_ -> Mixin.none) node appearances <|
+        \r ->
+            List.map (toHtml r emptyGap Layout.none Mixin.none) children
 
 
 {-| View version of `Html.text ""`.
 -}
-none : View p a
+none : View g a
 none =
-    fromHtml <| \_ _ _ -> Html.text ""
+    fromHtml <| \_ _ _ _ -> Html.text ""
 
 
 {-| An alias for `div [] []`.
@@ -424,11 +474,11 @@ setMixin =
     setMixinHelper
 
 
-setMixinHelper : Mixin msg -> View p msg -> View p msg
+setMixinHelper : Mixin msg -> View g msg -> View g msg
 setMixinHelper appearance (View f) =
     View <|
-        \p layout extra ->
-            f p layout (Mixin.batch [ appearance, extra ])
+        \renderer gap layout extra ->
+            f renderer gap layout (Mixin.batch [ appearance, extra ])
 
 
 {-| -}
@@ -450,11 +500,11 @@ setAttributes =
 
 
 {-| -}
-setLayout : Layout msg -> View p msg -> View p msg
+setLayout : Layout msg -> View g msg -> View g msg
 setLayout layout (View f) =
     View <|
-        \p extra appearance ->
-            f p (Layout.batch [ layout, extra ]) appearance
+        \renderer gap extra appearance ->
+            f renderer gap (Layout.batch [ layout, extra ]) appearance
 
 
 
@@ -463,7 +513,7 @@ setLayout layout (View f) =
 
 {-| Set "role" value for WAI-ARIA.
 -}
-setRole : String -> View p msg -> View p msg
+setRole : String -> View g msg -> View g msg
 setRole v =
     setMixinHelper <| Mixin.attribute "role" v
 
@@ -473,7 +523,7 @@ setRole v =
 e.g., `setAria "required" "true"` stands for "aria-required" is "true".
 
 -}
-setAria : String -> String -> View p msg -> View p msg
+setAria : String -> String -> View g msg -> View g msg
 setAria name v =
     setMixinHelper <| Mixin.attribute ("aria-" ++ name) v
 
@@ -486,20 +536,20 @@ i.e.,
   - `setBoolAria name False` is equal to `setAria name "false"`
 
 -}
-setBoolAria : String -> Bool -> View p msg -> View p msg
-setBoolAria name p =
+setBoolAria : String -> Bool -> View g msg -> View g msg
+setBoolAria name g =
     setAria name <|
-        if p then
+        if g then
             "true"
 
         else
             "false"
 
 
-modifyGap : (Float -> Float) -> View p1 msg -> View p2 msg
+modifyGap : (Gap -> Gap) -> View g1 msg -> View g2 msg
 modifyGap g (View f) =
     View <|
-        \p -> f (g p)
+        \r gap -> f r (g gap)
 
 
 
@@ -509,7 +559,7 @@ modifyGap g (View f) =
 {-| `View` version of `Html.select`.
 Differ from `lift Html.select`, it can accept "padding" style property.
 -}
-select : List (Mixin msg) -> List (View p msg) -> View p msg
+select : List (Mixin msg) -> List (View g msg) -> View g msg
 select =
     lift_ True Html.select
 
@@ -517,7 +567,7 @@ select =
 {-| `View` version of `Html.input`.
 Differ from `lift Html.input [] []`, it can accept "padding" style property.
 -}
-input : View p msg
+input : View g msg
 input =
     lift_ True Html.input [] []
 
@@ -525,7 +575,7 @@ input =
 {-| `View` version of `Html.textarea`.
 Differ from `lift Html.textarea [] []`, it can accept "padding" style property.
 -}
-textarea : View p msg
+textarea : View g msg
 textarea =
     lift_ True Html.textarea [] []
 
@@ -539,7 +589,7 @@ textNode : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> Vi
 textNode f str =
     lift f
         []
-        [ fromHtml <| \_ _ _ -> Html.text str
+        [ fromHtml <| \_ _ _ _ -> Html.text str
         ]
 
 
@@ -560,32 +610,33 @@ textBlock =
 keyed :
     String
     -> List (Mixin msg)
-    -> List ( String, View p msg )
-    -> View p msg
+    -> List ( String, View g msg )
+    -> View g msg
 keyed tag mixins children =
-    liftHelper False Mixin.none (Keyed.node tag) mixins <|
-        List.map (Tuple.mapSecond (toHtml 0 Layout.none Mixin.none)) children
+    liftHelper False (\_ -> Mixin.none) (Keyed.node tag) mixins <|
+        \r ->
+            List.map (Tuple.mapSecond (toHtml r emptyGap Layout.none Mixin.none)) children
 
 
 {-|
 
-    v1 : View p msg
+    v1 : View g msg
     v1 =
         Debug.todo "v1"
 
-    v2 : View p msg
+    v2 : View g msg
     v2 =
         Debug.todo "v2"
 
-    child : Int -> View p msg
+    child : Int -> View g msg
     child _ =
         Debug.todo "child"
 
-    child_ : Int -> Html (Protected p msg)
+    child_ : Int -> Html (Protected g msg)
     child_ =
         toProtected << child
 
-    v : List Int -> View p msg
+    v : List Int -> View g msg
     v =
         optimized
             String.fromInt
@@ -596,30 +647,31 @@ keyed tag mixins children =
 -}
 optimized :
     (x -> String)
-    -> (x -> Html (Protected p msg))
+    -> (x -> Protected g Renderer -> Html (Protected g msg))
     -> String
     -> List (Mixin msg)
     -> List x
-    -> View p msg
+    -> View g msg
 optimized identifier f tag mixins ls =
-    liftHelper False Mixin.none (Keyed.node tag) mixins <|
-        List.map (\x -> ( identifier x, Html.map unProtect <| f x )) ls
+    liftHelper False (\_ -> Mixin.none) (Keyed.node tag) mixins <|
+        \r ->
+            List.map (\x -> ( identifier x, Html.map unProtect <| f x (Protected r) )) ls
 
 
 {-| This is supposed to be used in order to make `Html.Lazy.lazyN` work.
 See `optimized` for real usage.
 -}
-toProtected : View p a -> Html (Protected p a)
-toProtected v =
-    Html.map Protected <| toHtml 0 Layout.none Mixin.none v
+toProtected : View g a -> Protected g Renderer -> Html (Protected g a)
+toProtected v (Protected renderer) =
+    Html.map Protected <| toHtml renderer emptyGap Layout.none Mixin.none v
 
 
 {-| -}
-type Protected p a
+type Protected g a
     = Protected a
 
 
-unProtect : Protected p a -> a
+unProtect : Protected g a -> a
 unProtect (Protected a) =
     a
 
@@ -628,7 +680,7 @@ unProtect (Protected a) =
 -- Primitives
 
 
-{-| Primitive type representing no gap on a view.
+{-| Primitive type representing no gap
 -}
 type NoGap
     = NoGap
@@ -636,12 +688,18 @@ type NoGap
 
 {-| Information about your custom gaps.
 
-  - rem : gap width in units of `rem`
+  - width : gap width relative to `baseGapSize` of `Renderer`
+  - height : gap height relative to `baseGapSize` of `Renderer`
+
+The `Renderer` value is given to `sandbox`, `element`, `document`, `application`.
+
+e.g., When `baseGapSize` is `"2rem"`, `IsGap { width = 1.2, height = 2 }` becomes gap with `"2.4rem"` width and `"4rem"` height.
 
 -}
 type IsGap p
     = IsGap
-        { rem : Float
+        { width : Float
+        , height : Float
         }
 
 
@@ -650,22 +708,24 @@ type IsGap p
 
 
 {-| -}
-fromNoGap : IsGap p -> View NoGap msg -> View p msg
+fromNoGap : IsGap g -> View NoGap msg -> View g msg
 fromNoGap =
     expand noGap
 
 
-{-| Expand gap from `p1` to `p2`.
-The width of `p2` is supposed to be greater than `p1`.
+{-| Expand gap from `g1` to `g2`.
+Both the width and the height of `g2` is supposed to be greater than `g1`.
 -}
-expand : IsGap p1 -> IsGap p2 -> View p1 msg -> View p2 msg
-expand p1 p2 child =
-    modifyGap (newGap p1 p2) child
+expand : IsGap g1 -> IsGap g2 -> View g1 msg -> View g2 msg
+expand g1 g2 child =
+    modifyGap (newGap g1 g2) child
 
 
-newGap : IsGap p1 -> IsGap p2 -> Float -> Float
+newGap : IsGap g1 -> IsGap g2 -> Gap -> Gap
 newGap (IsGap c1) (IsGap c2) curr =
-    ((c2.rem - c1.rem) / 2) + curr
+    { width = ((c2.width - c1.width) / 2) + curr.width
+    , height = ((c2.height - c1.height) / 2) + curr.height
+    }
 
 
 
@@ -677,21 +737,23 @@ newGap (IsGap c1) (IsGap c2) curr =
     This is an alias for `setBoundary defaultBoundary`.
 
 -}
-setBoundary : IsGap p -> View p msg -> View NoGap msg
+setBoundary : IsGap g -> View g msg -> View NoGap msg
 setBoundary =
     setBoundaryWith Boundary.defaultBoundary
 
 
 {-| Set boundary to convert into `NoGap`.
 -}
-setBoundaryWith : Boundary -> IsGap p -> View p msg -> View NoGap msg
+setBoundaryWith : Boundary -> IsGap g -> View g msg -> View NoGap msg
 setBoundaryWith align config child =
     liftHelper False
-        (innerGap config)
+        (\r -> innerGap r config)
         (nodeNameToNode align.nodeName)
         (Flex.rowMixins <| toFlex align)
-        [ toHtml 0 (Flex.childLayout <| toFlex align) Mixin.none child
-        ]
+    <|
+        \r ->
+            [ toHtml r emptyGap (Flex.childLayout <| toFlex align) Mixin.none child
+            ]
 
 
 nodeNameToNode : String -> List (Attribute msg) -> List (Html msg) -> Html msg
@@ -743,19 +805,41 @@ toFlexVertical align =
             Flex.VStretch
 
 
-innerGap : IsGap p -> Mixin msg
-innerGap (IsGap { rem }) =
-    Mixin.fromAttribute <|
-        Attributes.style "padding" <|
-            String.fromFloat (rem / 2)
-                ++ "rem"
+innerGap : Renderer -> IsGap g -> Mixin msg
+innerGap renderer (IsGap { width, height }) =
+    Mixin.fromAttributes
+        [ Attributes.style "padding-right" <|
+            "calc("
+                ++ String.fromFloat (width / 2)
+                ++ " * "
+                ++ renderer.baseGapSize
+                ++ ")"
+        , Attributes.style "padding-left" <|
+            "calc("
+                ++ String.fromFloat (width / 2)
+                ++ " * "
+                ++ renderer.baseGapSize
+                ++ ")"
+        , Attributes.style "padding-top" <|
+            "calc("
+                ++ String.fromFloat (height / 2)
+                ++ " * "
+                ++ renderer.baseGapSize
+                ++ ")"
+        , Attributes.style "padding-bottom" <|
+            "calc("
+                ++ String.fromFloat (height / 2)
+                ++ " * "
+                ++ renderer.baseGapSize
+                ++ ")"
+        ]
 
 
 
 -- Helper functions
 
 
-div : List (Mixin msg) -> List (View p msg) -> View p msg
+div : List (Mixin msg) -> List (View g msg) -> View g msg
 div =
     lift Html.div
 
@@ -763,40 +847,42 @@ div =
 noGap : IsGap NoGap
 noGap =
     IsGap
-        { rem = 0
+        { width = 0
+        , height = 0
         }
 
 
-toHtml : Float -> Layout msg -> Mixin msg -> View gap msg -> Html msg
-toHtml p layout appearance (View f) =
-    f p layout appearance
+toHtml : Renderer -> Gap -> Layout msg -> Mixin msg -> View gap msg -> Html msg
+toHtml renderer gap layout appearance (View f) =
+    f renderer gap layout appearance
 
 
-fromHtml : (Float -> Layout msg -> Mixin msg -> Html msg) -> View gap msg
+fromHtml : (Renderer -> Gap -> Layout msg -> Mixin msg -> Html msg) -> View gap msg
 fromHtml =
     View
 
 
-liftHelper : Bool -> Mixin msg -> (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> List a -> View p msg
+liftHelper : Bool -> (Renderer -> Mixin msg) -> (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> (Renderer -> List a) -> View g msg
 liftHelper allowGap special node appearances children =
     fromHtml <|
-        \pad (Layout layout_) extra ->
+        \renderer gap (Layout layout_) extra ->
             node
                 (Mixin.toAttributes <|
                     Mixin.batch
                         [ Mixin.batch appearances
                         , extra
                         , prohibited allowGap
-                        , special
-                        , if pad == 0 then
+                        , special renderer
+                        , if gap.width == 0 && gap.height == 0 then
                             layout_.outer
 
                           else
                             layout_.inner
                         ]
                 )
-                children
-                |> wrapHtml pad
+                (children renderer)
+                |> wrapHtml renderer
+                    gap
                     (Mixin.batch
                         [ prohibited allowGap
                         , layout_.outer
@@ -817,15 +903,39 @@ prohibited allowGap =
             ]
 
 
-wrapHtml : Float -> Mixin msg -> Html msg -> Html msg
-wrapHtml pad outer c =
-    if pad == 0 then
+wrapHtml : Renderer -> Gap -> Mixin msg -> Html msg -> Html msg
+wrapHtml renderer gap outer c =
+    if gap.width == 0 && gap.height == 0 then
         c
 
     else
         Html.div
             (Mixin.toAttributes outer
-                ++ [ Attributes.style "padding" <| String.fromFloat pad ++ "rem" ]
+                ++ [ Attributes.style "padding-right" <|
+                        "calc("
+                            ++ String.fromFloat gap.width
+                            ++ " * "
+                            ++ renderer.baseGapSize
+                            ++ ")"
+                   , Attributes.style "padding-left" <|
+                        "calc("
+                            ++ String.fromFloat gap.width
+                            ++ " * "
+                            ++ renderer.baseGapSize
+                            ++ ")"
+                   , Attributes.style "padding-top" <|
+                        "calc("
+                            ++ String.fromFloat gap.height
+                            ++ " * "
+                            ++ renderer.baseGapSize
+                            ++ ")"
+                   , Attributes.style "padding-bottom" <|
+                        "calc("
+                            ++ String.fromFloat gap.height
+                            ++ " * "
+                            ++ renderer.baseGapSize
+                            ++ ")"
+                   ]
             )
             [ c
             ]
