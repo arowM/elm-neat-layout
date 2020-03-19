@@ -1,6 +1,6 @@
 # Bleater
 
-A sample twitter like layout.
+A sample twitter-like layout.
 
 ## Dev server
 

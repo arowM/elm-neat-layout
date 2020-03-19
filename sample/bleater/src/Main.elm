@@ -1,19 +1,17 @@
 module Main exposing (main)
 
-import Browser
-import Browser.Navigation
-import Html exposing (Html, button, div, text)
+import Gap
+import Html exposing (Html)
 import Html.Attributes as Attributes
 import Html.Attributes.Classname exposing (classMixinWith)
 import Html.Events.Extra as Events
 import Html.Lazy as Html
 import MenuItem exposing (MenuItem)
 import Mixin exposing (Mixin)
-import Neat exposing (NoGap, Protected, View, fromNoGap, setBoundary, setLayout, setMixin, setMixins)
+import Neat exposing (NoGap, Protected, Renderer, View, defaultRenderer, fromNoGap, setBoundary, setLayout, setMixin, setMixins)
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, defaultColumn)
 import Neat.Layout.Row as Row exposing (defaultRow)
-import Gap exposing (BodyGap, HeaderGap, IconGap, MenuGap, MessageGap, bodyGap, headerGap, iconGap, menuGap, messageGap)
 
 
 
@@ -27,6 +25,7 @@ main =
         , view = view
         , update = update
         , subscriptions = subscriptions
+        , renderer = defaultRenderer
         }
 
 
@@ -143,12 +142,12 @@ alignHCenter v =
 menu : View NoGap msg
 menu =
     MenuItem.enum
-        |> List.map (fromNoGap menuGap << menuItem)
+        |> List.map (fromNoGap Gap.menu << menuItem)
         |> Layout.columnWith
             { defaultColumn
                 | horizontal = Column.Stretch
             }
-        |> setBoundary menuGap
+        |> setBoundary Gap.menu
         |> setClass "menu"
 
 
@@ -163,15 +162,15 @@ menuItem m =
                 [ class <| MenuItem.toClassname m
                 , class "menuItem_icon"
                 ]
-            |> fromNoGap iconGap
+            |> fromNoGap Gap.icon
         , Neat.textBlock (MenuItem.toLabel m)
             |> setMixins
                 [ class "menuItem_label"
                 ]
-            |> fromNoGap iconGap
+            |> fromNoGap Gap.icon
             |> setLayout Layout.fill
         ]
-        |> setBoundary iconGap
+        |> setBoundary Gap.icon
         |> setClass "menuItem"
 
 
@@ -195,8 +194,8 @@ body model =
 bodyTitle : View NoGap msg
 bodyTitle =
     Neat.textBlock "Home"
-        |> Neat.fromNoGap headerGap
-        |> setBoundary headerGap
+        |> Neat.fromNoGap Gap.header
+        |> setBoundary Gap.header
         |> setClass "bodyTitle"
 
 
@@ -204,7 +203,7 @@ bodyContent : List Message -> View NoGap msg
 bodyContent messages =
     Column.optimized
         (String.fromInt << .id)
-        (\m -> Html.lazy4 message_ m.icon m.name m.screenName)
+        (\m -> Html.lazy5 message_ m.icon m.name m.screenName)
         { defaultColumn
             | horizontal = Column.Stretch
         }
@@ -212,7 +211,7 @@ bodyContent messages =
         |> setClass "bodyContent"
 
 
-message_ : MessageIcon -> String -> String -> Column -> Html (Protected NoGap msg)
+message_ : MessageIcon -> String -> String -> Column -> Protected NoGap Renderer -> Html (Protected NoGap msg)
 message_ icon name screenName =
     Column.toProtected <| message icon name screenName
 
@@ -224,15 +223,15 @@ message icon name screenName =
             |> setClass "messageIcon"
             -- (Debug.log "This functions is only rendered at first" "messageIcon")
             |> setClass (messageIconClass icon)
-            |> fromNoGap bodyGap
+            |> fromNoGap Gap.body
         , Layout.column
             [ Layout.row
                 [ Neat.textBlock name
                     |> setClass "messageName"
-                    |> fromNoGap messageGap
+                    |> fromNoGap Gap.message
                 , Neat.textBlock ("@" ++ screenName)
                     |> setClass "messageScreenName"
-                    |> fromNoGap messageGap
+                    |> fromNoGap Gap.message
                 ]
             , Layout.column
                 [ Neat.textBlock """
@@ -243,11 +242,11 @@ message icon name screenName =
                     """
                 ]
                 |> setClass "messageBody"
-                |> Neat.fromNoGap messageGap
+                |> Neat.fromNoGap Gap.message
             ]
-            |> Neat.expand messageGap bodyGap
+            |> Neat.expand Gap.message Gap.body
         ]
-        |> setBoundary bodyGap
+        |> setBoundary Gap.body
         |> setClass "message"
 
 
@@ -263,12 +262,12 @@ rightPane =
         }
         [ searchField
         ]
-        |> setBoundary menuGap
+        |> setBoundary Gap.menu
         |> setClass "rightPane"
         |> setLayout Layout.fill
 
 
-searchField : View MenuGap Msg
+searchField : View Gap.Menu Msg
 searchField =
     Layout.rowWith
         { defaultRow
@@ -276,7 +275,7 @@ searchField =
         }
         [ Neat.empty
             |> setClass "searchIcon"
-            |> fromNoGap iconGap
+            |> fromNoGap Gap.icon
         , Neat.emptyNode Html.input
             |> setClass "searchInput"
             |> setType_ "text"
@@ -284,11 +283,11 @@ searchField =
                 (Mixin.fromAttribute <| Attributes.placeholder "Search Bleater")
             |> setMixin
                 (Mixin.fromAttribute <| Events.onChange ChangeSearchText)
-            |> fromNoGap iconGap
+            |> fromNoGap Gap.icon
         ]
-        |> setBoundary iconGap
+        |> setBoundary Gap.icon
         |> setClass "searchField"
-        |> fromNoGap menuGap
+        |> fromNoGap Gap.menu
 
 
 subscriptions : Model -> Sub Msg

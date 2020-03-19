@@ -1,41 +1,44 @@
 module Gap exposing
-    ( BodyGap
-    , IconGap
-    , MenuGap
-    , MessageGap
-    , HeaderGap
-    , bodyGap
-    , iconGap
-    , menuGap
-    , messageGap
-    , headerGap
+    ( Body
+    , Header
+    , Icon
+    , Menu
+    , Message
+    , body
+    , header
+    , icon
+    , menu
+    , message
     )
 
 import Neat exposing (IsGap(..))
 
 
-type MenuGap
-    = MenuGap
+type Menu
+    = Menu
 
 
-menuGap : IsGap MenuGap
-menuGap =
+menu : IsGap Menu
+menu =
     IsGap
-        { rem = menuRem
+        { width = menuRem
+        , height = menuRem
         }
+
 
 
 -- Gap for texts with icon.
 
 
-type IconGap
-    = IconGap
+type Icon
+    = Icon
 
 
-iconGap : IsGap MenuGap
-iconGap =
+icon : IsGap Icon
+icon =
     IsGap
-        { rem = iconRem
+        { width = iconRem
+        , height = iconRem
         }
 
 
@@ -43,50 +46,59 @@ iconGap =
 -- Gap for body.
 
 
-type BodyGap
-    = BodyGap
+type Body
+    = Body
 
 
-bodyGap : IsGap BodyGap
-bodyGap =
+body : IsGap Body
+body =
     IsGap
-        { rem = 0.6
+        { width = 0.6
+        , height = 0.6
         }
+
 
 
 -- Gap for message
 
 
-type MessageGap
-    = MessageGap
+type Message
+    = Message
 
 
-messageGap : IsGap MessageGap
-messageGap =
+message : IsGap Message
+message =
     IsGap
-        { rem = 0.4
+        { width = 0.4
+        , height = 0.4
         }
+
 
 
 -- Gap for headers
 
 
-type HeaderGap
-    = HeaderGap
+type Header
+    = Header
 
 
-headerGap : IsGap HeaderGap
-headerGap =
+header : IsGap Header
+header =
     IsGap
-        { rem = menuRem + iconRem
+        { width = menuRem + iconRem
+        , height = menuRem + iconRem
         }
+
 
 
 -- Constant values
 
 
 menuRem : Float
-menuRem = 0.8
+menuRem =
+    0.8
+
 
 iconRem : Float
-iconRem = 0.6
+iconRem =
+    0.6
