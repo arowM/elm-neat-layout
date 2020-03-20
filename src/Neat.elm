@@ -746,14 +746,19 @@ setBoundary =
 -}
 setBoundaryWith : Boundary -> IsGap g -> View g msg -> View NoGap msg
 setBoundaryWith align config child =
-    liftHelper False
-        (\r -> innerGap r config)
-        (nodeNameToNode align.nodeName)
-        (Flex.rowMixins <| toFlex align)
-    <|
-        \r ->
-            [ toHtml r emptyGap (Flex.childLayout <| toFlex align) Mixin.none child
-            ]
+    lift (nodeNameToNode align.nodeName)
+        []
+        [ liftHelper False
+            (\r -> innerGap r config)
+            Html.div
+            -- DO NOT directly put `(nodeNameToNode align.nodeName)` here.
+            -- It causes unnatural dashed borders for focused tabindexed nodes such as "button" node.
+            (Flex.rowMixins <| toFlex align)
+          <|
+            \r ->
+                [ toHtml r emptyGap (Flex.childLayout <| toFlex align) Mixin.none child
+                ]
+        ]
 
 
 nodeNameToNode : String -> List (Attribute msg) -> List (Html msg) -> Html msg
