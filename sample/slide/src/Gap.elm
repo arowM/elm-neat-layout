@@ -1,30 +1,32 @@
 module Gap exposing
-    ( PageGap
-    , SubGap
-    , pageGap
-    , subGap
+    ( Page
+    , Sub
+    , page
+    , sub
     )
 
 import Neat exposing (IsGap(..))
 
 
-type PageGap
-    = PageGap
+type Page
+    = Page
 
 
-pageGap : IsGap PageGap
-pageGap =
+page: IsGap Page
+page =
     IsGap
-        { rem = 1.4
+        { height = 1.4
+        , width = 1.4
         }
 
 
-type SubGap
-    = SubGap
+type Sub
+    = Sub
 
 
-subGap : IsGap SubGap
-subGap =
+sub: IsGap Sub
+sub=
     IsGap
-        { rem = 0.6
+        { height = 0.6
+        , width = 0.6
         }

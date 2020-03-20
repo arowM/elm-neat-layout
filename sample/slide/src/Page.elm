@@ -10,7 +10,7 @@ import Neat exposing (NoGap, View, fromNoGap, setBoundary, setLayout, setMixin)
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (defaultColumn)
 import Neat.Layout.Row as Row exposing (defaultRow)
-import Gap exposing (PageGap, pageGap, subGap)
+import Gap
 
 
 type alias Page msg =
@@ -39,7 +39,7 @@ pages =
 
 {-| Return current page view.
 -}
-template : Maybe String -> View PageGap msg -> Page msg
+template : Maybe String -> View Gap.Page msg -> Page msg
 template mtitle c =
     Layout.columnWith
         { defaultColumn
@@ -47,7 +47,7 @@ template mtitle c =
         }
         [ titleBoundary mtitle
         , c
-            |> setBoundary pageGap
+            |> setBoundary Gap.page
             |> setClass "contentBoundary"
             |> setLayout Layout.fill
         ]
@@ -63,8 +63,8 @@ titleBoundary mtitle =
         Just title ->
             Neat.textBlock title
                 |> setClass "title"
-                |> fromNoGap pageGap
-                |> setBoundary pageGap
+                |> fromNoGap Gap.page
+                |> setBoundary Gap.page
                 |> setClass "titleBoundary"
                 |> setLayout Layout.noShrink
 
@@ -73,7 +73,7 @@ titleBoundary mtitle =
 -- Content
 
 
-titlePage : View PageGap msg
+titlePage : View Gap.Page msg
 titlePage =
     Layout.columnWith
         { defaultColumn
@@ -81,7 +81,7 @@ titlePage =
         }
         [ Neat.textBlock "に〜と のためのキマるスタイリング🐐"
             |> centerize
-            |> fromNoGap pageGap
+            |> fromNoGap Gap.page
             |> setLayout Layout.fill
         , Layout.row
             [ Layout.columnWith
@@ -90,7 +90,7 @@ titlePage =
                 }
                 [ Neat.textBlock "2019/8/25 Elm Meetup in Summer"
                     |> setClass "subText"
-                    |> fromNoGap subGap
+                    |> fromNoGap Gap.sub
                 , Neat.lift Html.a
                     [ Mixin.fromAttribute <| Attributes.href "https://twitter.com/arowM_"
                     , Mixin.fromAttribute <| Attributes.target "_blank"
@@ -99,14 +99,14 @@ titlePage =
                     [ Neat.textBlock "arowM_"
                     ]
                     |> setClass "subText"
-                    |> fromNoGap subGap
+                    |> fromNoGap Gap.sub
                 ]
-                |> Neat.expand subGap pageGap
+                |> Neat.expand Gap.sub Gap.page
             ]
         ]
 
 
-self : View PageGap msg
+self : View Gap.Page msg
 self =
     md """
 ## arowM_
@@ -126,7 +126,7 @@ self =
     """
 
 
-abstPage : View PageGap msg
+abstPage : View Gap.Page msg
 abstPage =
     md """
 さっきリリースした elm-neat-layout の紹介
@@ -138,7 +138,7 @@ abstPage =
     """
 
 
-aboutNeatPage : View PageGap msg
+aboutNeatPage : View Gap.Page msg
 aboutNeatPage =
     md """
 ## に〜と == Neat
@@ -149,7 +149,7 @@ aboutNeatPage =
     """
 
 
-gapAndNeatPage : View PageGap msg
+gapAndNeatPage : View Gap.Page msg
 gapAndNeatPage =
     md """
 ## 余白の性質
@@ -165,7 +165,7 @@ gapAndNeatPage =
 """
 
 
-difficultyOfNeat : View PageGap msg
+difficultyOfNeat : View Gap.Page msg
 difficultyOfNeat =
     md """
 elm-html や elm-ui では に〜とな余白がむずかしい
@@ -187,7 +187,7 @@ elm-html や elm-ui では に〜とな余白がむずかしい
     """
 
 
-neatGap : View PageGap msg
+neatGap : View Gap.Page msg
 neatGap =
     md """
 ```elm
@@ -214,7 +214,7 @@ view2 =
     """
 
 
-neatGap2 : View PageGap msg
+neatGap2 : View Gap.Page msg
 neatGap2 =
     md """
 ```elm
@@ -241,7 +241,7 @@ composed =
     """
 
 
-typesafeGap : View PageGap msg
+typesafeGap : View Gap.Page msg
 typesafeGap =
     md """
 自分専用の余白を定義したり
@@ -298,7 +298,7 @@ expand : IsGap p1
     """
 
 
-abstPage2 : View PageGap msg
+abstPage2 : View Gap.Page msg
 abstPage2 =
     md """
 elm-neat-layout の特徴
@@ -309,7 +309,7 @@ elm-neat-layout の特徴
     """
 
 
-aboutLayout : View PageGap msg
+aboutLayout : View Gap.Page msg
 aboutLayout =
     md """
 elm-neat-layout は、CSSを置き換えるもの **ではない**
@@ -325,7 +325,7 @@ elm-neat-layout は、CSSを置き換えるもの **ではない**
     """
 
 
-aboutRow : View PageGap msg
+aboutRow : View Gap.Page msg
 aboutRow =
     md """
 横並び:
@@ -373,7 +373,7 @@ Layout.rowWith
     """
 
 
-aboutColumn : View PageGap msg
+aboutColumn : View Gap.Page msg
 aboutColumn =
     md """
 縦並び:
@@ -409,7 +409,7 @@ Layout.columnWith
     """
 
 
-others : View PageGap msg
+others : View Gap.Page msg
 others =
     md """
 パイプラインスタイルで書きやすい！
@@ -421,7 +421,7 @@ Layout.columnWith
     }
     [ titleBoundary mtitle
     , content
-        |> setBoundary pageGap
+        |> setBoundary Gap.page
         |> setClass "contentBoundary"
         |> setMixin
             ( if isSpecial then
@@ -436,7 +436,7 @@ Layout.columnWith
     """
 
 
-last : View PageGap msg
+last : View Gap.Page msg
 last =
     md """
 もっと詳しく知りたくなったら、
@@ -460,14 +460,14 @@ centerize v =
         [ v ]
 
 
-md : String -> View PageGap msg
+md : String -> View Gap.Page msg
 md str =
     Neat.lift
         (\attrs _ -> Html.lazy2 markdown_ attrs str)
         [ class "markdown"
         ]
         []
-        |> fromNoGap pageGap
+        |> fromNoGap Gap.page
 
 
 markdown_ : List (Attribute msg) -> String -> Html msg

@@ -27,6 +27,9 @@ main =
         , subscriptions = subscriptions
         , onUrlChange = UrlChanged
         , onUrlRequest = LinkClicked
+        , renderer =
+            { baseGapSize = "1rem"
+            }
         }
 
 
