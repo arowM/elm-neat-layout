@@ -261,7 +261,7 @@ element :
     , view : model -> View NoGap msg
     , update : msg -> model -> ( model, Cmd msg )
     , subscriptions : model -> Sub msg
-    , renderer : Renderer
+    , renderer : model -> Renderer
     }
     -> Program flags model msg
 element o =
@@ -274,7 +274,7 @@ element o =
                     , Attributes.style "margin" "0"
                     ]
                     [ resetCss
-                    , toHtml o.renderer emptyGap Layout.none Mixin.none (o.view model)
+                    , toHtml (o.renderer model) emptyGap Layout.none Mixin.none (o.view model)
                     ]
         , update = o.update
         , subscriptions = o.subscriptions
@@ -302,7 +302,7 @@ document :
     , view : model -> Document msg
     , update : msg -> model -> ( model, Cmd msg )
     , subscriptions : model -> Sub msg
-    , renderer : Renderer
+    , renderer : model -> Renderer
     }
     -> Program flags model msg
 document o =
@@ -317,7 +317,7 @@ document o =
                 { title = view.title
                 , body =
                     [ resetCss
-                    , toHtml o.renderer emptyGap Layout.none Mixin.none view.body
+                    , toHtml (o.renderer model) emptyGap Layout.none Mixin.none view.body
                     ]
                 }
         , update = o.update
@@ -356,7 +356,7 @@ application :
     , subscriptions : model -> Sub msg
     , onUrlRequest : UrlRequest -> msg
     , onUrlChange : Url -> msg
-    , renderer : Renderer
+    , renderer : model -> Renderer
     }
     -> Program flags model msg
 application o =
@@ -371,7 +371,7 @@ application o =
                 { title = view.title
                 , body =
                     [ resetCss
-                    , toHtml o.renderer emptyGap Layout.none Mixin.none view.body
+                    , toHtml (o.renderer model) emptyGap Layout.none Mixin.none view.body
                     ]
                 }
         , update = o.update
