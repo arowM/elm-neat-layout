@@ -23,6 +23,6 @@
 * Change `Row.defaultRow`
     * Change `.vertical` from `Row.Top` to `Row.Stretch`
 * Change `Column.defaultColumn`
-    * Change `.vertical` from `Column.Top` to `Column.Stretch`
+    * Change `.horizontal` from `Column.Left` to `Column.Stretch`
 * Remove `toPage` and add `sandbox`, `element`, `document`, and `application`, instead
 * Rename `IsPadding`, `NoPadding`, `fromNoPadding` to `IsGap`, `NoGap`, `fromNoGap`

@@ -93,7 +93,7 @@ toFlex align =
 
 {-| Default `Row` configuration.
 
-    { vertical = Top
+    { vertical = Stretch
     , horizontal = Left
     , wrap = False
     , nodeName = "div"
@@ -102,7 +102,7 @@ toFlex align =
 -}
 defaultRow : Row
 defaultRow =
-    { vertical = Top
+    { vertical = Stretch
     , horizontal = Left
     , wrap = False
     , nodeName = "div"

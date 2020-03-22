@@ -100,7 +100,7 @@ toFlex align =
 {-| Default `Column` configuration.
 
     { vertical = Top
-    , horizontal = Left
+    , horizontal = Stretch
     , wrap = False
     , nodeName = "div"
     }
@@ -109,7 +109,7 @@ toFlex align =
 defaultColumn : Column
 defaultColumn =
     { vertical = Top
-    , horizontal = Left
+    , horizontal = Stretch
     , wrap = False
     , nodeName = "div"
     }
