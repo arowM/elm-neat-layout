@@ -753,7 +753,10 @@ setBoundaryWith align config child =
             Html.div
             -- DO NOT directly put `(nodeNameToNode align.nodeName)` here.
             -- It causes unnatural dashed borders for focused tabindexed nodes such as "button" node.
-            (Flex.rowMixins <| toFlex align)
+            [ Mixin.batch <| Flex.rowMixins <| toFlex align
+            , style "width" "100%"
+            , style "height" "100%"
+            ]
           <|
             \r ->
                 [ toHtml r emptyGap (Flex.childLayout <| toFlex align) Mixin.none child
@@ -944,3 +947,8 @@ wrapHtml renderer gap outer c =
             )
             [ c
             ]
+
+
+style : String -> String -> Mixin msg
+style k v =
+    Mixin.fromAttribute <| Attributes.style k v
