@@ -7,7 +7,7 @@ import Html
 import Html.Attributes.Classname exposing (classMixinWith)
 import Json.Decode as Json
 import Mixin exposing (Mixin)
-import Neat exposing (NoGap, View, setMixin)
+import Neat exposing (NoGap, View, defaultRenderer, setMixin)
 import Page exposing (Page)
 import Url exposing (Url)
 import Url.Builder
@@ -27,9 +27,7 @@ main =
         , subscriptions = subscriptions
         , onUrlChange = UrlChanged
         , onUrlRequest = LinkClicked
-        , renderer =
-            { baseGapSize = "1rem"
-            }
+        , renderer = \_ -> defaultRenderer
         }
 
 

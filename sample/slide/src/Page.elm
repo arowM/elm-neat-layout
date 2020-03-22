@@ -77,7 +77,7 @@ titlePage : View Gap.Page msg
 titlePage =
     Layout.columnWith
         { defaultColumn
-            | horizontal = Column.Stretch
+            | horizontal = Column.Right
         }
         [ Neat.textBlock "に〜と のためのキマるスタイリング🐐"
             |> centerize
@@ -397,7 +397,6 @@ Layout.column
 Layout.columnWith
     { defaultRow
       | horizontal = Column.HCenter
-      , vertical = Column.Stretch
     }
     [ view1
       |> Neat.setLayout Layout.noShrink

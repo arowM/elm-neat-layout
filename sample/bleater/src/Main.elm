@@ -25,7 +25,7 @@ main =
         , view = view
         , update = update
         , subscriptions = subscriptions
-        , renderer = defaultRenderer
+        , renderer = \_ -> defaultRenderer
         }
 
 
@@ -112,10 +112,7 @@ update msg model =
 
 view : Model -> View NoGap Msg
 view model =
-    Layout.rowWith
-        { defaultRow
-            | vertical = Row.Stretch
-        }
+    Layout.row
         [ menu
             |> setLayout Layout.noShrink
         , body model
@@ -143,10 +140,7 @@ menu : View NoGap msg
 menu =
     MenuItem.enum
         |> List.map (fromNoGap Gap.menu << menuItem)
-        |> Layout.columnWith
-            { defaultColumn
-                | horizontal = Column.Stretch
-            }
+        |> Layout.column
         |> setBoundary Gap.menu
         |> setClass "menu"
 
@@ -180,10 +174,7 @@ menuItem m =
 
 body : Model -> View NoGap msg
 body model =
-    Layout.columnWith
-        { defaultColumn
-            | horizontal = Column.Stretch
-        }
+    Layout.column
         [ bodyTitle
         , bodyContent model.messages
             |> setLayout Layout.fill
@@ -204,9 +195,7 @@ bodyContent messages =
     Column.optimized
         (String.fromInt << .id)
         (\m -> Html.lazy5 message_ m.icon m.name m.screenName)
-        { defaultColumn
-            | horizontal = Column.Stretch
-        }
+        defaultColumn
         messages
         |> setClass "bodyContent"
 
@@ -256,10 +245,7 @@ message icon name screenName =
 
 rightPane : View NoGap Msg
 rightPane =
-    Layout.columnWith
-        { defaultColumn
-            | horizontal = Column.Stretch
-        }
+    Layout.column
         [ searchField
         ]
         |> setBoundary Gap.menu
