@@ -5,6 +5,7 @@ module Neat.Layout.Column exposing
     , column
     , Vertical(..)
     , Horizontal(..)
+    , Wrap(..)
     , optimized
     , toProtected
     )
@@ -16,6 +17,7 @@ module Neat.Layout.Column exposing
 
 @docs columnWith
 @docs Column
+@docs Wrap
 @docs defaultColumn
 @docs column
 @docs Vertical
@@ -63,7 +65,7 @@ columnMixins align =
     , flexDirection
     , horizontal align.horizontal
     , vertical align.vertical
-    , flexWrap align.wrap
+    , flexWrap <| toFlexWrap align.wrap
     ]
 
 
@@ -84,24 +86,45 @@ column =
 type alias Column =
     { vertical : Vertical
     , horizontal : Horizontal
-    , wrap : Bool
+    , wrap : Wrap
     , nodeName : String
     }
+
+
+{-| Configuration about wrapping.
+-}
+type Wrap
+    = NoWrap
+    | Wrap
+    | WrapInto Int
 
 
 toFlex : Column -> Flex
 toFlex align =
     { vertical = toFlexVertical align.vertical
     , horizontal = toFlexHorizontal align.horizontal
-    , wrap = align.wrap
+    , wrap = toFlexWrap align.wrap
     }
+
+
+toFlexWrap : Wrap -> Flex.Wrap
+toFlexWrap wrap =
+    case wrap of
+        NoWrap ->
+            Flex.NoWrap
+        Wrap ->
+            Flex.Wrap
+        WrapInto n ->
+            Flex.WrapInto n
+
+
 
 
 {-| Default `Column` configuration.
 
     { vertical = Top
     , horizontal = Stretch
-    , wrap = False
+    , wrap = NoWrap
     , nodeName = "div"
     }
 
@@ -110,7 +133,7 @@ defaultColumn : Column
 defaultColumn =
     { vertical = Top
     , horizontal = Stretch
-    , wrap = False
+    , wrap = NoWrap
     , nodeName = "div"
     }
 

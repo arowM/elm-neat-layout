@@ -8,6 +8,7 @@ module Neat.Layout exposing
     , fillBy
     , noShrink
     , shrinkBy
+    , basis
     )
 
 {-| Alignment functions.
@@ -32,6 +33,7 @@ module Neat.Layout exposing
 @docs fillBy
 @docs noShrink
 @docs shrinkBy
+@docs basis
 
 -}
 
@@ -147,6 +149,21 @@ shrinkBy n =
                 ]
         , inner = Mixin.none
         }
+
+
+{-| basis
+-}
+basis : String -> Layout msg
+basis v =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "-ms-flex-preferred-size" v
+                , style "flex-basis" v
+                ]
+        , inner = Mixin.none
+        }
+        |> Layout.makeImportant
 
 
 

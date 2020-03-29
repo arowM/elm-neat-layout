@@ -504,7 +504,16 @@ setLayout : Layout msg -> View g msg -> View g msg
 setLayout layout (View f) =
     View <|
         \renderer gap extra appearance ->
-            f renderer gap (Layout.batch [ layout, extra ]) appearance
+            f
+                renderer
+                gap
+                (if Layout.isImportant layout
+                    then
+                        Layout.batch [ extra, layout ]
+                    else
+                        Layout.batch [ layout, extra ]
+                )
+                appearance
 
 
 
@@ -777,7 +786,7 @@ toFlex : Boundary -> Flex
 toFlex align =
     { vertical = toFlexVertical align.vertical
     , horizontal = toFlexHorizontal align.horizontal
-    , wrap = False
+    , wrap = Flex.NoWrap
     }
 
 
@@ -873,7 +882,7 @@ fromHtml =
 liftHelper : Bool -> (Renderer -> Mixin msg) -> (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> (Renderer -> List a) -> View g msg
 liftHelper allowGap special node appearances children =
     fromHtml <|
-        \renderer gap (Layout layout_) extra ->
+        \renderer gap (Layout _ layout_) extra ->
             node
                 (Mixin.toAttributes <|
                     Mixin.batch

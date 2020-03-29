@@ -5,6 +5,7 @@ module Neat.Layout.Row exposing
     , row
     , Vertical(..)
     , Horizontal(..)
+    , Wrap(..)
     , optimized
     , toProtected
     )
@@ -16,6 +17,7 @@ module Neat.Layout.Row exposing
 
 @docs rowWith
 @docs Row
+@docs Wrap
 @docs defaultRow
 @docs row
 @docs Vertical
@@ -30,8 +32,10 @@ module Neat.Layout.Row exposing
 -}
 
 import Html exposing (Html)
+import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat exposing (Protected, Renderer, View)
+import Neat.Layout.Internal as Layout exposing (Layout)
 import Neat.Flex as Flex exposing (Flex)
 
 
@@ -43,8 +47,12 @@ import Neat.Flex as Flex exposing (Flex)
 rowWith : Row -> List (View p msg) -> View p msg
 rowWith align children =
     wrapper align (rowMixins align) <|
-        List.map (expandChild align) children
-
+        List.map (expandChild align)
+        <| List.map
+            (Neat.setLayout
+                (Flex.setChildBasis <| toFlexWrap align.wrap)
+            )
+            children
 
 wrapper : Row -> List (Mixin msg) -> List (View p msg) -> View p msg
 wrapper align =
@@ -78,24 +86,43 @@ row =
 type alias Row =
     { vertical : Vertical
     , horizontal : Horizontal
-    , wrap : Bool
+    , wrap : Wrap
     , nodeName : String
     }
+
+
+{-| Configuration about wrapping.
+-}
+type Wrap
+    = NoWrap
+    | Wrap
+    | WrapInto Int
 
 
 toFlex : Row -> Flex
 toFlex align =
     { vertical = toFlexVertical align.vertical
     , horizontal = toFlexHorizontal align.horizontal
-    , wrap = align.wrap
+    , wrap = toFlexWrap align.wrap
     }
+
+
+toFlexWrap : Wrap -> Flex.Wrap
+toFlexWrap wrap =
+    case wrap of
+        NoWrap ->
+            Flex.NoWrap
+        Wrap ->
+            Flex.Wrap
+        WrapInto n ->
+            Flex.WrapInto n
 
 
 {-| Default `Row` configuration.
 
     { vertical = Stretch
     , horizontal = Left
-    , wrap = False
+    , wrap = NoWrap
     , nodeName = "div"
     }
 
@@ -104,7 +131,7 @@ defaultRow : Row
 defaultRow =
     { vertical = Stretch
     , horizontal = Left
-    , wrap = False
+    , wrap = NoWrap
     , nodeName = "div"
     }
 

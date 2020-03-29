@@ -2,9 +2,11 @@ module Neat.Flex exposing
     ( Flex
     , Horizontal(..)
     , Vertical(..)
+    , Wrap(..)
     , childLayout
     , flex
     , flexWrap
+    , setChildBasis
     , rowMixins
     )
 
@@ -65,9 +67,15 @@ childLayoutV v =
 type alias Flex =
     { vertical : Vertical
     , horizontal : Horizontal
-    , wrap : Bool
+    , wrap : Wrap
     }
 
+{-| Configuration about wrapping.
+-}
+type Wrap
+    = NoWrap
+    | Wrap
+    | WrapInto Int
 
 
 -- Mixins
@@ -87,19 +95,48 @@ flexDirection =
         ]
 
 
-flexWrap : Bool -> Mixin msg
-flexWrap b =
-    if b then
-        Mixin.batch
-            [ style "-ms-flex-wrap" "wrap"
-            , style "flex-wrap" "wrap"
-            ]
+flexWrap : Wrap -> Mixin msg
+flexWrap wrap =
+    case wrap of
+        NoWrap ->
+            Mixin.batch
+                [ style "-ms-flex-wrap" "nowrap"
+                , style "flex-wrap" "nowrap"
+                ]
+        Wrap ->
+            Mixin.batch
+                [ style "-ms-flex-wrap" "wrap"
+                , style "flex-wrap" "wrap"
+                ]
+        WrapInto _ ->
+            Mixin.batch
+                [ style "-ms-flex-wrap" "wrap"
+                , style "flex-wrap" "wrap"
+                ]
 
-    else
-        Mixin.batch
-            [ style "-ms-flex-wrap" "nowrap"
-            , style "flex-wrap" "nowrap"
-            ]
+
+setChildBasis : Wrap -> Layout msg
+setChildBasis wrap =
+    case wrap of
+        WrapInto n ->
+            (basis <| String.fromFloat (100 / toFloat n) ++ "%")
+
+        _ ->
+            Layout.none
+
+{-| basis
+-}
+basis : String -> Layout msg
+basis v =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "-ms-flex-preferred-size" v
+                , style "flex-basis" v
+                ]
+        , inner = Mixin.none
+        }
+        |> Layout.makeImportant
 
 
 

@@ -7,6 +7,8 @@ module Neat.Layout.Internal exposing
     , batch
     , none
     , fromRecord
+    , isImportant
+    , makeImportant
     )
 
 {-| A brief module for Layouts.
@@ -33,7 +35,7 @@ import Mixin exposing (Mixin)
 
 
 type Layout msg
-    = Layout (Layout_ msg)
+    = Layout Bool (Layout_ msg)
 
 
 type alias Layout_ msg =
@@ -43,8 +45,8 @@ type alias Layout_ msg =
 
 
 setOuter : Mixin msg -> Layout msg -> Layout msg
-setOuter extra (Layout layout_) =
-    Layout <|
+setOuter extra (Layout p layout_) =
+    Layout p <|
         { layout_
             | outer =
                 Mixin.batch
@@ -55,8 +57,8 @@ setOuter extra (Layout layout_) =
 
 
 setInner : Mixin msg -> Layout msg -> Layout msg
-setInner extra (Layout layout_) =
-    Layout <|
+setInner extra (Layout p layout_) =
+    Layout p <|
         { layout_
             | inner =
                 Mixin.batch
@@ -68,13 +70,20 @@ setInner extra (Layout layout_) =
 
 fromRecord : Layout_ msg -> Layout msg
 fromRecord =
-    Layout
+    Layout False
 
 
 toRecord : Layout msg -> Layout_ msg
-toRecord (Layout layout_) =
+toRecord (Layout _ layout_) =
     layout_
 
+isImportant : Layout msg -> Bool
+isImportant (Layout p _) =
+    p
+
+makeImportant : Layout msg -> Layout msg
+makeImportant (Layout _ layout_) =
+    Layout True layout_
 
 {-| -}
 batch : List (Layout msg) -> Layout msg
@@ -89,7 +98,7 @@ batch ls =
 {-| -}
 none : Layout msg
 none =
-    Layout <|
+    Layout False <|
         { inner = Mixin.none
         , outer = Mixin.none
         }

@@ -24,5 +24,7 @@
     * Change `.vertical` from `Row.Top` to `Row.Stretch`
 * Change `Column.defaultColumn`
     * Change `.horizontal` from `Column.Left` to `Column.Stretch`
+* Change type of `Row.Row.wrap` and `Column.Column.wrap` from `Bool` to `Wrap`
+    * `Wrap.WrapInto n` enables to break line into `n`.
 * Remove `toPage` and add `sandbox`, `element`, `document`, and `application`, instead
 * Rename `IsPadding`, `NoPadding`, `fromNoPadding` to `IsGap`, `NoGap`, `fromNoGap`
