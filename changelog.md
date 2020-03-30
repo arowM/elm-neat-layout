@@ -12,6 +12,7 @@
     * `input`
     * `textarea`
     * `select`
+* Add `when` and `unless`
 
 ### Breaking Changes
 

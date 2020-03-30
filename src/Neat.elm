@@ -34,6 +34,8 @@ module Neat exposing
     , optimized
     , toProtected
     , Protected
+    , when
+    , unless
     )
 
 {-| Main module for elm-neat-layout.
@@ -80,6 +82,10 @@ module Neat exposing
 @docs setAttributes
 @docs setLayout
 
+# Handle cases
+
+@docs when
+@docs unless
 
 # Keyed
 
@@ -851,6 +857,22 @@ innerGap renderer (IsGap { width, height }) =
                 ++ ")"
         ]
 
+
+-- Handle cases
+
+
+{-| Insert a `View` only when a condition is met.
+-}
+when : Bool -> View p msg -> View p msg
+when p v =
+    if p then v else none
+
+
+{-| Insert a `View` unless a condition is met.
+-}
+unless : Bool -> View p msg -> View p msg
+unless p =
+    when <| not p
 
 
 -- Helper functions
