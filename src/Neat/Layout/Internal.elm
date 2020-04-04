@@ -1,30 +1,18 @@
 module Neat.Layout.Internal exposing
     ( Layout(..)
     , Layout_
-    , setInner
-    , setOuter
-    , toRecord
     , batch
-    , none
     , fromRecord
     , isImportant
     , makeImportant
+    , map
+    , none
+    , setInner
+    , setOuter
+    , toRecord
     )
 
 {-| A brief module for Layouts.
-
-
-# Core
-
-@docs Layout
-@docs Layout_
-@docs setInner
-@docs setOuter
-@docs fromInner
-@docs toRecord
-@docs batch
-@docs none
-
 -}
 
 import Mixin exposing (Mixin)
@@ -35,13 +23,28 @@ import Mixin exposing (Mixin)
 
 
 type Layout msg
-    = Layout Bool (Layout_ msg)
+    = Layout IsImportant (Layout_ msg)
+
+
+{-| Overwrite system layouts if True.
+See `setLayout` in `Neat` module.
+-}
+type alias IsImportant =
+    Bool
 
 
 type alias Layout_ msg =
     { inner : Mixin msg
     , outer : Mixin msg
     }
+
+
+map : (a -> b) -> Layout a -> Layout b
+map f (Layout p { inner, outer }) =
+    Layout p
+        { inner = Mixin.map f inner
+        , outer = Mixin.map f outer
+        }
 
 
 setOuter : Mixin msg -> Layout msg -> Layout msg
@@ -77,13 +80,16 @@ toRecord : Layout msg -> Layout_ msg
 toRecord (Layout _ layout_) =
     layout_
 
+
 isImportant : Layout msg -> Bool
 isImportant (Layout p _) =
     p
 
+
 makeImportant : Layout msg -> Layout msg
 makeImportant (Layout _ layout_) =
     Layout True layout_
+
 
 {-| -}
 batch : List (Layout msg) -> Layout msg
