@@ -3,6 +3,10 @@
 ### Improvements:
 
 * Add `setBoundaryWith` function and `Neat.Boundary` module
+* Add special map functions
+    * `setBoundaryWithMap`
+    * `Neat.Layout.Column.columnWithMap`
+    * `Neat.Layout.Row.rowWithMap`
 * Add functions for accessibility
     * `setRole`
     * `setAria`

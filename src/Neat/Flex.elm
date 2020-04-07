@@ -6,8 +6,8 @@ module Neat.Flex exposing
     , childLayout
     , flex
     , flexWrap
-    , setChildBasis
     , rowMixins
+    , setChildBasis
     )
 
 {-| Internal module exposing helper functions for flexbox.
@@ -70,12 +70,14 @@ type alias Flex =
     , wrap : Wrap
     }
 
+
 {-| Configuration about wrapping.
 -}
 type Wrap
     = NoWrap
     | Wrap
     | WrapInto Int
+
 
 
 -- Mixins
@@ -103,11 +105,13 @@ flexWrap wrap =
                 [ style "-ms-flex-wrap" "nowrap"
                 , style "flex-wrap" "nowrap"
                 ]
+
         Wrap ->
             Mixin.batch
                 [ style "-ms-flex-wrap" "wrap"
                 , style "flex-wrap" "wrap"
                 ]
+
         WrapInto _ ->
             Mixin.batch
                 [ style "-ms-flex-wrap" "wrap"
@@ -119,10 +123,11 @@ setChildBasis : Wrap -> Layout msg
 setChildBasis wrap =
     case wrap of
         WrapInto n ->
-            (basis <| String.fromFloat (100 / toFloat n) ++ "%")
+            basis <| String.fromFloat (100 / toFloat n) ++ "%"
 
         _ ->
             Layout.none
+
 
 {-| basis
 -}

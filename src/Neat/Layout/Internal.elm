@@ -6,9 +6,7 @@ module Neat.Layout.Internal exposing
     , toRecord
     , batch
     , none
-    , fromRecord
-    , isImportant
-    , makeImportant
+    , fromRecord, isImportant, makeImportant
     )
 
 {-| A brief module for Layouts.
@@ -77,13 +75,16 @@ toRecord : Layout msg -> Layout_ msg
 toRecord (Layout _ layout_) =
     layout_
 
+
 isImportant : Layout msg -> Bool
 isImportant (Layout p _) =
     p
 
+
 makeImportant : Layout msg -> Layout msg
 makeImportant (Layout _ layout_) =
     Layout True layout_
+
 
 {-| -}
 batch : List (Layout msg) -> Layout msg

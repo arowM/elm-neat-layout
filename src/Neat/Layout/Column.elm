@@ -1,11 +1,12 @@
 module Neat.Layout.Column exposing
     ( columnWith
+    , columnWithMap
     , Column
+    , Wrap(..)
     , defaultColumn
     , column
     , Vertical(..)
     , Horizontal(..)
-    , Wrap(..)
     , optimized
     , toProtected
     )
@@ -16,6 +17,7 @@ module Neat.Layout.Column exposing
 # Columns
 
 @docs columnWith
+@docs columnWithMap
 @docs Column
 @docs Wrap
 @docs defaultColumn
@@ -36,17 +38,31 @@ import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat exposing (Protected, Renderer, View)
 import Neat.Flex as Flex exposing (Flex, flex, flexWrap)
+import Neat.Internal exposing (unsafeMap)
 
 
 
 -- Core
 
 
-{-| -}
+{-| Align Views vertically.
+
+Alias for `columnWithMap`.
+
+-}
 columnWith : Column -> List (View p msg) -> View p msg
 columnWith align children =
     wrapper align (columnMixins align) <|
         List.map (expandChild align) children
+
+
+{-| Align Views vertically.
+In addition, `columnWithMap` can convert msg type of a View.
+-}
+columnWithMap : (a -> b) -> Column -> List (View p a) -> View p b
+columnWithMap f align children =
+    wrapper align (columnMixins align) <|
+        List.map (unsafeMap f << expandChild align) children
 
 
 wrapper : Column -> List (Mixin msg) -> List (View p msg) -> View p msg
@@ -112,12 +128,12 @@ toFlexWrap wrap =
     case wrap of
         NoWrap ->
             Flex.NoWrap
+
         Wrap ->
             Flex.Wrap
+
         WrapInto n ->
             Flex.WrapInto n
-
-
 
 
 {-| Default `Column` configuration.

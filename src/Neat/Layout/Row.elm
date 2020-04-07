@@ -1,11 +1,12 @@
 module Neat.Layout.Row exposing
     ( rowWith
+    , rowWithMap
     , Row
+    , Wrap(..)
     , defaultRow
     , row
     , Vertical(..)
     , Horizontal(..)
-    , Wrap(..)
     , optimized
     , toProtected
     )
@@ -16,6 +17,7 @@ module Neat.Layout.Row exposing
 # Row
 
 @docs rowWith
+@docs rowWithMap
 @docs Row
 @docs Wrap
 @docs defaultRow
@@ -32,27 +34,47 @@ module Neat.Layout.Row exposing
 -}
 
 import Html exposing (Html)
-import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
 import Neat exposing (Protected, Renderer, View)
-import Neat.Layout.Internal as Layout exposing (Layout)
 import Neat.Flex as Flex exposing (Flex)
+import Neat.Internal exposing (unsafeMap)
 
 
 
 -- Core
 
 
-{-| -}
+{-| Align Views horizontally.
+
+Alias for `rowWithMap`.
+
+-}
 rowWith : Row -> List (View p msg) -> View p msg
 rowWith align children =
     wrapper align (rowMixins align) <|
-        List.map (expandChild align)
-        <| List.map
-            (Neat.setLayout
-                (Flex.setChildBasis <| toFlexWrap align.wrap)
+        List.map (expandChild align) <|
+            List.map
+                (Neat.setLayout
+                    (Flex.setChildBasis <| toFlexWrap align.wrap)
+                )
+                children
+
+
+{-| Align Views horizontally.
+In addition, `rowWithMap` can convert msg type of a View.
+-}
+rowWithMap : (a -> b) -> Row -> List (View p a) -> View p b
+rowWithMap f align children =
+    wrapper align (rowMixins align) <|
+        List.map
+            (identity
+                >> Neat.setLayout
+                    (Flex.setChildBasis <| toFlexWrap align.wrap)
+                >> expandChild align
+                >> unsafeMap f
             )
             children
+
 
 wrapper : Row -> List (Mixin msg) -> List (View p msg) -> View p msg
 wrapper align =
@@ -112,8 +134,10 @@ toFlexWrap wrap =
     case wrap of
         NoWrap ->
             Flex.NoWrap
+
         Wrap ->
             Flex.Wrap
+
         WrapInto n ->
             Flex.WrapInto n
 

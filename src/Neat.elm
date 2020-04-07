@@ -1,5 +1,6 @@
 module Neat exposing
     ( View
+    , NoGap
     , sandbox
     , Renderer
     , defaultRenderer
@@ -21,21 +22,21 @@ module Neat exposing
     , setAttribute
     , setAttributes
     , setLayout
+    , when
+    , unless
     , keyed
-    , NoGap
     , IsGap(..)
     , fromNoGap
     , expand
     , setBoundary
     , setBoundaryWith
+    , setBoundaryWithMap
     , setRole
     , setAria
     , setBoolAria
     , optimized
     , toProtected
     , Protected
-    , when
-    , unless
     )
 
 {-| Main module for elm-neat-layout.
@@ -44,6 +45,7 @@ module Neat exposing
 # Core
 
 @docs View
+@docs NoGap
 
 
 # `Browser.*` alternatives
@@ -82,30 +84,36 @@ module Neat exposing
 @docs setAttributes
 @docs setLayout
 
+
 # Handle cases
 
 @docs when
 @docs unless
+
 
 # Keyed
 
 @docs keyed
 
 
-# Primitive
-
-@docs NoGap
-
-
 # Custom gaps
 
-You can introduce custom gaps by just declaring their types and `IsGap` values.
+You can use custom gaps just by declaring their types and `IsGap` values.
 
-    type MyGap
-        = MyGap
+e.g.,
 
-    myGap : IsGap MyGap
-    myGap =
+    module MyGap exposing
+        ( ButtonGroup
+        , buttonGroup
+        )
+
+    import Neat exposing (IsGap)
+
+    type ButtonGroup
+        = ButtonGroup
+
+    buttonGroup : IsGap ButtonGroup
+    buttonGroup =
         IsGap
             { width = 0.6
             , height = 0.6
@@ -120,6 +128,7 @@ You can introduce custom gaps by just declaring their types and `IsGap` values.
 @docs expand
 @docs setBoundary
 @docs setBoundaryWith
+@docs setBoundaryWithMap
 
 
 # Accessibility
@@ -149,6 +158,7 @@ import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
 import Neat.Boundary as Boundary exposing (Boundary)
 import Neat.Flex as Flex exposing (Flex)
+import Neat.Internal as Internal exposing (Gap, fromHtml, toHtml, unwrap)
 import Neat.Layout.Internal as Layout exposing (Layout(..))
 import Url exposing (Url)
 
@@ -157,16 +167,10 @@ import Url exposing (Url)
 -- Core
 
 
-{-| Html alternative that has type level gap.
+{-| Html alternative type.
 -}
-type View gap msg
-    = View (Renderer -> Gap -> Layout msg -> Mixin msg -> Html msg)
-
-
-type alias Gap =
-    { width : Float
-    , height : Float
-    }
+type alias View gap msg =
+    Internal.View gap msg
 
 
 emptyGap : Gap
@@ -174,6 +178,15 @@ emptyGap =
     { width = 0
     , height = 0
     }
+
+
+{-| Primitive type representing no gap
+
+For custom gaps, see [Custom gaps](#custom-gaps).
+
+-}
+type NoGap
+    = NoGap
 
 
 
@@ -481,10 +494,10 @@ setMixin =
 
 
 setMixinHelper : Mixin msg -> View g msg -> View g msg
-setMixinHelper appearance (View f) =
-    View <|
+setMixinHelper appearance view =
+    fromHtml <|
         \renderer gap layout extra ->
-            f renderer gap layout (Mixin.batch [ appearance, extra ])
+            unwrap view renderer gap layout (Mixin.batch [ appearance, extra ])
 
 
 {-| -}
@@ -507,17 +520,17 @@ setAttributes =
 
 {-| -}
 setLayout : Layout msg -> View g msg -> View g msg
-setLayout layout (View f) =
-    View <|
+setLayout layout view =
+    fromHtml <|
         \renderer gap extra appearance ->
-            f
+            unwrap view
                 renderer
                 gap
-                (if Layout.isImportant layout
-                    then
-                        Layout.batch [ extra, layout ]
-                    else
-                        Layout.batch [ layout, extra ]
+                (if Layout.isImportant layout then
+                    Layout.batch [ extra, layout ]
+
+                 else
+                    Layout.batch [ layout, extra ]
                 )
                 appearance
 
@@ -562,9 +575,9 @@ setBoolAria name g =
 
 
 modifyGap : (Gap -> Gap) -> View g1 msg -> View g2 msg
-modifyGap g (View f) =
-    View <|
-        \r gap -> f r (g gap)
+modifyGap g view =
+    fromHtml <|
+        \r gap -> unwrap view r (g gap)
 
 
 
@@ -692,13 +705,7 @@ unProtect (Protected a) =
 
 
 
--- Primitives
-
-
-{-| Primitive type representing no gap
--}
-type NoGap
-    = NoGap
+-- Custom gaps
 
 
 {-| Information about your custom gaps.
@@ -706,9 +713,9 @@ type NoGap
   - width : gap width relative to `baseGapSize` of `Renderer`
   - height : gap height relative to `baseGapSize` of `Renderer`
 
-The `Renderer` value is given to `sandbox`, `element`, `document`, `application`.
+The `Renderer` value above is given to `sandbox`, `element`, `document`, `application`.
 
-e.g., When `baseGapSize` is `"2rem"`, `IsGap { width = 1.2, height = 2 }` becomes gap with `"2.4rem"` width and `"4rem"` height.
+e.g., When `baseGapSize = "2rem"` is passed to `sandbox`, `IsGap { width = 1.2, height = 2 }` becomes gap with `"2.4rem"` width and `"4rem"` height.
 
 -}
 type IsGap p
@@ -748,9 +755,7 @@ newGap (IsGap c1) (IsGap c2) curr =
 
 
 {-| Wrap a view with boundary without gap.
-
-    This is an alias for `setBoundary defaultBoundary`.
-
+Alias for `setBoundary defaultBoundary`.
 -}
 setBoundary : IsGap g -> View g msg -> View NoGap msg
 setBoundary =
@@ -758,23 +763,36 @@ setBoundary =
 
 
 {-| Set boundary to convert into `NoGap`.
+Alias for `setBoundaryWithMap identity`.
 -}
 setBoundaryWith : Boundary -> IsGap g -> View g msg -> View NoGap msg
-setBoundaryWith align config child =
+setBoundaryWith =
+    setBoundaryWithMap identity
+
+
+{-| Set boundary to convert into `NoGap`.
+In addition, `setBoundaryWithMap` can convert msg type of a View.
+
+(The elm-neat-layout does not have `map` function. Use `setBoundaryWithMap`, `Layout.Row.rowWithMap`, and `Layout.Column.columnWithMap`, instead.)
+
+-}
+setBoundaryWithMap : (a -> b) -> Boundary -> IsGap g -> View g a -> View NoGap b
+setBoundaryWithMap f align config child =
     lift (nodeNameToNode align.nodeName)
         []
         [ liftHelper False
             (\r -> innerGap r config)
             Html.div
             -- DO NOT directly put `(nodeNameToNode align.nodeName)` here.
-            -- It causes unnatural dashed borders for focused tabindexed nodes such as "button" node.
+            -- It causes unnatural dashed borders, which is displayed when tabindexed nodes such as "button" node is focused.
             [ Mixin.batch <| Flex.rowMixins <| toFlex align
             , style "width" "100%"
             , style "height" "100%"
             ]
           <|
             \r ->
-                [ toHtml r emptyGap (Flex.childLayout <| toFlex align) Mixin.none child
+                [ Html.map f <|
+                    toHtml r emptyGap (Flex.childLayout <| toFlex align) Mixin.none child
                 ]
         ]
 
@@ -858,6 +876,7 @@ innerGap renderer (IsGap { width, height }) =
         ]
 
 
+
 -- Handle cases
 
 
@@ -865,7 +884,11 @@ innerGap renderer (IsGap { width, height }) =
 -}
 when : Bool -> View p msg -> View p msg
 when p v =
-    if p then v else none
+    if p then
+        v
+
+    else
+        none
 
 
 {-| Insert a `View` unless a condition is met.
@@ -873,6 +896,7 @@ when p v =
 unless : Bool -> View p msg -> View p msg
 unless p =
     when <| not p
+
 
 
 -- Helper functions
@@ -889,16 +913,6 @@ noGap =
         { width = 0
         , height = 0
         }
-
-
-toHtml : Renderer -> Gap -> Layout msg -> Mixin msg -> View gap msg -> Html msg
-toHtml renderer gap layout appearance (View f) =
-    f renderer gap layout appearance
-
-
-fromHtml : (Renderer -> Gap -> Layout msg -> Mixin msg -> Html msg) -> View gap msg
-fromHtml =
-    View
 
 
 liftHelper : Bool -> (Renderer -> Mixin msg) -> (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> (Renderer -> List a) -> View g msg
