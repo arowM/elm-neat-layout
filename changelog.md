@@ -17,6 +17,7 @@
     * `textarea`
     * `select`
 * Add `when` and `unless`
+* Add `Neat.Media` module
 
 ### Breaking Changes
 
