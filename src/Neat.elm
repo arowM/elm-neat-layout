@@ -675,7 +675,7 @@ keyed tag mixins children =
 -}
 optimized :
     (x -> String)
-    -> (x -> Protected g Renderer -> Html (Protected g msg))
+    -> (x -> Renderer -> Html (Protected g msg))
     -> String
     -> List (Mixin msg)
     -> List x
@@ -683,14 +683,14 @@ optimized :
 optimized identifier f tag mixins ls =
     liftHelper False (\_ -> Mixin.none) (Keyed.node tag) mixins <|
         \r ->
-            List.map (\x -> ( identifier x, Html.map unProtect <| f x (Protected r) )) ls
+            List.map (\x -> ( identifier x, Html.map unProtect <| f x r )) ls
 
 
 {-| This is supposed to be used in order to make `Html.Lazy.lazyN` work.
 See `optimized` for real usage.
 -}
-toProtected : View g a -> Protected g Renderer -> Html (Protected g a)
-toProtected v (Protected renderer) =
+toProtected : View g a -> Renderer -> Html (Protected g a)
+toProtected v renderer =
     Html.map Protected <| toHtml renderer emptyGap Layout.none Mixin.none v
 
 

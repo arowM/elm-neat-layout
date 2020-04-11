@@ -21,6 +21,7 @@
 
 ### Breaking Changes
 
+* Change type of `optimized`
 * Change type of `Row.optimized`
 * Change type of `Column.optimized`
 * Rename `text` to `textBlock`

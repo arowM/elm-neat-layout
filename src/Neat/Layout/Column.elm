@@ -306,7 +306,7 @@ child _ =
     Debug.todo "child"
 
 -- Make sure to declare this top level in order to `lazy` works well.
-child_ : Int -> Column -> Html (Protected p msg)
+child_ : Int -> Column -> Renderer -> Html (Protected p msg)
 child_ n =
     toProtected <| child n
 
@@ -321,7 +321,7 @@ v =
 -}
 optimized :
     (x -> String)
-    -> (x -> Column -> Protected p Renderer -> Html (Protected p msg))
+    -> (x -> Column -> Renderer -> Html (Protected p msg))
     -> Column
     -> List x
     -> View p msg
@@ -336,7 +336,7 @@ optimized identifier f align =
 {-| This is supposed to be used in order to make `Html.lazy.lazyN` work.
 See `optimized` for real usage.
 -}
-toProtected : View p a -> Column -> Protected p Renderer -> Html (Protected p a)
+toProtected : View p a -> Column -> Renderer -> Html (Protected p a)
 toProtected v align =
     Neat.toProtected <|
         expandChild align v
