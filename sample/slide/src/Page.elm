@@ -75,34 +75,38 @@ titleBoundary mtitle =
 
 titlePage : View Gap.Page msg
 titlePage =
-    Layout.columnWith
-        { defaultColumn
-            | horizontal = Column.Right
-        }
-        [ Neat.textBlock "に〜と のためのキマるスタイリング🐐"
-            |> centerize
-            |> fromNoGap Gap.page
-            |> setLayout Layout.fill
-        , Layout.row
-            [ Layout.columnWith
-                { defaultColumn
-                    | horizontal = Column.Right
-                }
-                [ Neat.textBlock "2019/8/25 Elm Meetup in Summer"
-                    |> setClass "subText"
-                    |> fromNoGap Gap.sub
-                , Neat.lift Html.a
-                    [ Mixin.fromAttribute <| Attributes.href "https://twitter.com/arowM_"
-                    , Mixin.fromAttribute <| Attributes.target "_blank"
-                    , Mixin.fromAttribute <| Attributes.rel "noopener"
-                    ]
-                    [ Neat.textBlock "arowM_"
-                    ]
-                    |> setClass "subText"
-                    |> fromNoGap Gap.sub
-                ]
-                |> Neat.expand Gap.sub Gap.page
+    Layout.column
+        [ Layout.columnWith
+            { defaultColumn
+                | vertical = Column.VCenter
+            }
+            [ Neat.textBlock "に〜と のためのキマるスタイリング🐐"
+                |> centerize
+                |> fromNoGap Gap.page
+            , Neat.textBlock "※ 本スライドの内容はバージョン1の頃のものです"
+                |> setClass "subText"
+                |> centerize
+                |> fromNoGap Gap.page
             ]
+                |> setLayout Layout.fill
+        , Layout.columnWith
+           { defaultColumn
+               | horizontal = Column.Right
+           }
+           [ Neat.textBlock "2019/8/25 Elm Meetup in Summer"
+               |> setClass "subText"
+               |> fromNoGap Gap.sub
+           , Neat.lift Html.a
+               [ Mixin.fromAttribute <| Attributes.href "https://twitter.com/arowM_"
+               , Mixin.fromAttribute <| Attributes.target "_blank"
+               , Mixin.fromAttribute <| Attributes.rel "noopener"
+               ]
+               [ Neat.textBlock "arowM_"
+               ]
+               |> setClass "subText"
+               |> fromNoGap Gap.sub
+           ]
+           |> Neat.expand Gap.sub Gap.page
         ]
 
 

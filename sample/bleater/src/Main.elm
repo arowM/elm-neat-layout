@@ -200,7 +200,7 @@ bodyContent messages =
         |> setClass "bodyContent"
 
 
-message_ : MessageIcon -> String -> String -> Column -> Protected NoGap Renderer -> Html (Protected NoGap msg)
+message_ : MessageIcon -> String -> String -> Column -> Renderer -> Html (Protected NoGap msg)
 message_ icon name screenName =
     Column.toProtected <| message icon name screenName
 
@@ -210,7 +210,7 @@ message icon name screenName =
     Layout.row
         [ Neat.empty
             |> setClass "messageIcon"
-            -- (Debug.log "This functions is only rendered at first" "messageIcon")
+            -- |> setClass (Debug.log "This functions is only rendered at first" "messageIcon")
             |> setClass (messageIconClass icon)
             |> fromNoGap Gap.body
         , Layout.column
