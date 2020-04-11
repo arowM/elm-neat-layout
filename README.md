@@ -1,6 +1,6 @@
 # elm-neat-layout
 
-Elm layout framework that helps to keep paddings neat.
+Elm layout framework that helps to keep gaps neat.
 
 ## What's elm-neat-layout?
 
