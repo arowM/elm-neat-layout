@@ -55,7 +55,7 @@ childLayoutV v =
         VStretch ->
             Layout.fromRecord <|
                 { inner = style "height" "100%"
-                , outer = Mixin.none
+                , outer = style "height" "auto"
                 }
 
         _ ->
