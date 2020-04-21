@@ -1,0 +1,95 @@
+@import 'variables';
+
+.input, .select {
+  border: 1px solid #333;
+  border-radius: 0.3em;
+  background-color: #666;
+  width: 7em;
+}
+
+.editor {
+  &-title {
+    border: solid 2px #333;
+    border-bottom: none;
+    border-radius: 0.3em 0.3em 0 0;
+    background-color: #666;
+    color: #ccc;
+    font-weight: bold;
+    vertical-align: center;
+    font-size: 1.2em;
+  }
+
+  &-body {
+    font-family: Consolas, 'Courier New', Courier, Monaco, monospace;
+    white-space: pre;
+    border: solid 2px #333;
+    border-radius: 0 0 0.3em 0.3em;
+    background-color: #333;
+    color: #ccc;
+    min-height: 8em;
+    min-width: 20em;
+  }
+
+  .annotation {
+    color: #cc6;
+
+    &-error {
+      color: #f66;
+    }
+  }
+
+}
+
+.preview {
+  resize: both;
+  overflow: auto;
+
+  &-title {
+    border: solid 2px #333;
+    border-bottom: none;
+    border-radius: 0.3em 0.3em 0 0;
+    background-color: #666;
+    color: #ccc;
+    font-weight: bold;
+    vertical-align: center;
+    font-size: 1.2em;
+  }
+
+  &-body {
+    border: solid 2px #333;
+    border-radius: 0 0 0.3em 0.3em;
+    background-color: #333;
+    min-height: 7em;
+    min-width: 20em;
+
+    &-inner {
+      background-color: #fff;
+    }
+  }
+
+  .invalid {
+    display: none;
+  }
+}
+
+.block {
+  width: 3em;
+  height: 2em;
+  border: solid 2px;
+}
+
+.background-red {
+  background-color: #f99;
+}
+
+.background-blue {
+  background-color: #99f;
+}
+
+.border-red {
+  border-color: #f66;
+}
+
+.border-blue {
+  border-color: #66f;
+}
