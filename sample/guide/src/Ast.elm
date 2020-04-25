@@ -37,7 +37,7 @@ import Maybe.Extra as Maybe
 import Mixin exposing (Mixin)
 import Neat exposing (IsGap(..), NoGap, View, empty, fromNoGap, setAttribute, setLayout, setMixin, setMixins, textBlock)
 import Neat.Layout as Layout
-import Neat.Layout.Column exposing (column)
+import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
 import Reference exposing (Reference)
 import Reference.List
@@ -52,7 +52,7 @@ type Ast
     = TextBlock String (List Modifier)
     | Empty (List Modifier)
     | RowWith (Maybe Row) (List Ast) (List Modifier)
-    | Column (List Ast) (List Modifier)
+    | ColumnWith (Maybe Column) (List Ast) (List Modifier)
     | Unselected
 
 
@@ -72,7 +72,7 @@ modifiersOf ast =
         RowWith _ _ mods ->
             mods
 
-        Column _ mods ->
+        ColumnWith _ _ mods ->
             mods
 
         Unselected ->
@@ -91,8 +91,8 @@ setModifiersOf ast mods =
         RowWith align children _ ->
             RowWith align children mods
 
-        Column children _ ->
-            Column children mods
+        ColumnWith align children _ ->
+            ColumnWith align children mods
 
         Unselected ->
             Unselected
@@ -104,8 +104,8 @@ setChildrenOf ast children =
         RowWith align _ mods ->
             RowWith align children mods
 
-        Column _ mods ->
-            Column children mods
+        ColumnWith align _ mods ->
+            ColumnWith align children mods
 
         _ ->
             ast
@@ -131,13 +131,35 @@ rowAlignmentOf ast =
             Nothing
 
 
+setColumnAlignment : Ast -> Maybe Column -> Ast
+setColumnAlignment ast malign =
+    case ast of
+        ColumnWith _ children mods ->
+            ColumnWith malign children mods
+
+        _ ->
+            ast
+
+
+columnAlignmentOf : Ast -> Maybe Column
+columnAlignmentOf ast =
+    case ast of
+        ColumnWith malign _ _ ->
+            malign
+
+        _ ->
+            Nothing
+
+
 editAlignment : Ast -> Bool
 editAlignment ast =
     case ast of
         RowWith (Just _) _ _ ->
             True
 
-        -- TODO Column
+        ColumnWith (Just _) _ _ ->
+            True
+
         _ ->
             False
 
@@ -228,7 +250,7 @@ editorCore ref =
         RowWith _ children mods ->
             rowEditor ref children mods
 
-        Column children mods ->
+        ColumnWith _ children mods ->
             columnEditor ref children mods
 
         Unselected ->
@@ -395,7 +417,7 @@ rowAlignmentEditor ref =
                         setRowAlignment ast <|
                             Just
                                 { thisAlign
-                                    | vertical = lookupWithDefault Row.Stretch v rowVerticals
+                                    | vertical = lookupWithDefault defaultRow.vertical v rowVerticals
                                 }
                     )
                 |> setValue (encodeRowVertical <| thisAlign.vertical)
@@ -408,7 +430,7 @@ rowAlignmentEditor ref =
                         setRowAlignment ast <|
                             Just
                                 { thisAlign
-                                    | horizontal = lookupWithDefault Row.Left v rowHorizontals
+                                    | horizontal = lookupWithDefault defaultRow.horizontal v rowHorizontals
                                 }
                     )
                 |> setValue (encodeRowHorizontal <| thisAlign.horizontal)
@@ -421,7 +443,7 @@ rowAlignmentEditor ref =
                         setRowAlignment ast <|
                             Just
                                 { thisAlign
-                                    | wrap = lookupWithDefault Row.Wrap v rowWraps
+                                    | wrap = lookupWithDefault defaultRow.wrap v rowWraps
                                 }
                     )
                 |> setValue (encodeRowWrap <| thisAlign.wrap)
@@ -432,8 +454,46 @@ rowAlignmentEditor ref =
 
 columnEditor : Reference Ast Ast -> List Ast -> List Modifier -> View NoGap Msg
 columnEditor ref asts mods =
+    let
+        ast =
+            Reference.this ref
+
+        useColumnWith =
+            editAlignment ast
+
+        columnValue =
+            if useColumnWith then
+                "columnWith"
+
+            else
+                "column"
+
+        thisAlign =
+            Maybe.withDefault defaultColumn <| columnAlignmentOf ast
+    in
     column
-        [ textBlock "column"
+        [ row
+            [ selectWith
+                [ ( "column", "column" )
+                , ( "columnWith", "columnWith" )
+                ]
+                |> updateWithRefOnInput ref
+                    (\v ->
+                        setColumnAlignment ast
+                            (if v == "columnWith" then
+                                Just thisAlign
+
+                             else
+                                Nothing
+                            )
+                    )
+                |> setValue columnValue
+            ]
+        , Neat.when useColumnWith <|
+            row
+                [ indent
+                , columnAlignmentEditor ref
+                ]
         , Neat.when (List.length asts == 0) <|
             textBlock "    ["
         , Reference.fromRecord
@@ -467,6 +527,60 @@ columnEditor ref asts mods =
             ]
         , editMods ref mods
         , appendMods ref mods
+        ]
+
+
+columnAlignmentEditor : Reference Ast Ast -> View NoGap Msg
+columnAlignmentEditor ref =
+    let
+        ast =
+            Reference.this ref
+
+        thisAlign =
+            Maybe.withDefault defaultColumn <| columnAlignmentOf <| ast
+    in
+    column
+        [ textBlock "{ defaultColumn"
+        , row
+            [ textBlock "  | vertical = "
+            , selectForEnum columnVerticals
+                |> updateWithRefOnInput ref
+                    (\v ->
+                        setColumnAlignment ast <|
+                            Just
+                                { thisAlign
+                                    | vertical = lookupWithDefault defaultColumn.vertical v columnVerticals
+                                }
+                    )
+                |> setValue (encodeColumnVertical <| thisAlign.vertical)
+            ]
+        , row
+            [ textBlock "  , horizontal = "
+            , selectForEnum columnHorizontals
+                |> updateWithRefOnInput ref
+                    (\v ->
+                        setColumnAlignment ast <|
+                            Just
+                                { thisAlign
+                                    | horizontal = lookupWithDefault defaultColumn.horizontal v columnHorizontals
+                                }
+                    )
+                |> setValue (encodeColumnHorizontal <| thisAlign.horizontal)
+            ]
+        , row
+            [ textBlock "  , wrap = "
+            , selectForEnum columnWraps
+                |> updateWithRefOnInput ref
+                    (\v ->
+                        setColumnAlignment ast <|
+                            Just
+                                { thisAlign
+                                    | wrap = lookupWithDefault defaultColumn.wrap v columnWraps
+                                }
+                    )
+                |> setValue (encodeColumnWrap <| thisAlign.wrap)
+            ]
+        , textBlock "}"
         ]
 
 
@@ -655,8 +769,8 @@ previewUnmodified ast =
             rowWith (Maybe.withDefault defaultRow align)
                 (List.map previewCore asts)
 
-        Column asts mods ->
-            column
+        ColumnWith align asts mods ->
+            columnWith (Maybe.withDefault defaultColumn align)
                 (List.map previewCore asts)
 
         _ ->
@@ -815,6 +929,32 @@ rowWraps =
     ]
 
 
+columnVerticals : List ( String, Column.Vertical )
+columnVerticals =
+    [ ( "Top", Column.Top )
+    , ( "Bottom", Column.Bottom )
+    , ( "VCenter", Column.VCenter )
+    , ( "SpaceBetween", Column.SpaceBetween )
+    , ( "SpaceAround", Column.SpaceAround )
+    ]
+
+
+columnHorizontals : List ( String, Column.Horizontal )
+columnHorizontals =
+    [ ( "Stretch", Column.Stretch )
+    , ( "Left", Column.Left )
+    , ( "Right", Column.Right )
+    , ( "HCenter", Column.HCenter )
+    ]
+
+
+columnWraps : List ( String, Column.Wrap )
+columnWraps =
+    [ ( "NoWrap", Column.NoWrap )
+    , ( "Wrap", Column.Wrap )
+    ]
+
+
 
 -- Parsers for select tag
 
@@ -832,7 +972,7 @@ parseAstNode v =
             RowWith Nothing [] []
 
         "column" ->
-            Column [] []
+            ColumnWith Nothing [] []
 
         _ ->
             Unselected
@@ -915,6 +1055,54 @@ encodeRowWrap v =
             "Wrap"
 
 
+encodeColumnVertical : Column.Vertical -> String
+encodeColumnVertical v =
+    case v of
+        Column.Top ->
+            "Top"
+
+        Column.Bottom ->
+            "Bottom"
+
+        Column.VCenter ->
+            "VCenter"
+
+        Column.SpaceBetween ->
+            "SpaceBetween"
+
+        Column.SpaceAround ->
+            "SpaceAround"
+
+
+encodeColumnHorizontal : Column.Horizontal -> String
+encodeColumnHorizontal v =
+    case v of
+        Column.Stretch ->
+            "Stretch"
+
+        Column.Left ->
+            "Left"
+
+        Column.Right ->
+            "Right"
+
+        Column.HCenter ->
+            "HCenter"
+
+
+encodeColumnWrap : Column.Wrap -> String
+encodeColumnWrap v =
+    case v of
+        Column.NoWrap ->
+            "NoWrap"
+
+        Column.Wrap ->
+            "Wrap"
+
+        Column.WrapInto _ ->
+            "Wrap"
+
+
 
 -- Gap calculations
 
@@ -954,7 +1142,7 @@ unmodifiedGap ast =
             AstGap.reduceChildGaps <|
                 List.map resultingGap children
 
-        Column children _ ->
+        ColumnWith _ children _ ->
             AstGap.reduceChildGaps <|
                 List.map resultingGap children
 
