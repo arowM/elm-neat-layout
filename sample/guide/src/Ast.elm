@@ -43,15 +43,21 @@ import Reference exposing (Reference)
 import Reference.List
 
 
+
 -- AST Core
+
 
 {-| -}
 type Ast
     = TextBlock String (List Modifier)
     | Empty (List Modifier)
-    | RowWith Row (List Ast) (List Modifier)
+    | RowWith (Maybe Row) (List Ast) (List Modifier)
     | Column (List Ast) (List Modifier)
     | Unselected
+
+
+type alias ShowAlignmentEditor =
+    Bool
 
 
 modifiersOf : Ast -> List Modifier
@@ -105,6 +111,37 @@ setChildrenOf ast children =
             ast
 
 
+setRowAlignment : Ast -> Maybe Row -> Ast
+setRowAlignment ast malign =
+    case ast of
+        RowWith _ children mods ->
+            RowWith malign children mods
+
+        _ ->
+            ast
+
+
+rowAlignmentOf : Ast -> Maybe Row
+rowAlignmentOf ast =
+    case ast of
+        RowWith malign _ _ ->
+            malign
+
+        _ ->
+            Nothing
+
+
+editAlignment : Ast -> Bool
+editAlignment ast =
+    case ast of
+        RowWith (Just _) _ _ ->
+            True
+
+        -- TODO Column
+        _ ->
+            False
+
+
 {-| Modifiers for View
 -}
 type Modifier
@@ -116,7 +153,9 @@ type Modifier
     | ExpandTo (Maybe AstGap)
 
 
+
 -- Msg
+
 
 {-| -}
 type Msg
@@ -131,7 +170,9 @@ update msg _ =
             ( ast, Cmd.none )
 
 
+
 -- View
+
 
 {-| View for REPL
 -}
@@ -151,7 +192,9 @@ repl f n ast =
         ]
 
 
+
 -- -- Editor
+
 
 {-| View for editor window
 -}
@@ -182,8 +225,8 @@ editorCore ref =
         Empty mods ->
             emptyEditor ref mods
 
-        RowWith align children mods ->
-            rowEditor ref align children mods
+        RowWith _ children mods ->
+            rowEditor ref children mods
 
         Column children mods ->
             columnEditor ref children mods
@@ -199,8 +242,8 @@ textBlockEditor ref str mods =
             [ textBlock "textBlock \""
             , Neat.input
                 |> setAttribute (Attributes.type_ "text")
-                |> setAttribute (Attributes.value str)
-                |> updateWithRefOnInput ref (\a _ -> TextBlock a mods)
+                |> setValue str
+                |> updateWithRefOnInput ref (\a -> TextBlock a mods)
                 |> setClass "input"
             , row
                 [ textBlock "\""
@@ -239,8 +282,8 @@ gapAnnotation gap =
 
 annotationBlock : String -> View NoGap Msg
 annotationBlock msg =
-            textBlock ("  -- " ++ msg)
-                |> setClass "annotation"
+    textBlock ("  -- " ++ msg)
+        |> setClass "annotation"
 
 
 emptyEditor : Reference Ast Ast -> List Modifier -> View NoGap Msg
@@ -255,10 +298,48 @@ emptyEditor ref mods =
         ]
 
 
-rowEditor : Reference Ast Ast -> Row -> List Ast -> List Modifier -> View NoGap Msg
-rowEditor ref align asts mods =
+rowEditor : Reference Ast Ast -> List Ast -> List Modifier -> View NoGap Msg
+rowEditor ref asts mods =
+    let
+        ast =
+            Reference.this ref
+
+        useRowWith =
+            editAlignment ast
+
+        rowValue =
+            if useRowWith then
+                "rowWith"
+
+            else
+                "row"
+
+        thisAlign =
+            Maybe.withDefault defaultRow <| rowAlignmentOf ast
+    in
     column
-        [ textBlock "row"
+        [ row
+            [ selectWith
+                [ ( "row", "row" )
+                , ( "rowWith", "rowWith" )
+                ]
+                |> updateWithRefOnInput ref
+                    (\v ->
+                        setRowAlignment ast
+                            (if v == "rowWith" then
+                                Just thisAlign
+
+                             else
+                                Nothing
+                            )
+                    )
+                |> setValue rowValue
+            ]
+        , Neat.when useRowWith <|
+            row
+                [ indent
+                , rowAlignmentEditor ref
+                ]
         , Neat.when (List.length asts == 0) <|
             textBlock "    ["
         , Reference.fromRecord
@@ -292,6 +373,60 @@ rowEditor ref align asts mods =
             ]
         , editMods ref mods
         , appendMods ref mods
+        ]
+
+
+rowAlignmentEditor : Reference Ast Ast -> View NoGap Msg
+rowAlignmentEditor ref =
+    let
+        ast =
+            Reference.this ref
+
+        thisAlign =
+            Maybe.withDefault defaultRow <| rowAlignmentOf <| ast
+    in
+    column
+        [ textBlock "{ defaultRow"
+        , row
+            [ textBlock "  | vertical = "
+            , selectForEnum rowVerticals
+                |> updateWithRefOnInput ref
+                    (\v ->
+                        setRowAlignment ast <|
+                            Just
+                                { thisAlign
+                                    | vertical = lookupWithDefault Row.Stretch v rowVerticals
+                                }
+                    )
+                |> setValue (encodeRowVertical <| thisAlign.vertical)
+            ]
+        , row
+            [ textBlock "  , horizontal = "
+            , selectForEnum rowHorizontals
+                |> updateWithRefOnInput ref
+                    (\v ->
+                        setRowAlignment ast <|
+                            Just
+                                { thisAlign
+                                    | horizontal = lookupWithDefault Row.Left v rowHorizontals
+                                }
+                    )
+                |> setValue (encodeRowHorizontal <| thisAlign.horizontal)
+            ]
+        , row
+            [ textBlock "  , wrap = "
+            , selectForEnum rowWraps
+                |> updateWithRefOnInput ref
+                    (\v ->
+                        setRowAlignment ast <|
+                            Just
+                                { thisAlign
+                                    | wrap = lookupWithDefault Row.Wrap v rowWraps
+                                }
+                    )
+                |> setValue (encodeRowWrap <| thisAlign.wrap)
+            ]
+        , textBlock "}"
         ]
 
 
@@ -338,31 +473,14 @@ columnEditor ref asts mods =
 unselectedEditor : Reference Ast Ast -> View NoGap Msg
 unselectedEditor ref =
     row
-        [ Neat.select []
-            [ Neat.textNode Html.option ""
-                |> setMixins
-                    [ Mixin.attribute "value" ""
-                    ]
-            , Neat.textNode Html.option "empty"
-                |> setMixins
-                    [ Mixin.attribute "value" "empty"
-                    ]
-            , Neat.textNode Html.option "textBlock \"\""
-                |> setMixins
-                    [ Mixin.attribute "value" "textBlock"
-                    ]
-            , Neat.textNode Html.option "row []"
-                |> setMixins
-                    [ Mixin.attribute "value" "row"
-                    ]
-            , Neat.textNode Html.option "column []"
-                |> setMixins
-                    [ Mixin.attribute "value" "column"
-                    ]
+        [ selectWith
+            [ ( "empty", "empty" )
+            , ( "textBlock \"\"", "textBlock" )
+            , ( "row []", "row" )
+            , ( "column []", "column" )
             ]
-            |> setClass "select"
-            |> updateWithRefOnInput ref (\v _ -> parseAstNode v)
-            |> setAttribute (Attributes.value "")
+            |> updateWithRefOnInput ref parseAstNode
+            |> setValue ""
         ]
 
 
@@ -385,13 +503,10 @@ editorMod ref =
         SetLayoutFillBy n ->
             row
                 [ textBlock "|> setLayout (Layout.fillBy "
-                , Neat.input
-                    |> setAttribute (Attributes.type_ "number")
-                    |> setAttribute (Attributes.value <| String.fromInt n)
-                    |> setClass "input"
+                , numberInput n
                     |> updateWithRefOnInput ref
-                        (\v ( acc, _ ) ->
-                            ( acc
+                        (\v ->
+                            ( accumGap
                             , v
                                 |> String.toInt
                                 |> Maybe.withDefault 0
@@ -411,13 +526,10 @@ editorMod ref =
         SetLayoutShrinkBy n ->
             row
                 [ textBlock "|> setLayout (Layout.shrinkBy "
-                , Neat.input
-                    |> setAttribute (Attributes.type_ "number")
-                    |> setAttribute (Attributes.value <| String.fromInt n)
-                    |> setClass "input"
+                , numberInput n
                     |> updateWithRefOnInput ref
-                        (\v ( acc, _ ) ->
-                            ( acc
+                        (\v ->
+                            ( accumGap
                             , v
                                 |> String.toInt
                                 |> Maybe.withDefault 1
@@ -435,23 +547,14 @@ editorMod ref =
 editorModSetClass : Reference ( AstGap, Modifier ) Ast -> String -> View NoGap Msg
 editorModSetClass ref str =
     let
-        (accumGap, _) = Reference.this ref
+        ( accumGap, _ ) =
+            Reference.this ref
     in
     row
         [ textBlock "|> setAttribute (class \""
-        , Neat.select []
-            (List.map
-                (\k ->
-                    Neat.textNode Html.option k
-                        |> setMixins
-                            [ Mixin.attribute "value" k
-                            ]
-                )
-                ("" :: List.map Tuple.first classes)
-            )
-            |> setClass "select"
-            |> updateWithRefOnInput ref (\v ( acc, _ ) -> ( acc, SetClass v ))
-            |> setAttribute (Attributes.value str)
+        , selectForEnum classes
+            |> updateWithRefOnInput ref (\v -> ( accumGap, SetClass v ))
+            |> setValue str
         , textBlock "\")"
         , gapAnnotation <| AstGap.mappend accumGap AstGap.Undetermined
         ]
@@ -461,34 +564,22 @@ editorModExpandTo : AstGap -> Reference ( AstGap, Modifier ) Ast -> Maybe AstGap
 editorModExpandTo accumGap ref mgap2 =
     row
         [ textBlock <| labelExpandTo accumGap
-        , Neat.select
-            []
-            (List.map
-                (\k ->
-                    Neat.textNode Html.option k
-                        |> setMixins
-                            [ Mixin.attribute "value" k
-                            ]
-                )
-                ("" :: List.map Tuple.first gaps)
-            )
-            |> setClass "select"
+        , selectForEnum gaps
             |> updateWithRefOnInput ref
-                (\a ( acc, _ ) ->
-                    ( acc
+                (\a ->
+                    ( accumGap
                     , Dict.get a (Dict.fromList gaps)
                         |> Maybe.map (AstGap.Gap a)
                         |> ExpandTo
                     )
                 )
-            |> setAttribute
-                (Attributes.value <|
-                    case mgap2 of
-                        Just (AstGap.Gap name _) ->
-                            name
+            |> setValue
+                (case mgap2 of
+                    Just (AstGap.Gap name _) ->
+                        name
 
-                        _ ->
-                            ""
+                    _ ->
+                        ""
                 )
         , gapAnnotation <| AstGap.mappend accumGap (Maybe.withDefault AstGap.Undetermined mgap2)
         ]
@@ -506,9 +597,13 @@ labelExpandTo gap =
         _ ->
             ""
 
+
+
 -- -- Preview
 
-{-| View for preview window -}
+
+{-| View for preview window
+-}
 preview : Ast -> View NoGap Msg
 preview ast =
     column
@@ -557,7 +652,7 @@ previewUnmodified ast =
             empty
 
         RowWith align asts mods ->
-            rowWith align
+            rowWith (Maybe.withDefault defaultRow align)
                 (List.map previewCore asts)
 
         Column asts mods ->
@@ -605,7 +700,59 @@ previewMod ( accumGap, mod ) =
                     identity
 
 
+indent : View NoGap msg
+indent =
+    textBlock "    "
+
+
+appendMods : Reference Ast Ast -> List Modifier -> View NoGap Msg
+appendMods ref mods =
+    let
+        ast =
+            Reference.this ref
+    in
+    rowWith
+        { defaultRow
+            | horizontal = Row.Left
+        }
+        [ indent
+        , selectWith
+            [ ( "|> setAttribute (class \"\")", "setClass" )
+            , ( "|> setLayout Layout.fill", "setLayoutFill" )
+            , ( "|> setLayout (Layout.fillBy n)", "setLayoutFillBy" )
+            , ( "|> setLayout Layout.noShrink", "setLayoutNoShrink" )
+            , ( "|> setLayout (Layout.shrinkBy n)", "setLayoutShrinkBy" )
+            , ( labelExpandTo (resultingGap <| Reference.this ref) ++ "_", "expandTo" )
+            ]
+            |> updateWithRefOnInput ref
+                (\v -> setModifiersOf ast <| mods ++ Maybe.toList (parseModifier v))
+            |> setValue ""
+        ]
+
+
+editMods : Reference Ast Ast -> List Modifier -> View NoGap Msg
+editMods ref mods =
+    column <|
+        Reference.List.unwrap
+            (identity
+                >> editorMod
+                >> (\v ->
+                        row
+                            [ indent
+                            , v
+                            ]
+                   )
+            )
+        <|
+            Reference.fromRecord
+                { rootWith = List.map Tuple.second >> rootWithModifiers ref
+                , this = setAccumulatedGaps (unmodifiedGap <| Reference.this ref) mods
+                }
+
+
+
 -- Data
+
 
 classes : List ( String, String )
 classes =
@@ -627,7 +774,6 @@ classes =
     ]
 
 
-
 gaps : List ( String, GapSize )
 gaps =
     [ ( "narrow"
@@ -640,6 +786,32 @@ gaps =
         , height = 2
         }
       )
+    ]
+
+
+rowVerticals : List ( String, Row.Vertical )
+rowVerticals =
+    [ ( "Stretch", Row.Stretch )
+    , ( "Top", Row.Top )
+    , ( "Bottom", Row.Bottom )
+    , ( "VCenter", Row.VCenter )
+    ]
+
+
+rowHorizontals : List ( String, Row.Horizontal )
+rowHorizontals =
+    [ ( "Left", Row.Left )
+    , ( "Right", Row.Right )
+    , ( "HCenter", Row.HCenter )
+    , ( "SpaceBetween", Row.SpaceBetween )
+    , ( "SpaceAround", Row.SpaceAround )
+    ]
+
+
+rowWraps : List ( String, Row.Wrap )
+rowWraps =
+    [ ( "NoWrap", Row.NoWrap )
+    , ( "Wrap", Row.Wrap )
     ]
 
 
@@ -657,7 +829,7 @@ parseAstNode v =
             TextBlock "" []
 
         "row" ->
-            RowWith defaultRow [] []
+            RowWith Nothing [] []
 
         "column" ->
             Column [] []
@@ -691,73 +863,56 @@ parseModifier v =
             Nothing
 
 
-indent : View NoGap msg
-indent =
-    textBlock "    "
+
+-- Encoders for select tag value
 
 
-appendMods : Reference Ast Ast -> List Modifier -> View NoGap Msg
-appendMods ref mods =
-    rowWith
-        { defaultRow
-            | horizontal = Row.Left
-        }
-        [ indent
-        , Neat.select []
-            [ Neat.textNode Html.option ""
-                |> setMixins
-                    [ Mixin.attribute "value" ""
-                    ]
-            , Neat.textNode Html.option "|> setAttribute (class \"\")"
-                |> setMixins
-                    [ Mixin.attribute "value" "setClass"
-                    ]
-            , Neat.textNode Html.option "|> setLayout Layout.fill"
-                |> setMixins
-                    [ Mixin.attribute "value" "setLayoutFill"
-                    ]
-            , Neat.textNode Html.option "|> setLayout (Layout.fillBy n)"
-                |> setMixins
-                    [ Mixin.attribute "value" "setLayoutFillBy"
-                    ]
-            , Neat.textNode Html.option "|> setLayout Layout.noShrink"
-                |> setMixins
-                    [ Mixin.attribute "value" "setLayoutNoShrink"
-                    ]
-            , Neat.textNode Html.option "|> setLayout (Layout.shrinkBy n)"
-                |> setMixins
-                    [ Mixin.attribute "value" "setLayoutShrinkBy"
-                    ]
-            , Neat.textNode Html.option (labelExpandTo (resultingGap <| Reference.this ref) ++ "_")
-                |> setMixins
-                    [ Mixin.attribute "value" "expandTo"
-                    ]
-            ]
-            |> setClass "select"
-            |> updateWithRefOnInput ref
-                (\v ast -> setModifiersOf ast <| mods ++ Maybe.toList (parseModifier v))
-            |> setAttribute (Attributes.value "")
-        ]
+encodeRowVertical : Row.Vertical -> String
+encodeRowVertical v =
+    case v of
+        Row.Stretch ->
+            "Stretch"
+
+        Row.Top ->
+            "Top"
+
+        Row.Bottom ->
+            "Bottom"
+
+        Row.VCenter ->
+            "VCenter"
 
 
-editMods : Reference Ast Ast -> List Modifier -> View NoGap Msg
-editMods ref mods =
-    column <|
-        Reference.List.unwrap
-            (identity
-                >> editorMod
-                >> (\v ->
-                        row
-                            [ indent
-                            , v
-                            ]
-                   )
-            )
-        <|
-            Reference.fromRecord
-                { rootWith = List.map Tuple.second >> rootWithModifiers ref
-                , this = setAccumulatedGaps (unmodifiedGap <| Reference.this ref) mods
-                }
+encodeRowHorizontal : Row.Horizontal -> String
+encodeRowHorizontal v =
+    case v of
+        Row.Left ->
+            "Left"
+
+        Row.Right ->
+            "Right"
+
+        Row.HCenter ->
+            "HCenter"
+
+        Row.SpaceBetween ->
+            "SpaceBetween"
+
+        Row.SpaceAround ->
+            "SpaceAround"
+
+
+encodeRowWrap : Row.Wrap -> String
+encodeRowWrap v =
+    case v of
+        Row.NoWrap ->
+            "NoWrap"
+
+        Row.Wrap ->
+            "Wrap"
+
+        Row.WrapInto _ ->
+            "Wrap"
 
 
 
@@ -826,6 +981,11 @@ setClass =
     setMixin << class
 
 
+setValue : String -> View NoGap msg -> View NoGap msg
+setValue v =
+    setAttribute (Attributes.value v)
+
+
 setLayoutFillBy : Int -> View NoGap msg -> View NoGap msg
 setLayoutFillBy =
     setLayout << Layout.fillBy
@@ -846,11 +1006,48 @@ rootWithChildren ref children =
     Reference.root <| Reference.modify (\ast -> setChildrenOf ast children) ref
 
 
-updateWithRef : Reference a Ast -> (a -> a) -> Msg
-updateWithRef ref f =
-    UpdateAst <| Reference.root <| Reference.modify f ref
+updateWithRef : Reference a Ast -> a -> Msg
+updateWithRef ref v =
+    UpdateAst <| Reference.root <| Reference.modify (\_ -> v) ref
 
 
-updateWithRefOnInput : Reference a Ast -> (String -> a -> a) -> View NoGap Msg -> View NoGap Msg
+updateWithRefOnInput : Reference a Ast -> (String -> a) -> View NoGap Msg -> View NoGap Msg
 updateWithRefOnInput ref f =
     setAttribute <| Events.onInput <| \a -> updateWithRef ref <| f a
+
+
+lookup : comparable -> List ( comparable, v ) -> Maybe v
+lookup k ls =
+    Dict.get k <| Dict.fromList ls
+
+
+lookupWithDefault : v -> comparable -> List ( comparable, v ) -> v
+lookupWithDefault def k ls =
+    lookup k ls
+        |> Maybe.withDefault def
+
+
+selectForEnum : List ( String, v ) -> View NoGap Msg
+selectForEnum kvs =
+    selectWith <| List.map (\( k, _ ) -> ( k, k )) kvs
+
+
+selectWith : List ( String, String ) -> View NoGap Msg
+selectWith ps =
+    Neat.select []
+        (List.map
+            (\( label, value ) ->
+                Neat.textNode Html.option label
+                    |> setValue value
+            )
+            (( "", "" ) :: ps)
+        )
+        |> setClass "select"
+
+
+numberInput : Int -> View NoGap msg
+numberInput n =
+    Neat.input
+        |> setAttribute (Attributes.type_ "number")
+        |> setAttribute (Attributes.value <| String.fromInt n)
+        |> setClass "input"

@@ -41,7 +41,8 @@ codeLine =
 
 {-| Gaps for Editors
 -}
-type Editor = Editor
+type Editor
+    = Editor
 
 
 {-| -}
@@ -55,7 +56,8 @@ editor =
 
 {-| Gaps for Previewers
 -}
-type Preview = Preview
+type Preview
+    = Preview
 
 
 {-| -}
@@ -66,9 +68,11 @@ preview =
         , height = 0.4
         }
 
+
 {-| Gaps for repl windows
 -}
-type Repl = Repl
+type Repl
+    = Repl
 
 
 {-| -}
