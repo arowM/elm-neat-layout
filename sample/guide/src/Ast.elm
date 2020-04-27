@@ -17,7 +17,6 @@ Usually, you should define and use the appropriate type for each gap.
 @docs Modifier
 @docs Msg
 @docs update
-@docs repl
 @docs editor
 @docs preview
 
@@ -192,29 +191,6 @@ update msg _ =
             ( ast, Cmd.none )
 
 
-
--- View
-
-
-{-| View for REPL
--}
-repl : (Msg -> msg) -> Int -> Ast -> View Gap.Repl msg
-repl f n ast =
-    rowWithMap
-        f
-        { defaultRow
-            | wrap = Row.WrapInto n
-        }
-        [ editor ast
-            |> fromNoGap Gap.repl
-            |> setLayout Layout.fill
-        , preview ast
-            |> fromNoGap Gap.repl
-            |> setLayout Layout.fill
-        ]
-
-
-
 -- -- Editor
 
 
@@ -222,20 +198,7 @@ repl f n ast =
 -}
 editor : Ast -> View NoGap Msg
 editor ast =
-    column
-        [ textBlock "Editor"
-            |> Neat.fromNoGap Gap.editor
-            |> Neat.setBoundary Gap.editor
-            |> setClass "editor-title"
-        , column
-            [ editorCore <| Reference.top ast
-            ]
-            |> Neat.fromNoGap Gap.editor
-            |> Neat.setBoundary Gap.editor
-            |> setClass "editor-body"
-            |> setLayout Layout.fill
-        ]
-        |> setClass "editor"
+    editorCore <| Reference.top ast
 
 
 editorCore : Reference Ast Ast -> View NoGap Msg
@@ -884,21 +847,6 @@ classes =
       )
     , ( "block"
       , ""
-      )
-    ]
-
-
-gaps : List ( String, GapSize )
-gaps =
-    [ ( "narrow"
-      , { width = 0.4
-        , height = 0.4
-        }
-      )
-    , ( "wide"
-      , { width = 2
-        , height = 2
-        }
       )
     ]
 

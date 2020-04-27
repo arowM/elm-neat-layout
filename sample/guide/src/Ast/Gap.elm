@@ -36,6 +36,7 @@ type AstGap
     | Invalid Error
     | Undetermined
 
+type CustomGap = GustomGap String GapSize
 
 {-| Size definition for a Gap
 -}
