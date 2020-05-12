@@ -1,27 +1,22 @@
-module Ast exposing
-    ( Ast(..)
-    , Modifier(..)
+module Repl.Editor exposing
+    ( Editor
     , Msg
     , update
-    , repl
     , editor
-    , preview
     )
 
-{-| Simplified AST for elm-neat-layout
 
-To avoid type constrains, this module uses **bad** hack which assumes every gap as a `NoGap`.
-Usually, you should define and use the appropriate type for each gap.
+{-| Editor window for Repl
 
-@docs Ast
-@docs Modifier
+@docs Editor
 @docs Msg
 @docs update
 @docs editor
-@docs preview
 
 -}
 
+
+import Repl.Ast as Ast exposing (Ast(..), Modifier(..))
 import Ast.Gap as AstGap exposing (AstGap, GapSize)
 import Dict
 import Gap
@@ -42,181 +37,48 @@ import Reference exposing (Reference)
 import Reference.List
 
 
-
--- AST Core
-
-
-{-| -}
-type Ast
-    = TextBlock String (List Modifier)
-    | Empty (List Modifier)
-    | RowWith (Maybe Row) (List Ast) (List Modifier)
-    | ColumnWith (Maybe Column) (List Ast) (List Modifier)
-    | Unselected
+type Editor = Editor Model
 
 
-type alias ShowAlignmentEditor =
-    Bool
-
-
-modifiersOf : Ast -> List Modifier
-modifiersOf ast =
-    case ast of
-        TextBlock _ mods ->
-            mods
-
-        Empty mods ->
-            mods
-
-        RowWith _ _ mods ->
-            mods
-
-        ColumnWith _ _ mods ->
-            mods
-
-        Unselected ->
-            []
-
-
-setModifiersOf : Ast -> List Modifier -> Ast
-setModifiersOf ast mods =
-    case ast of
-        TextBlock str _ ->
-            TextBlock str mods
-
-        Empty _ ->
-            Empty mods
-
-        RowWith align children _ ->
-            RowWith align children mods
-
-        ColumnWith align children _ ->
-            ColumnWith align children mods
-
-        Unselected ->
-            Unselected
-
-
-setChildrenOf : Ast -> List Ast -> Ast
-setChildrenOf ast children =
-    case ast of
-        RowWith align _ mods ->
-            RowWith align children mods
-
-        ColumnWith align _ mods ->
-            ColumnWith align children mods
-
-        _ ->
-            ast
-
-
-setRowAlignment : Ast -> Maybe Row -> Ast
-setRowAlignment ast malign =
-    case ast of
-        RowWith _ children mods ->
-            RowWith malign children mods
-
-        _ ->
-            ast
-
-
-rowAlignmentOf : Ast -> Maybe Row
-rowAlignmentOf ast =
-    case ast of
-        RowWith malign _ _ ->
-            malign
-
-        _ ->
-            Nothing
-
-
-setColumnAlignment : Ast -> Maybe Column -> Ast
-setColumnAlignment ast malign =
-    case ast of
-        ColumnWith _ children mods ->
-            ColumnWith malign children mods
-
-        _ ->
-            ast
-
-
-columnAlignmentOf : Ast -> Maybe Column
-columnAlignmentOf ast =
-    case ast of
-        ColumnWith malign _ _ ->
-            malign
-
-        _ ->
-            Nothing
-
-
-editAlignment : Ast -> Bool
-editAlignment ast =
-    case ast of
-        RowWith (Just _) _ _ ->
-            True
-
-        ColumnWith (Just _) _ _ ->
-            True
-
-        _ ->
-            False
-
-
-{-| Modifiers for View
--}
-type Modifier
-    = SetClass String
-    | SetLayoutFill
-    | SetLayoutFillBy Int
-    | SetLayoutNoShrink
-    | SetLayoutShrinkBy Int
-    | ExpandTo (Maybe AstGap)
-
-
-
--- Msg
+type alias Model =
+    { ast : Ast
+    }
 
 
 {-| -}
 type Msg
     = UpdateAst Ast
 
-
 {-| -}
-update : Msg -> Ast -> ( Ast, Cmd Msg )
+update : Msg -> Editor -> ( Editor, Cmd Msg )
 update msg _ =
     case msg of
         UpdateAst ast ->
-            ( ast, Cmd.none )
+            ( Editor { ast = ast }, Cmd.none )
 
 
--- -- Editor
-
-
-{-| View for editor window
--}
-editor : Ast -> View NoGap Msg
-editor ast =
+{-| -}
+editor : Editor -> View NoGap Msg
+editor (Editor {ast}) =
     editorCore <| Reference.top ast
 
 
 editorCore : Reference Ast Ast -> View NoGap Msg
 editorCore ref =
     case Reference.this ref of
-        TextBlock str mods ->
+        Ast.TextBlock str mods ->
             textBlockEditor ref str mods
 
-        Empty mods ->
+        Ast.Empty mods ->
             emptyEditor ref mods
 
-        RowWith _ children mods ->
+        Ast.RowWith _ children mods ->
             rowEditor ref children mods
 
-        ColumnWith _ children mods ->
+        Ast.ColumnWith _ children mods ->
             columnEditor ref children mods
 
-        Unselected ->
+        Ast.Unselected ->
             unselectedEditor ref
 
 
@@ -637,11 +499,11 @@ editorModSetClass ref str =
         ]
 
 
-editorModExpandTo : AstGap -> Reference ( AstGap, Modifier ) Ast -> Maybe AstGap -> View NoGap Msg
-editorModExpandTo accumGap ref mgap2 =
+editorModExpandTo : GapEditor -> AstGap -> Reference ( AstGap, Modifier ) Ast -> Maybe AstGap -> View NoGap Msg
+editorModExpandTo gapEditor accumGap ref mgap2 =
     row
         [ textBlock <| labelExpandTo accumGap
-        , selectForEnum gaps
+        , selectForEnum gapEditor
             |> updateWithRefOnInput ref
                 (\a ->
                     ( accumGap
@@ -674,107 +536,6 @@ labelExpandTo gap =
         _ ->
             ""
 
-
-
--- -- Preview
-
-
-{-| View for preview window
--}
-preview : Ast -> View NoGap Msg
-preview ast =
-    column
-        [ textBlock "Preview"
-            |> Neat.fromNoGap Gap.preview
-            |> Neat.setBoundary Gap.preview
-            |> setClass "preview-title"
-        , row
-            [ previewCore ast
-            ]
-            |> (case resultingGap ast of
-                    AstGap.Gap name size ->
-                        Neat.setBoundary (IsGap size)
-
-                    AstGap.NoGap ->
-                        identity
-
-                    AstGap.Invalid _ ->
-                        setClass "invalid"
-
-                    AstGap.Undetermined ->
-                        identity
-               )
-            |> setClass "preview-body-inner"
-            |> Neat.fromNoGap Gap.preview
-            |> Neat.setBoundary Gap.preview
-            |> setClass "preview-body"
-            |> setLayout Layout.fill
-        ]
-        |> setClass "preview"
-
-
-previewCore : Ast -> View NoGap Msg
-previewCore ast =
-    previewUnmodified ast
-        |> applyModifiers ast
-
-
-previewUnmodified : Ast -> View NoGap Msg
-previewUnmodified ast =
-    case ast of
-        TextBlock str mods ->
-            textBlock str
-
-        Empty mods ->
-            empty
-
-        RowWith align asts mods ->
-            rowWith (Maybe.withDefault defaultRow align)
-                (List.map previewCore asts)
-
-        ColumnWith align asts mods ->
-            columnWith (Maybe.withDefault defaultColumn align)
-                (List.map previewCore asts)
-
-        _ ->
-            Neat.none
-
-
-applyModifiers : Ast -> View NoGap Msg -> View NoGap Msg
-applyModifiers ast =
-    List.foldr (>>)
-        identity
-        (List.map previewMod <| setAccumulatedGaps (unmodifiedGap ast) (modifiersOf ast))
-
-
-previewMod : ( AstGap, Modifier ) -> View NoGap Msg -> View NoGap Msg
-previewMod ( accumGap, mod ) =
-    case mod of
-        SetClass str ->
-            setClass str
-
-        SetLayoutFill ->
-            setLayoutFillBy 1
-
-        SetLayoutFillBy n ->
-            setLayoutFillBy n
-
-        SetLayoutNoShrink ->
-            setLayoutShrinkBy 0
-
-        SetLayoutShrinkBy n ->
-            setLayoutShrinkBy n
-
-        ExpandTo mgap2 ->
-            case ( mgap2, accumGap ) of
-                ( Just (AstGap.Gap _ gap2), AstGap.Gap _ gap1 ) ->
-                    Neat.expand (IsGap gap1) (IsGap gap2)
-
-                ( Just (AstGap.Gap _ gap2), AstGap.NoGap ) ->
-                    Neat.expand (IsGap { width = 0, height = 0 }) (IsGap gap2)
-
-                _ ->
-                    identity
 
 
 indent : View NoGap msg
@@ -1187,3 +948,110 @@ numberInput n =
         |> setAttribute (Attributes.type_ "number")
         |> setAttribute (Attributes.value <| String.fromInt n)
         |> setClass "input"
+
+
+
+-- AST helpers
+
+modifiersOf : Ast -> List Modifier
+modifiersOf ast =
+    case ast of
+        TextBlock _ mods ->
+            mods
+
+        Empty mods ->
+            mods
+
+        RowWith _ _ mods ->
+            mods
+
+        ColumnWith _ _ mods ->
+            mods
+
+        Unselected ->
+            []
+
+
+setModifiersOf : Ast -> List Modifier -> Ast
+setModifiersOf ast mods =
+    case ast of
+        TextBlock str _ ->
+            TextBlock str mods
+
+        Empty _ ->
+            Empty mods
+
+        RowWith align children _ ->
+            RowWith align children mods
+
+        ColumnWith align children _ ->
+            ColumnWith align children mods
+
+        Unselected ->
+            Unselected
+
+
+setChildrenOf : Ast -> List Ast -> Ast
+setChildrenOf ast children =
+    case ast of
+        RowWith align _ mods ->
+            RowWith align children mods
+
+        ColumnWith align _ mods ->
+            ColumnWith align children mods
+
+        _ ->
+            ast
+
+
+setRowAlignment : Ast -> Maybe Row -> Ast
+setRowAlignment ast malign =
+    case ast of
+        RowWith _ children mods ->
+            RowWith malign children mods
+
+        _ ->
+            ast
+
+
+rowAlignmentOf : Ast -> Maybe Row
+rowAlignmentOf ast =
+    case ast of
+        RowWith malign _ _ ->
+            malign
+
+        _ ->
+            Nothing
+
+
+setColumnAlignment : Ast -> Maybe Column -> Ast
+setColumnAlignment ast malign =
+    case ast of
+        ColumnWith _ children mods ->
+            ColumnWith malign children mods
+
+        _ ->
+            ast
+
+
+columnAlignmentOf : Ast -> Maybe Column
+columnAlignmentOf ast =
+    case ast of
+        ColumnWith malign _ _ ->
+            malign
+
+        _ ->
+            Nothing
+
+
+editAlignment : Ast -> Bool
+editAlignment ast =
+    case ast of
+        RowWith (Just _) _ _ ->
+            True
+
+        ColumnWith (Just _) _ _ ->
+            True
+
+        _ ->
+            False

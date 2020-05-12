@@ -1,18 +1,19 @@
 module Repl.GapEditor exposing
     ( GapEditor
+    , toList
     , Msg
     , update
     , editor
     , capitalizeHead
-    , toCustomGaps
     )
 
-{-| Gap related functions for REPL.
+{-| Gap editor for REPL.
 
 
 # Core
 
 @docs GapEditor
+@docs toList
 @docs Msg
 @docs update
 @docs editor
@@ -51,8 +52,8 @@ type alias GapForm =
     }
 
 
-toCustomGaps : GapEditor -> List ( String, GapSize )
-toCustomGaps (GapEditor model) =
+toList : GapEditor -> List ( String, GapSize )
+toList (GapEditor model) =
     Debug.todo "formDecoder"
 
 
