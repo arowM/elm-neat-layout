@@ -1,28 +1,33 @@
 module Repl exposing
-    ( Msg
-    , Repl
-    , init
+    ( Repl
+    , fromRecord
+    , Msg
     , update
     , repl
     )
 
 {-| Repl for the guide.
 
+@docs Repl
+@docs fromRecord
 @docs Msg
-@docs init
 @docs update
 @docs repl
 
 -}
 
 import Gap
+import Html.Attributes.Classname exposing (classMixinWith)
 import Mixin exposing (Mixin)
-import Neat exposing (NoGap, View, setAttribute, setMixin)
+import Neat exposing (IsGap(..), NoGap, View, empty, fromNoGap, setAttribute, setLayout, setMixin, setMixins, textBlock)
 import Neat.Layout as Layout
+import Neat.Layout.Column as Column exposing (Column, column, columnWith, columnWithMap, defaultColumn)
+import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
 import Reference exposing (Reference)
-import Repl.GapEditor as GapEditor exposing (GapEditor)
--- TODO move to Repl.Ast
-import Ast as Ast exposing (Ast)
+import Repl.Ast as Ast exposing (Ast)
+import Repl.GapEditor as GapEditor exposing (GapEditor, gapEditor)
+import Repl.Preview as Preview exposing (preview)
+import Repl.ViewEditor as ViewEditor exposing (ViewEditor, viewEditor)
 
 
 {-| State of REPL.
@@ -33,67 +38,73 @@ type Repl
 
 type alias Model =
     { gapEditor : GapEditor
-    , ast : Ast
+    , viewEditor : ViewEditor
     }
 
-{-| Msg for REPL. -}
+
+{-| Msg for REPL.
+-}
 type Msg
     = UpdateGapEditor GapEditor.Msg
-    | UpdateAst Ast.Msg
+    | UpdateViewEditor ViewEditor.Msg
 
 
 {-| Constructor for `Repl`.
 -}
-fromRecord : { gapEditor : GapEditor, ast : Ast } -> Repl
-fromRecord = Repl
+fromRecord : { gapEditor : GapEditor, viewEditor : ViewEditor } -> Repl
+fromRecord =
+    Repl
 
-update : Msg -> Repl -> (Repl, Cmd Msg)
+
+update : Msg -> Repl -> ( Repl, Cmd Msg )
 update msg (Repl model) =
     case msg of
         UpdateGapEditor new ->
-            ( Repl
-                { model
-                    | gapEditor = new
-                }
-            , Cmd.none
-            )
+            GapEditor.update new model.gapEditor
+                |> Tuple.mapFirst (\m -> Repl { model | gapEditor = m })
+                |> Tuple.mapSecond (Cmd.map UpdateGapEditor)
 
-        UpdateAst new ->
-            ( Repl
-                { model
-                    | ast = new
-                }
-            , Cmd.none
-            )
+        UpdateViewEditor new ->
+            ViewEditor.update new model.viewEditor
+                |> Tuple.mapFirst (\m -> Repl { model | viewEditor = m })
+                |> Tuple.mapSecond (Cmd.map UpdateViewEditor)
 
 
 {-| View for REPL
 -}
-repl : (Msg -> msg) -> Ast -> View Gap.Repl msg
-repl f ast =
+repl : (Msg -> msg) -> Repl -> View Gap.Repl msg
+repl f (Repl model) =
+    repl_ f model
+
+
+repl_ : (Msg -> msg) -> Model -> View Gap.Repl msg
+repl_ f model =
     rowWithMap
         f
         { defaultRow
             | wrap = Row.Wrap
         }
-        [ editor ast
+        [ editor model
             |> fromNoGap Gap.repl
             |> setLayout Layout.fill
-        , preview ast
+        , preview
+            { viewEditor = model.viewEditor }
             |> fromNoGap Gap.repl
             |> setLayout Layout.fill
         ]
 
 
-editor : Repl -> View NoGap Msg
-editor (Repl model) =
+editor : Model -> View NoGap Msg
+editor model =
     column
         [ textBlock "Editor"
             |> Neat.fromNoGap Gap.editor
             |> Neat.setBoundary Gap.editor
             |> setClass "editor-title"
-        , column
-            [ Ast.editor <| Reference.top model.ast
+        , columnWithMap
+            UpdateViewEditor
+            defaultColumn
+            [ viewEditor { gapEditor = model.gapEditor } model.viewEditor
             ]
             |> Neat.fromNoGap Gap.editor
             |> Neat.setBoundary Gap.editor
@@ -103,12 +114,13 @@ editor (Repl model) =
         |> setClass "editor"
 
 
+
 -- Helper functions
 
 
 class : String -> Mixin msg
 class =
-    classMixinWith <| \name -> "view__" ++ name
+    classMixinWith <| \name -> "repl__" ++ name
 
 
 setClass : String -> View NoGap msg -> View NoGap msg

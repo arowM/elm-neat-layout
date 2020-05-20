@@ -1,6 +1,5 @@
 module Main exposing (main)
 
-import Ast exposing (Ast)
 import Gap
 import Html exposing (Html)
 import Html.Attributes.Classname exposing (classMixinWith)
@@ -10,6 +9,10 @@ import Neat exposing (NoGap, View, setBoundary, setLayout)
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, column, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWithMap)
+import Repl exposing (Repl, repl)
+import Repl.Ast as Ast
+import Repl.GapEditor as GapEditor exposing (GapEditor)
+import Repl.ViewEditor as ViewEditor exposing (ViewEditor)
 
 
 
@@ -31,40 +34,60 @@ main =
 
 
 type alias Model =
-    { ast : Ast
+    { repl1 : Repl
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { ast = Ast.Unselected
+    ( { repl1 =
+            Repl.fromRecord
+                { gapEditor = defaultGapEditor
+                , viewEditor = defaultViewEditor
+                }
       }
     , Cmd.none
     )
 
 
+defaultViewEditor : ViewEditor
+defaultViewEditor =
+    ViewEditor.fromAst
+        Ast.Unselected
+
+
+defaultGapEditor : GapEditor
+defaultGapEditor =
+    GapEditor.fromList
+        [ ( "narrow"
+          , { width = 0.4
+            , height = 0.4
+            }
+          )
+        , ( "wide"
+          , { width = 2
+            , height = 2
+            }
+          )
+        ]
+
+
 type Msg
-    = UpdateAst Ast.Msg
+    = UpdateRepl1 Repl.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateAst msg_ ->
-            let
-                ( ast_, cmd ) =
-                    Ast.update msg_ model.ast
-            in
-            ( { model
-                | ast = ast_
-              }
-            , Cmd.map UpdateAst cmd
-            )
+        UpdateRepl1 new ->
+            Repl.update new model.repl1
+                |> Tuple.mapFirst (\r -> { model | repl1 = r })
+                |> Tuple.mapSecond (Cmd.map UpdateRepl1)
 
 
 view : Model -> View NoGap Msg
 view model =
-    Ast.repl UpdateAst 2 model.ast
+    repl UpdateRepl1 model.repl1
         |> setLayout Layout.fill
         |> setBoundary Gap.repl
 

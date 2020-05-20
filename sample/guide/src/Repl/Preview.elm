@@ -1,33 +1,40 @@
 module Repl.Preview exposing
-    ( Preview
-    , preview
+    ( preview
+    , Config
     )
-
 
 {-| Preview window for REPL.
 
-# Model
-
-@docs Preview
-
-# View
-
 @docs preview
+@docs Config
 
 -}
 
+import Gap
+import Html.Attributes.Classname exposing (classMixinWith)
+import Mixin exposing (Mixin)
+import Neat exposing (IsGap(..), NoGap, View, empty, fromNoGap, setAttribute, setLayout, setMixin, setMixins, textBlock)
+import Neat.Layout as Layout
+import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaultColumn)
+import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
+import Repl.Ast as Ast exposing (Ast(..), Modifier(..), modifiersOf, resultingGap, setAccumulatedGaps, unmodifiedGap)
+import Repl.Ast.Gap as AstGap exposing (AstGap, GapSize)
+import Repl.ViewEditor as ViewEditor exposing (ViewEditor)
 
-type Preview = Preview Model
 
+type alias Config =
+    { viewEditor : ViewEditor
+    }
 
-type alias Model =
-    { gapEditor : GapEditor
-    , ast : A
 
 {-| View for preview window
 -}
-preview : Ast -> View NoGap Msg
-preview ast =
+preview : Config -> View NoGap msg
+preview config =
+    let
+        ast =
+            ViewEditor.toAst config.viewEditor
+    in
     column
         [ textBlock "Preview"
             |> Neat.fromNoGap Gap.preview
@@ -58,13 +65,13 @@ preview ast =
         |> setClass "preview"
 
 
-previewCore : Ast -> View NoGap Msg
+previewCore : Ast -> View NoGap msg
 previewCore ast =
     previewUnmodified ast
         |> applyModifiers ast
 
 
-previewUnmodified : Ast -> View NoGap Msg
+previewUnmodified : Ast -> View NoGap msg
 previewUnmodified ast =
     case ast of
         TextBlock str mods ->
@@ -85,30 +92,30 @@ previewUnmodified ast =
             Neat.none
 
 
-applyModifiers : Ast -> View NoGap Msg -> View NoGap Msg
+applyModifiers : Ast -> View NoGap msg -> View NoGap msg
 applyModifiers ast =
     List.foldr (>>)
         identity
         (List.map previewMod <| setAccumulatedGaps (unmodifiedGap ast) (modifiersOf ast))
 
 
-previewMod : ( AstGap, Modifier ) -> View NoGap Msg -> View NoGap Msg
+previewMod : ( AstGap, Modifier ) -> View NoGap msg -> View NoGap msg
 previewMod ( accumGap, mod ) =
     case mod of
         SetClass str ->
             setClass str
 
         SetLayoutFill ->
-            setLayoutFillBy 1
+            setLayout <| Layout.fillBy 1
 
         SetLayoutFillBy n ->
-            setLayoutFillBy n
+            setLayout <| Layout.fillBy n
 
         SetLayoutNoShrink ->
-            setLayoutShrinkBy 0
+            setLayout <| Layout.shrinkBy 0
 
         SetLayoutShrinkBy n ->
-            setLayoutShrinkBy n
+            setLayout <| Layout.shrinkBy n
 
         ExpandTo mgap2 ->
             case ( mgap2, accumGap ) of
@@ -122,3 +129,15 @@ previewMod ( accumGap, mod ) =
                     identity
 
 
+
+-- Helper functions
+
+
+class : String -> Mixin msg
+class =
+    classMixinWith <| \name -> "repl_-preview__" ++ name
+
+
+setClass : String -> View NoGap msg -> View NoGap msg
+setClass =
+    setMixin << class

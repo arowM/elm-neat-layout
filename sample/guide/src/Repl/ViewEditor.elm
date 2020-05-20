@@ -1,24 +1,27 @@
-module Repl.Editor exposing
-    ( Editor
+module Repl.ViewEditor exposing
+    ( ViewEditor
+    , fromAst
+    , toAst
     , Msg
     , update
-    , editor
+    , viewEditor
+    , Config
     )
-
 
 {-| Editor window for Repl
 
-@docs Editor
+@docs ViewEditor
+@docs fromAst
+@docs toAst
 @docs Msg
 @docs update
-@docs editor
+@docs viewEditor
+@docs Config
 
 -}
 
-
-import Repl.Ast as Ast exposing (Ast(..), Modifier(..))
-import Ast.Gap as AstGap exposing (AstGap, GapSize)
 import Dict
+import Form.Decoder as FD
 import Gap
 import Html
 import Html.Attributes as Attributes
@@ -35,9 +38,13 @@ import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaul
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
 import Reference exposing (Reference)
 import Reference.List
+import Repl.Ast as Ast exposing (Ast(..), Modifier(..), gapOfModifier, resultingGap, setAccumulatedGaps, unmodifiedGap)
+import Repl.Ast.Gap as AstGap exposing (AstGap, GapSize)
+import Repl.GapEditor as GapEditor exposing (GapEditor)
 
 
-type Editor = Editor Model
+type ViewEditor
+    = ViewEditor Model
 
 
 type alias Model =
@@ -46,44 +53,62 @@ type alias Model =
 
 
 {-| -}
+fromAst : Ast -> ViewEditor
+fromAst ast =
+    ViewEditor { ast = ast }
+
+
+{-| -}
+toAst : ViewEditor -> Ast
+toAst (ViewEditor { ast }) =
+    ast
+
+
+{-| -}
 type Msg
     = UpdateAst Ast
 
+
+type alias Config =
+    { gapEditor : GapEditor
+    }
+
+
 {-| -}
-update : Msg -> Editor -> ( Editor, Cmd Msg )
+update : Msg -> ViewEditor -> ( ViewEditor, Cmd Msg )
 update msg _ =
     case msg of
         UpdateAst ast ->
-            ( Editor { ast = ast }, Cmd.none )
+            ( ViewEditor { ast = ast }, Cmd.none )
 
 
 {-| -}
-editor : Editor -> View NoGap Msg
-editor (Editor {ast}) =
-    editorCore <| Reference.top ast
+viewEditor : Config -> ViewEditor -> View NoGap Msg
+viewEditor config (ViewEditor { ast }) =
+    editorCore config <| Reference.top ast
 
 
-editorCore : Reference Ast Ast -> View NoGap Msg
-editorCore ref =
+editorCore : Config -> Reference Ast Ast -> View NoGap Msg
+editorCore config ref =
     case Reference.this ref of
         Ast.TextBlock str mods ->
-            textBlockEditor ref str mods
+            textBlockEditor config ref str mods
 
         Ast.Empty mods ->
-            emptyEditor ref mods
+            emptyEditor config ref mods
 
         Ast.RowWith _ children mods ->
-            rowEditor ref children mods
+            rowEditor config ref children mods
 
         Ast.ColumnWith _ children mods ->
-            columnEditor ref children mods
+            columnEditor config ref children mods
 
         Ast.Unselected ->
             unselectedEditor ref
 
 
-textBlockEditor : Reference Ast Ast -> String -> List Modifier -> View NoGap Msg
-textBlockEditor ref str mods =
+textBlockEditor : Config -> Reference Ast Ast -> String -> List Modifier -> View NoGap Msg
+textBlockEditor config ref str mods =
     column
         [ row
             [ textBlock "textBlock \""
@@ -97,7 +122,7 @@ textBlockEditor ref str mods =
                 , gapAnnotation <| AstGap.mappend (unmodifiedGap <| Reference.this ref) AstGap.Undetermined
                 ]
             ]
-        , editMods ref mods
+        , editMods config ref mods
         , appendMods ref mods
         ]
 
@@ -133,20 +158,20 @@ annotationBlock msg =
         |> setClass "annotation"
 
 
-emptyEditor : Reference Ast Ast -> List Modifier -> View NoGap Msg
-emptyEditor ref mods =
+emptyEditor : Config -> Reference Ast Ast -> List Modifier -> View NoGap Msg
+emptyEditor config ref mods =
     column
         [ row
             [ textBlock "empty"
             , gapAnnotation <| AstGap.mappend (unmodifiedGap <| Reference.this ref) AstGap.Undetermined
             ]
-        , editMods ref mods
+        , editMods config ref mods
         , appendMods ref mods
         ]
 
 
-rowEditor : Reference Ast Ast -> List Ast -> List Modifier -> View NoGap Msg
-rowEditor ref asts mods =
+rowEditor : Config -> Reference Ast Ast -> List Ast -> List Modifier -> View NoGap Msg
+rowEditor config ref asts mods =
     let
         ast =
             Reference.this ref
@@ -193,7 +218,7 @@ rowEditor ref asts mods =
             { rootWith = rootWithChildren ref
             , this = asts
             }
-            |> Reference.List.unwrap editorCore
+            |> Reference.List.unwrap (editorCore config)
             |> List.indexedMap
                 (\n x ->
                     if n == 0 then
@@ -218,7 +243,7 @@ rowEditor ref asts mods =
             [ textBlock "    ]"
             , gapAnnotation (unmodifiedGap <| Reference.this ref)
             ]
-        , editMods ref mods
+        , editMods config ref mods
         , appendMods ref mods
         ]
 
@@ -277,8 +302,8 @@ rowAlignmentEditor ref =
         ]
 
 
-columnEditor : Reference Ast Ast -> List Ast -> List Modifier -> View NoGap Msg
-columnEditor ref asts mods =
+columnEditor : Config -> Reference Ast Ast -> List Ast -> List Modifier -> View NoGap Msg
+columnEditor config ref asts mods =
     let
         ast =
             Reference.this ref
@@ -325,7 +350,7 @@ columnEditor ref asts mods =
             { rootWith = rootWithChildren ref
             , this = asts
             }
-            |> Reference.List.unwrap editorCore
+            |> Reference.List.unwrap (editorCore config)
             |> List.indexedMap
                 (\n x ->
                     if n == 0 then
@@ -350,7 +375,7 @@ columnEditor ref asts mods =
             [ textBlock "    ]"
             , gapAnnotation (unmodifiedGap <| Reference.this ref)
             ]
-        , editMods ref mods
+        , editMods config ref mods
         , appendMods ref mods
         ]
 
@@ -423,8 +448,8 @@ unselectedEditor ref =
         ]
 
 
-editorMod : Reference ( AstGap, Modifier ) Ast -> View NoGap Msg
-editorMod ref =
+editorMod : Config -> Reference ( AstGap, Modifier ) Ast -> View NoGap Msg
+editorMod config ref =
     let
         ( accumGap, mod ) =
             Reference.this ref
@@ -480,7 +505,7 @@ editorMod ref =
                 ]
 
         ExpandTo mgap2 ->
-            editorModExpandTo accumGap ref mgap2
+            editorModExpandTo config accumGap ref mgap2
 
 
 editorModSetClass : Reference ( AstGap, Modifier ) Ast -> String -> View NoGap Msg
@@ -499,11 +524,21 @@ editorModSetClass ref str =
         ]
 
 
-editorModExpandTo : GapEditor -> AstGap -> Reference ( AstGap, Modifier ) Ast -> Maybe AstGap -> View NoGap Msg
-editorModExpandTo gapEditor accumGap ref mgap2 =
+editorModExpandTo : Config -> AstGap -> Reference ( AstGap, Modifier ) Ast -> Maybe AstGap -> View NoGap Msg
+editorModExpandTo { gapEditor } accumGap ref mgap2 =
+    case FD.run GapEditor.decoder gapEditor of
+        Err _ ->
+            textBlock "Gaps are invalid"
+
+        Ok gaps ->
+            editorModExpandTo_ gaps accumGap ref mgap2
+
+
+editorModExpandTo_ : List ( String, GapSize ) -> AstGap -> Reference ( AstGap, Modifier ) Ast -> Maybe AstGap -> View NoGap Msg
+editorModExpandTo_ gaps accumGap ref mgap2 =
     row
         [ textBlock <| labelExpandTo accumGap
-        , selectForEnum gapEditor
+        , selectForEnum gaps
             |> updateWithRefOnInput ref
                 (\a ->
                     ( accumGap
@@ -537,7 +572,6 @@ labelExpandTo gap =
             ""
 
 
-
 indent : View NoGap msg
 indent =
     textBlock "    "
@@ -568,12 +602,12 @@ appendMods ref mods =
         ]
 
 
-editMods : Reference Ast Ast -> List Modifier -> View NoGap Msg
-editMods ref mods =
+editMods : Config -> Reference Ast Ast -> List Modifier -> View NoGap Msg
+editMods config ref mods =
     column <|
         Reference.List.unwrap
             (identity
-                >> editorMod
+                >> editorMod config
                 >> (\v ->
                         row
                             [ indent
@@ -813,64 +847,12 @@ encodeColumnWrap v =
 
 
 
--- Gap calculations
-
-
-modifiedGap : AstGap -> List Modifier -> AstGap
-modifiedGap init =
-    List.foldl (\mod acc -> AstGap.mappend acc <| gapOfModifier mod) init
-
-
-setAccumulatedGaps : AstGap -> List Modifier -> List ( AstGap, Modifier )
-setAccumulatedGaps init mods =
-    List.zip
-        (List.scanl (\mod acc -> AstGap.mappend acc <| gapOfModifier mod) init mods)
-        mods
-
-
-gapOfModifier : Modifier -> AstGap
-gapOfModifier mod =
-    case mod of
-        ExpandTo (Just gap) ->
-            gap
-
-        _ ->
-            AstGap.Undetermined
-
-
-unmodifiedGap : Ast -> AstGap
-unmodifiedGap ast =
-    case ast of
-        TextBlock _ _ ->
-            AstGap.NoGap
-
-        Empty _ ->
-            AstGap.NoGap
-
-        RowWith _ children _ ->
-            AstGap.reduceChildGaps <|
-                List.map resultingGap children
-
-        ColumnWith _ children _ ->
-            AstGap.reduceChildGaps <|
-                List.map resultingGap children
-
-        Unselected ->
-            AstGap.Undetermined
-
-
-resultingGap : Ast -> AstGap
-resultingGap ast =
-    modifiedGap (unmodifiedGap ast) (modifiersOf ast)
-
-
-
 -- Helper functions
 
 
 class : String -> Mixin msg
 class =
-    classMixinWith <| \name -> "ast__" ++ name
+    classMixinWith <| \name -> "repl_-viewEditor__" ++ name
 
 
 setClass : String -> View NoGap msg -> View NoGap msg
@@ -881,16 +863,6 @@ setClass =
 setValue : String -> View NoGap msg -> View NoGap msg
 setValue v =
     setAttribute (Attributes.value v)
-
-
-setLayoutFillBy : Int -> View NoGap msg -> View NoGap msg
-setLayoutFillBy =
-    setLayout << Layout.fillBy
-
-
-setLayoutShrinkBy : Int -> View NoGap msg -> View NoGap msg
-setLayoutShrinkBy =
-    setLayout << Layout.shrinkBy
 
 
 rootWithModifiers : Reference Ast Ast -> List Modifier -> Ast
@@ -952,24 +924,6 @@ numberInput n =
 
 
 -- AST helpers
-
-modifiersOf : Ast -> List Modifier
-modifiersOf ast =
-    case ast of
-        TextBlock _ mods ->
-            mods
-
-        Empty mods ->
-            mods
-
-        RowWith _ _ mods ->
-            mods
-
-        ColumnWith _ _ mods ->
-            mods
-
-        Unselected ->
-            []
 
 
 setModifiersOf : Ast -> List Modifier -> Ast

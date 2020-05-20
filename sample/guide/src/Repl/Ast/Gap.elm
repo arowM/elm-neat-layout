@@ -1,4 +1,4 @@
-module Ast.Gap exposing
+module Repl.Ast.Gap exposing
     ( AstGap(..)
     , GapSize
     , Error(..)
@@ -36,7 +36,10 @@ type AstGap
     | Invalid Error
     | Undetermined
 
-type CustomGap = GustomGap String GapSize
+
+type CustomGap
+    = GustomGap String GapSize
+
 
 {-| Size definition for a Gap
 -}

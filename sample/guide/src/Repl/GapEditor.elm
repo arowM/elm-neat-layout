@@ -1,10 +1,11 @@
 module Repl.GapEditor exposing
     ( GapEditor
-    , toList
+    , decoder
     , Msg
     , update
-    , editor
+    , gapEditor
     , capitalizeHead
+    , fromList
     )
 
 {-| Gap editor for REPL.
@@ -13,20 +14,22 @@ module Repl.GapEditor exposing
 # Core
 
 @docs GapEditor
-@docs toList
+@docs decoder
 @docs Msg
 @docs update
-@docs editor
+@docs gapEditor
 @docs capitalizeHead
 
 -}
 
-import Ast.Gap exposing (GapSize)
+import Form.Decoder as FD exposing (Decoder)
 import Neat exposing (NoGap, View, textBlock)
 import Neat.Layout.Column exposing (column)
 import Neat.Layout.Row exposing (row)
 import Reference exposing (Reference)
 import Reference.List
+import Repl.Ast.Gap exposing (GapSize)
+import Repl.GapEditor.GapForm as GapForm exposing (GapForm)
 import View exposing (emptyLine, textInput)
 
 
@@ -40,21 +43,39 @@ type GapEditor
     = GapEditor Model
 
 
+fromList : List ( String, GapSize ) -> GapEditor
+fromList ls =
+    ls
+        |> List.map
+            (\( name, size ) ->
+                { name = name
+                , width = String.fromFloat size.width
+                , height = String.fromFloat size.height
+                }
+            )
+        |> (\fs -> GapEditor { forms = fs })
+
+
 type alias Model =
     { forms : List GapForm
     }
 
 
-type alias GapForm =
-    { name : String
-    , width : String
-    , height : String
-    }
+{-| Decoder that produces list of (gap name, gap size).
+-}
+decoder : Decoder GapEditor ( Int, GapForm.Error ) (List ( String, GapSize ))
+decoder =
+    FD.lift (\(GapEditor model) -> model) modelDecoder
 
 
-toList : GapEditor -> List ( String, GapSize )
-toList (GapEditor model) =
-    Debug.todo "formDecoder"
+modelDecoder : Decoder Model ( Int, GapForm.Error ) (List ( String, GapSize ))
+modelDecoder =
+    FD.lift .forms formsDecoder
+
+
+formsDecoder : Decoder (List GapForm) ( Int, GapForm.Error ) (List ( String, GapSize ))
+formsDecoder =
+    FD.listOf GapForm.decoder
 
 
 type Msg
@@ -75,8 +96,8 @@ update msg (GapEditor model) =
 
 {-| View for Gap editor window
 -}
-editor : GapEditor -> View NoGap Msg
-editor (GapEditor model) =
+gapEditor : GapEditor -> View NoGap Msg
+gapEditor (GapEditor model) =
     column
         (Reference.List.unwrap formEditor <| Reference.top model.forms)
 
