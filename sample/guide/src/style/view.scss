@@ -1,10 +1,11 @@
-@import '../variables';
+@import './variables';
 
 .input, .select {
   border: 1px solid #333;
   border-radius: 0.3em;
   background-color: #666;
   width: 7em;
+  padding: 0.1em 0.2em;
 }
 
 .annotation {
@@ -13,4 +14,8 @@
   &-error {
     color: #f66;
   }
+}
+
+.emptyLine {
+  height: 1em;
 }

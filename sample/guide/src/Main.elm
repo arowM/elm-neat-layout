@@ -41,10 +41,8 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { repl1 =
-            Repl.fromRecord
-                { gapEditor = defaultGapEditor
-                , viewEditor = defaultViewEditor
-                }
+            Repl.default
+                |> Repl.setGapEditor defaultGapEditor
       }
     , Cmd.none
     )

@@ -11,7 +11,7 @@ module Neat.Boundary exposing
 # Core
 
 @docs Boundary
-@docs defaultBoudary
+@docs defaultBoundary
 @docs Vertical
 @docs Horizontal
 

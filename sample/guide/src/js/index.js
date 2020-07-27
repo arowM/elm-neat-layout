@@ -1,9 +1,11 @@
 require('../style/reset.scss');
 require('../style/app.scss');
+require('../style/view.scss');
 
 require('../style/repl.scss');
 require('../style/repl/preview.scss');
 require('../style/repl/viewEditor.scss');
+require('../style/repl/gapEditor.scss');
 // require('../style/repl/gapEditor.scss');
 
 const { Elm } = require('../Main.elm');

@@ -1,25 +1,41 @@
 module Repl exposing
     ( Repl
-    , fromRecord
+    , default
     , Msg
     , update
     , repl
+    , setViewEditor
+    , setGapEditor
+    , showViewEditor
+    , showGapEditor
     )
 
 {-| Repl for the guide.
 
+# Core
+
 @docs Repl
-@docs fromRecord
 @docs Msg
 @docs update
 @docs repl
 
+# Repl builders
+
+@docs default
+@docs setViewEditor
+@docs setGapEditor
+@docs showViewEditor
+@docs showGapEditor
+
 -}
 
 import Gap
+import Html.Attributes as Attributes
 import Html.Attributes.Classname exposing (classMixinWith)
+import Html.Events as Events
 import Mixin exposing (Mixin)
-import Neat exposing (IsGap(..), NoGap, View, empty, fromNoGap, setAttribute, setLayout, setMixin, setMixins, textBlock)
+import Neat exposing (IsGap(..), NoGap, View, empty, emptyNode, fromNoGap, setAttribute, setLayout, setMixin, setMixins, textBlock)
+import Neat.Boundary as Boundary exposing (Boundary, defaultBoundary)
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, column, columnWith, columnWithMap, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
@@ -39,6 +55,8 @@ type Repl
 type alias Model =
     { gapEditor : GapEditor
     , viewEditor : ViewEditor
+    , showGapEditor : Bool
+    , showViewEditor : Bool
     }
 
 
@@ -47,13 +65,44 @@ type alias Model =
 type Msg
     = UpdateGapEditor GapEditor.Msg
     | UpdateViewEditor ViewEditor.Msg
+    | ToggleShowViewEditor
+    | ToggleShowGapEditor
 
 
 {-| Constructor for `Repl`.
 -}
-fromRecord : { gapEditor : GapEditor, viewEditor : ViewEditor } -> Repl
-fromRecord =
+default : Repl
+default =
     Repl
+    { gapEditor = GapEditor.fromList []
+    , viewEditor = ViewEditor.fromAst Ast.Unselected
+    , showGapEditor = False
+    , showViewEditor = False
+    }
+
+
+
+-- Setters
+
+
+setGapEditor : GapEditor -> Repl -> Repl
+setGapEditor v (Repl o) =
+    Repl { o | gapEditor = v }
+
+
+setViewEditor : ViewEditor -> Repl -> Repl
+setViewEditor v (Repl o) =
+    Repl { o | viewEditor = v }
+
+
+showGapEditor : Repl -> Repl
+showGapEditor (Repl o) =
+    Repl { o | showGapEditor = True }
+
+
+showViewEditor : Repl -> Repl
+showViewEditor (Repl o) =
+    Repl { o | showViewEditor = True }
 
 
 update : Msg -> Repl -> ( Repl, Cmd Msg )
@@ -69,51 +118,128 @@ update msg (Repl model) =
                 |> Tuple.mapFirst (\m -> Repl { model | viewEditor = m })
                 |> Tuple.mapSecond (Cmd.map UpdateViewEditor)
 
+        ToggleShowViewEditor ->
+            ( Repl
+                { model |
+                    showViewEditor = not model.showViewEditor
+                }
+            , Cmd.none
+            )
+
+        ToggleShowGapEditor ->
+            ( Repl
+                { model |
+                    showGapEditor = not model.showGapEditor
+                }
+            , Cmd.none
+            )
+
 
 {-| View for REPL
 -}
-repl : (Msg -> msg) -> Repl -> View Gap.Repl msg
+repl : (Msg -> msg) -> Repl -> View NoGap msg
 repl f (Repl model) =
     repl_ f model
 
 
-repl_ : (Msg -> msg) -> Model -> View Gap.Repl msg
+repl_ : (Msg -> msg) -> Model -> View NoGap msg
 repl_ f model =
-    rowWithMap
+    columnWithMap
         f
-        { defaultRow
-            | wrap = Row.Wrap
-        }
-        [ editor model
-            |> fromNoGap Gap.repl
+        defaultColumn
+        [ rowWith
+            { defaultRow
+                | horizontal = Row.Right
+            }
+            [ editorTabButton
+                { onClick = ToggleShowViewEditor
+                , label = "View"
+                }
+                model.showViewEditor
+            , editorTabButton
+                { onClick = ToggleShowGapEditor
+                , label = "Gap"
+                }
+                model.showGapEditor
+            ]
             |> setLayout Layout.fill
-        , preview
-            { viewEditor = model.viewEditor }
-            |> fromNoGap Gap.repl
-            |> setLayout Layout.fill
-        ]
-
-
-editor : Model -> View NoGap Msg
-editor model =
-    column
-        [ textBlock "Editor"
-            |> Neat.fromNoGap Gap.editor
             |> Neat.setBoundary Gap.editor
-            |> setClass "editor-title"
-        , columnWithMap
-            UpdateViewEditor
-            defaultColumn
-            [ viewEditor { gapEditor = model.gapEditor } model.viewEditor
+            |> setClass "repl_title"
+        , column
+            [ preview
+                { viewEditor = model.viewEditor }
+                |> fromNoGap Gap.repl
+                |> setLayout Layout.fill
+
+            , editor
+                { toMsg = UpdateViewEditor
+                , title = "View"
+                }
+                [ viewEditor
+                    { gapEditor = model.gapEditor
+                    }
+                    model.viewEditor
+                ]
+                |> fromNoGap Gap.repl
+                |> setLayout Layout.fill
+                |> Neat.when model.showViewEditor
+            , editor
+                { toMsg = UpdateGapEditor
+                , title = "Gap"
+                }
+                [ gapEditor model.gapEditor
+                ]
+                |> fromNoGap Gap.repl
+                |> setLayout Layout.fill
+                |> Neat.when model.showGapEditor
             ]
             |> Neat.fromNoGap Gap.editor
             |> Neat.setBoundary Gap.editor
-            |> setClass "editor-body"
+            |> setClass "repl_body"
             |> setLayout Layout.fill
         ]
-        |> setClass "editor"
+        |> setClass "window"
 
 
+editor : { toMsg : msg -> Msg, title : String } -> List (View NoGap msg) -> View NoGap Msg
+editor { title, toMsg } view =
+    column
+        [ row
+            [ textBlock title
+                |> Neat.fromNoGap Gap.editor
+            ]
+            |> Neat.setBoundary Gap.editor
+            |> setClass "window_title"
+        , columnWithMap
+            toMsg
+            defaultColumn
+            view
+            |> Neat.fromNoGap Gap.editor
+            |> Neat.setBoundary Gap.editor
+            |> setClass "window_body"
+            |> setLayout Layout.fill
+        ]
+        |> setClass "window"
+
+
+editorTabButton : { onClick : Msg, label : String } -> Bool -> View Gap.Editor Msg
+editorTabButton { onClick, label } show =
+                textBlock label
+                  |> Neat.fromNoGap Gap.editor
+                  |> Neat.setBoundaryWith
+                    { defaultBoundary
+                        | nodeName = "button"
+                        , vertical = Boundary.VCenter
+                        , horizontal = Boundary.HCenter
+                    }
+                    Gap.editor
+                    |> Neat.setAttributes
+                        [ Attributes.type_ "button"
+                        , Events.onClick onClick
+                        ]
+                    |> setClass "repl_tabButton"
+                    |> Neat.setBoolAria "checked" show
+                    |> Neat.fromNoGap Gap.editor
 
 -- Helper functions
 

@@ -1,6 +1,6 @@
 # 2.0.0
 
-### Improvements:
+### Improvements
 
 * Add `setBoundaryWith` function and `Neat.Boundary` module
 * Add special map functions

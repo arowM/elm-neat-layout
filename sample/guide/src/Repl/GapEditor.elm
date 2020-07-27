@@ -22,8 +22,10 @@ module Repl.GapEditor exposing
 
 -}
 
+import Html.Attributes.Classname exposing (classMixinWith)
 import Form.Decoder as FD exposing (Decoder)
-import Neat exposing (NoGap, View, textBlock)
+import Mixin exposing (Mixin)
+import Neat exposing (NoGap, View, setMixin, textBlock)
 import Neat.Layout.Column exposing (column)
 import Neat.Layout.Row exposing (row)
 import Reference exposing (Reference)
@@ -116,6 +118,7 @@ formEditor ref =
                 , toMsg = UpdateForms
                 }
                 this.name
+                    |> setClass "input"
             , textBlock <| " : IsGap " ++ capitalizeHead this.name
             ]
         , textBlock <| this.name ++ " ="
@@ -128,6 +131,7 @@ formEditor ref =
                 , toMsg = UpdateForms
                 }
                 this.width
+                    |> setClass "input"
             ]
         , row
             [ textBlock <| "        { height = "
@@ -137,6 +141,7 @@ formEditor ref =
                 , toMsg = UpdateForms
                 }
                 this.height
+                    |> setClass "input"
             ]
         , textBlock <| "        }"
         , View.emptyLine
@@ -159,3 +164,17 @@ capitalizeHead name =
         |> Maybe.map
             (\( c, str ) -> String.cons (Char.toUpper c) str)
         |> Maybe.withDefault ""
+
+
+
+-- Helper functions
+
+
+class : String -> Mixin msg
+class =
+    classMixinWith <| \name -> "repl_-gapEditor__" ++ name
+
+
+setClass : String -> View NoGap msg -> View NoGap msg
+setClass =
+    setMixin << class
