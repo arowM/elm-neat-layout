@@ -24,15 +24,17 @@ module Repl.GapEditor exposing
 
 import Html.Attributes.Classname exposing (classMixinWith)
 import Form.Decoder as FD exposing (Decoder)
+import Gap
 import Mixin exposing (Mixin)
-import Neat exposing (NoGap, View, setMixin, textBlock)
+import Neat exposing (NoGap, View, fromNoGap, setBoundary, setBoundaryWith, setMixin, textBlock)
+import Neat.Boundary as Boundary exposing (Boundary, defaultBoundary)
 import Neat.Layout.Column exposing (column)
-import Neat.Layout.Row exposing (row)
+import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith)
 import Reference exposing (Reference)
 import Reference.List
 import Repl.Ast.Gap exposing (GapSize)
 import Repl.GapEditor.GapForm as GapForm exposing (GapForm)
-import View exposing (emptyLine, textInput)
+import View exposing (emptyLine)
 
 
 
@@ -47,19 +49,15 @@ type GapEditor
 
 fromList : List ( String, GapSize ) -> GapEditor
 fromList ls =
-    ls
-        |> List.map
-            (\( name, size ) ->
-                { name = name
-                , width = String.fromFloat size.width
-                , height = String.fromFloat size.height
-                }
-            )
-        |> (\fs -> GapEditor { forms = fs })
+    GapEditor
+        { createForm = GapForm.init
+        , gaps = ls
+        }
 
 
 type alias Model =
-    { forms : List GapForm
+    { createForm : GapForm
+    , gaps : List (String, GapSize)
     }
 
 
@@ -82,19 +80,51 @@ formsDecoder =
 
 type Msg
     = UpdateForms (List GapForm)
+    | UpdateCreateFormName String
+    | UpdateCreateFormHeight String
+    | UpdateCreateFormWidth String
 
 
 update : Msg -> GapEditor -> ( GapEditor, Cmd Msg )
 update msg (GapEditor model) =
+    update_ msg model
+        |> Tuple.mapFirst GapEditor
+
+
+update_ : Msg -> Model -> ( Model, Cmd Msg)
+update_ msg model =
     case msg of
         UpdateForms new ->
-            ( GapEditor
-                { model
+            ( { model
                     | forms = new
-                }
+              }
             , Cmd.none
             )
 
+        UpdateCreateFormName name ->
+            updateCreateFormField
+                (\gf -> { gf | name = capitalizeHead name })
+                model
+
+        UpdateCreateFormHeight height ->
+            updateCreateFormField
+                (\gf -> { gf | height = height })
+                model
+
+        UpdateCreateFormWidth width ->
+            updateCreateFormField
+                (\gf -> { gf | width = width })
+                model
+
+
+
+updateCreateFormField : (GapForm -> GapForm) -> Model -> (Model, Cmd none)
+updateCreateFormField f model =
+    ( { model
+          | createForm = f model.createForm
+      }
+    , Cmd.none
+    )
 
 {-| View for Gap editor window
 -}
@@ -113,8 +143,7 @@ formEditor ref =
     column
         [ row
             [ textInput
-                { ref = ref
-                , onInput = \a -> { this | name = a }
+                { onInput = \a -> { this | name = a }
                 , toMsg = UpdateForms
                 }
                 this.name
@@ -126,8 +155,7 @@ formEditor ref =
         , row
             [ textBlock <| "        { width = "
             , textInput
-                { ref = ref
-                , onInput = \a -> { this | width = a }
+                { onInput = \a -> { this | width = a }
                 , toMsg = UpdateForms
                 }
                 this.width
@@ -136,8 +164,7 @@ formEditor ref =
         , row
             [ textBlock <| "        { height = "
             , textInput
-                { ref = ref
-                , onInput = \a -> { this | height = a }
+                { onInput = \a -> { this | height = a }
                 , toMsg = UpdateForms
                 }
                 this.height
@@ -155,6 +182,63 @@ formEditor ref =
         ]
 
 
+createForm : GapForm -> View NoGap Msg
+createForm model =
+    column
+        [ row
+            [ textBlock "Gap name"
+                    |> fromNoGap Gap.editor
+            , textInput
+                { onInput = \a -> { model | name = a }
+                , toMsg = UpdateCreateFormName
+                }
+                model.name
+                    |> setClass "input"
+                    |> fromNoGap Gap.editor
+            ]
+        , row
+            [ textBlock "Width"
+                    |> fromNoGap Gap.editor
+            , textInput
+                { onInput = \a -> { model | width = a }
+                , toMsg = UpdateCreateFormWidth
+                }
+                model.width
+                    |> setClass "input"
+                    |> fromNoGap Gap.editor
+            ]
+        , row
+            [ textBlock "Height"
+                |> fromNoGap Gap.editor
+            , textInput
+                { onInput = \a -> { model | height = a }
+                , toMsg = UpdateCreateFormHeight
+                }
+                model.height
+                    |> setClass "input"
+                    |> fromNoGap Gap.editor
+            ]
+        , rowWith
+            { defaultRow
+                | horizontal = Row.Right
+            }
+            [ textBlock "Add"
+                |> fromNoGap Gap.editor
+                |> setBoundaryWith
+                    Gap.editor
+                    { defaultBoundary
+                        | nodeName = "button"
+                        , horizontal = Boundary.HCenter
+                        , vertical = Boundary.VCenter
+                    }
+                |> fromNoGap Gap.editor
+            ]
+        ]
+                |> setBoundary Gap.editor
+                |> setClass "innerForm"
+
+
+
 {-| Convert gap function name into gap type name.
 -}
 capitalizeHead : String -> String
@@ -166,13 +250,28 @@ capitalizeHead name =
         |> Maybe.withDefault ""
 
 
+{-| Configuration for `textInput`.
+-}
+type alias TextInput t msg =
+    { onInput : String -> t
+    , toMsg : t -> msg
+    }
+
+textInput : TextInput t msg -> String -> View NoGap msg
+textInput o value =
+    View.textInput
+        { ref = Reference.identity
+        , onInput = o.onInput
+        , toMsg = o.toMsg
+        }
+
 
 -- Helper functions
 
 
 class : String -> Mixin msg
 class =
-    classMixinWith <| \name -> "repl_-gapEditor__" ++ name
+    classMixinWith <| \name -> "view" ++ name
 
 
 setClass : String -> View NoGap msg -> View NoGap msg

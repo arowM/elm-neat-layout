@@ -1,4 +1,4 @@
-module Repl.GapEditor.GapForm exposing (Error, GapForm, decoder)
+module Repl.GapEditor.GapForm exposing (Error, GapForm, decoder, init)
 
 import Form.Decoder as FD exposing (Decoder)
 import Repl.Ast.Gap exposing (GapSize)
@@ -8,6 +8,14 @@ type alias GapForm =
     { name : String
     , width : String
     , height : String
+    }
+
+
+init : GapForm
+init =
+    { name = ""
+    , width = ""
+    , height = ""
     }
 
 

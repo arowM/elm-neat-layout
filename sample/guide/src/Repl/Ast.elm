@@ -38,8 +38,6 @@ import Neat exposing (IsGap(..), NoGap, View, empty, fromNoGap, setAttribute, se
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
-import Reference exposing (Reference)
-import Reference.List
 import Repl.Ast.Gap as AstGap exposing (AstGap, GapSize)
 
 

@@ -15,9 +15,9 @@ module View exposing
 import Html.Attributes as Attributes
 import Html.Attributes.Classname exposing (classMixinWith)
 import Html.Events as Events
+import Html.Events.Extra as Events
 import Mixin exposing (Mixin)
 import Neat exposing (NoGap, View, setAttribute, setMixin)
-import Reference exposing (Reference)
 
 
 {-| Empty line for columns.
@@ -28,25 +28,50 @@ emptyLine =
         |> setClass "emptyLine"
 
 
-{-| Input box of text
+{-| Input box for text entry
 -}
-textInput : TextInput t p msg -> String -> View NoGap msg
+textInput : TextInput msg -> String -> View NoGap msg
 textInput o value =
     Neat.input
-        |> Neat.setAttribute (Attributes.type_ "text")
+        |> Neat.setAttributes
+            [ Attributes.type_ "text"
+            , Events.onChange o.onChange
+            ]
         |> setValue value
-        |> updateWithRefOnInput o.toMsg o.ref o.onInput
         |> setClass "input"
 
 
 {-| Configuration for `textInput`.
 -}
-type alias TextInput t p msg =
-    { ref : Reference t p
-    , onInput : String -> t
-    , toMsg : p -> msg
+type alias TextInput msg =
+    { onChange : String -> msg
     }
 
+
+
+{-| Select box
+-}
+select : Select msg -> String -> View NoGap msg
+select o value =
+    Neat.select []
+        (List.map
+            (\( label, value ) ->
+                Neat.textNode Html.option label
+                    |> setValue value
+            )
+            (( "", "" ) :: o.options)
+        )
+        |> setClass "select"
+        |> Neat.setAttributes
+            [ Events.onChange o.onChange
+            ]
+        |> setValue value
+
+
+type alias Select msg =
+    { options : List (String, String)
+    , onChange : String -> msg
+    }
 
 
 -- Helper functions
@@ -65,13 +90,3 @@ setClass =
 setValue : String -> View NoGap msg -> View NoGap msg
 setValue v =
     setAttribute (Attributes.value v)
-
-
-updateWithRef : (p -> msg) -> Reference a p -> a -> msg
-updateWithRef toMsg ref v =
-    toMsg <| Reference.root <| Reference.modify (\_ -> v) ref
-
-
-updateWithRefOnInput : (p -> msg) -> Reference a p -> (String -> a) -> View NoGap msg -> View NoGap msg
-updateWithRefOnInput toMsg ref f =
-    setAttribute <| Events.onInput <| \a -> updateWithRef toMsg ref <| f a
