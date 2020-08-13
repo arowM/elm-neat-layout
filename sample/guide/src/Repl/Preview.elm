@@ -18,7 +18,7 @@ import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
 import Repl.Ast as Ast exposing (Ast(..), Modifier(..), modifiersOf, resultingGap, setAccumulatedGaps, unmodifiedGap)
-import Repl.Ast.Gap as AstGap exposing (AstGap, GapSize)
+import Repl.Ast.Gap as AstGap exposing (AstGap)
 import Repl.ViewEditor as ViewEditor exposing (ViewEditor)
 
 

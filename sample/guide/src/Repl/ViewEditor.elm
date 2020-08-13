@@ -21,24 +21,27 @@ module Repl.ViewEditor exposing
 -}
 
 import Dict
+import EList exposing (EList, Key)
 import Form.Decoder as FD
 import Gap
-import Html
+import Html exposing (Html)
 import Html.Attributes as Attributes
 import Html.Attributes.Classname exposing (classMixinWith)
 import Html.Events as Events
 import Html.Events.Extra as Events
+import Html.Lazy as Html
 import Json.Encode as Json
 import List.Extra as List
 import Maybe.Extra as Maybe
 import Mixin exposing (Mixin)
-import Neat exposing (IsGap(..), NoGap, View, empty, fromNoGap, setAttribute, setLayout, setMixin, setMixins, textBlock)
+import Neat exposing (IsGap(..), NoGap, Protected, Renderer, View, empty, fromNoGap, setAttribute, setLayout, setMixin, setMixins, textBlock)
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
 import Repl.Ast as Ast exposing (Ast(..), Modifier(..), gapOfModifier, resultingGap, setAccumulatedGaps, unmodifiedGap)
-import Repl.Ast.Gap as AstGap exposing (AstGap, GapSize)
+import Repl.AccumGap as AccumGap exposing (AccumGap)
 import Repl.GapEditor as GapEditor exposing (GapEditor)
+import View exposing (emptyLine)
 
 
 type ViewEditor
@@ -98,6 +101,19 @@ type alias Node a =
         , set: a -> Root -> Root
         }
 
+unwrapNodeEList : (Node a -> b) -> Node (EList a) -> EList b
+unwrapNodeEList f node =
+    node.current
+        |> EList.keyedMap
+            (\(key, a) -> f
+                { current = a
+                , set = \x ->
+                    node.set <|
+                        EList.update key x node.current
+                }
+            )
+
+
 editorCore : Config -> Node Ast -> View NoGap Msg
 editorCore config node =
     case node.current of
@@ -117,6 +133,7 @@ editorCore config node =
                 }
 
         Ast.RowWith align children mods ->
+            {-
             rowEditor config
                 { current = align
                 , set = \new -> node.set (Ast.RowWith new children mods)
@@ -126,6 +143,17 @@ editorCore config node =
                 }
                 { current = mods
                 , set = \new -> node.set (Ast.RowWith align children new)
+                }
+-}
+            columnEditor config
+                { current = align
+                , set = \new -> node.set (Ast.ColumnWith new children mods)
+                }
+                { current = children
+                , set = \new -> node.set (Ast.ColumnWith align new mods)
+                }
+                { current = mods
+                , set = \new -> node.set (Ast.ColumnWith align children new)
                 }
 
         Ast.ColumnWith align children mods ->
@@ -144,7 +172,7 @@ editorCore config node =
             unselectedEditor node
 
 
-textBlockEditor : Config -> Node String -> Node (List Modifier) -> View NoGap Msg
+textBlockEditor : Config -> Node String -> Node (EList Modifier) -> View NoGap Msg
 textBlockEditor config str mods =
     column
         [ row
@@ -194,19 +222,22 @@ annotationBlock msg =
         |> setClass "annotation"
 
 
-emptyEditor : Config -> Node (List Modifier) -> View NoGap Msg
+emptyEditor : Config -> Node (EList Modifier) -> View NoGap Msg
 emptyEditor config mods =
     column
         [ row
             [ textBlock "empty"
-            , gapAnnotation <| AstGap.mappend (unmodifiedGap <| Ast.Empty mods.current) AstGap.Undetermined
+            , gapAnnotation
+                <| AstGap.mappend
+                    (unmodifiedGap <| Ast.Empty mods.current)
+                    AstGap.Undetermined
             ]
         , editMods config mods
         , appendMods mods
         ]
 
 
-rowEditor : Config -> Node Row -> Node (List Ast) -> Node (List Modifier) -> View NoGap Msg
+rowEditor : Config -> Node Row -> Node (EList Ast) -> Node (EList Modifier) -> View NoGap Msg
 rowEditor config align asts mods =
     let
         useRowWith = align.current /= Nothing
@@ -244,24 +275,15 @@ rowEditor config align asts mods =
             textBlock "    ["
 
 
-
-        , Reference.fromRecord
-            { rootWith = rootWithChildren ref
-            , this = asts
-            }
-            |> Reference.List.unwrap (editorCore config)
-            |> List.indexedMap
-                (\n x ->
-                    if n == 0 then
-                        row [ textBlock "    [ ", x ]
-
-                    else
-                        row [ textBlock "    , ", x ]
+        , asts
+            |> unwrapNodeEList identity
+            |> EList.zipWithList ("[" :: List.repeat (EList.length asts.current) ",")
+            |> EList.toKeyedList
+            |> Column.optimized
+                (\(k, _) -> EList.uniqueString k)
+                (\(k, (char, v)) ->
+                    Html.lazy4 rowChild_ config char v
                 )
-            |> column
-
-
-
         , rowWith
             { defaultRow
                 | horizontal = Row.Left
@@ -269,7 +291,7 @@ rowEditor config align asts mods =
             [ indent
             , unselectedEditor
                 { current = Ast.Unselected
-                , set = \child -> mods.set (\ms -> ms ++ [ child ])
+                , set = \child -> mods.set (\ms -> EList.append ms (EList.singleton child))
                 }
             ]
         , row
@@ -280,13 +302,20 @@ rowEditor config align asts mods =
         , appendMods mods
         ]
 
+rowChild_ : Config -> String -> Ast -> Column -> Renderer -> Html (Protected p Msg)
+rowChild_ config char ast =
+    Column.toProtected <| rowChild config char ast
+
+rowChild : Config -> String -> Ast -> View p msg
+rowChild config char ast =
+    row
+        [ textBlock <| "    " ++ char ++ " "
+        , editorCore config ast
+        ]
+
 
 rowAlignmentEditor : Node Row -> View NoGap Msg
-rowAlignmentEditor align =
-    let
-        thisAlign =
-            Maybe.withDefault defaultRow <| rowAlignmentOf <| ast
-    in
+rowAlignmentEditor ({ current } as align) =
     column
         [ textBlock "{ defaultRow"
         , row
@@ -295,7 +324,7 @@ rowAlignmentEditor align =
                 { options = doubleKeys rowVerticals
                 , onChange = \v ->
                     align.set
-                        { align.current
+                        { current
                             | vertical = lookupWithDefault defaultRow.vertical rowVerticals v
                         }
                 }
@@ -305,43 +334,34 @@ rowAlignmentEditor align =
             [ textBlock "  , horizontal = "
             , View.select
                 { options = doubleKeys rowHorizontals
-                , onChange =
-            , selectForEnum rowHorizontals
-                |> updateWithRefOnInput ref
-                    (\v ->
-                        setRowAlignment ast <|
-                            Just
-                                { thisAlign
-                                    | horizontal = lookupWithDefault defaultRow.horizontal v rowHorizontals
-                                }
-                    )
-                |> setValue (encodeRowHorizontal <| thisAlign.horizontal)
+                , onChange = \v ->
+                    align.set
+                        { current
+                            | horizontal = lookupWithDefault defaultRow.horizontal rowHorizontals v
+                        }
+                }
+                (encodeRowVertical align.current.horizontal)
             ]
         , row
             [ textBlock "  , wrap = "
-            , selectForEnum rowWraps
-                |> updateWithRefOnInput ref
-                    (\v ->
-                        setRowAlignment ast <|
-                            Just
-                                { thisAlign
-                                    | wrap = lookupWithDefault defaultRow.wrap v rowWraps
-                                }
-                    )
-                |> setValue (encodeRowWrap <| thisAlign.wrap)
+            , View.select
+                { options = doubleKeys rowWraps
+                , onChange = \v ->
+                    align.set
+                        { current
+                            | wrap = lookupWithDefault defaultRow.wrap rowWraps v
+                        }
+                }
+                (encodeRowVertical align.current.wrap)
             ]
         , textBlock "}"
         ]
 
 
-columnEditor : Config -> Reference Ast Ast -> List Ast -> List Modifier -> View NoGap Msg
-columnEditor config ref asts mods =
+columnEditor : Config -> Node Column -> Node (EList Ast) -> Node (EList Modifier) -> View NoGap Msg
+columnEditor config align asts mods =
     let
-        ast =
-            Reference.this ref
-
-        useColumnWith =
-            editAlignment ast
+        useColumnWith = align.current /= Nothing
 
         columnValue =
             if useColumnWith then
@@ -350,150 +370,133 @@ columnEditor config ref asts mods =
             else
                 "column"
 
-        thisAlign =
-            Maybe.withDefault defaultColumn <| columnAlignmentOf ast
+        decodeColumnValue v =
+            if v == "columnWith" then
+                Just defaultColumn
+            else
+                Nothing
     in
     column
         [ row
-            [ selectWith
-                [ ( "column", "column" )
-                , ( "columnWith", "columnWith" )
-                ]
-                |> updateWithRefOnInput ref
-                    (\v ->
-                        setColumnAlignment ast
-                            (if v == "columnWith" then
-                                Just thisAlign
-
-                             else
-                                Nothing
-                            )
-                    )
-                |> setValue columnValue
+            [ View.select
+                { options =
+                    [ ( "column", "column" )
+                    , ( "columnWith", "columnWith" )
+                    ]
+                , onChange = UpdateAst (align.set << decodeColumnValue)
+                }
+                columnValue
             ]
         , Neat.when useColumnWith <|
             row
                 [ indent
-                , columnAlignmentEditor ref
+                , columnAlignmentEditor align
                 ]
-        , Neat.when (List.length asts == 0) <|
+        , Neat.when (List.length asts.current == 0) <|
             textBlock "    ["
-        , Reference.fromRecord
-            { rootWith = rootWithChildren ref
-            , this = asts
-            }
-            |> Reference.List.unwrap (editorCore config)
-            |> List.indexedMap
-                (\n x ->
-                    if n == 0 then
-                        row [ textBlock "    [ ", x ]
 
-                    else
-                        row [ textBlock "    , ", x ]
+
+        , asts
+            |> unwrapNodeEList identity
+            |> EList.zipWithList ("[" :: List.repeat (EList.length asts.current) ",")
+            |> EList.toKeyedList
+            |> Column.optimized
+                (\(k, _) -> EList.uniqueString k)
+                (\(k, (char, v)) ->
+                    Html.lazy4 columnChild_ config char v
                 )
-            |> column
         , rowWith
             { defaultRow
                 | horizontal = Row.Left
             }
             [ indent
-            , unselectedEditor <|
-                Reference.fromRecord
-                    { rootWith = \child -> rootWithChildren ref (asts ++ [ child ])
-                    , this = Unselected
-                    }
+            , unselectedEditor
+                { current = Ast.Unselected
+                , set = \child -> mods.set (\ms -> EList.append ms (EList.singleton child))
+                }
             ]
         , row
             [ textBlock "    ]"
-            , gapAnnotation (unmodifiedGap <| Reference.this ref)
+            , gapAnnotation (unmodifiedGap <| Ast.ColumnWith align.current asts.current mods.current)
             ]
-        , editMods config ref mods
-        , appendMods ref mods
+        , editMods config mods
+        , appendMods mods
         ]
 
 
-columnAlignmentEditor : Reference Ast Ast -> View NoGap Msg
-columnAlignmentEditor ref =
-    let
-        ast =
-            Reference.this ref
-
-        thisAlign =
-            Maybe.withDefault defaultColumn <| columnAlignmentOf <| ast
-    in
+columnAlignmentEditor : Node Column -> View NoGap Msg
+columnAlignmentEditor ({ current } as align) =
     column
         [ textBlock "{ defaultColumn"
         , row
             [ textBlock "  | vertical = "
-            , selectForEnum columnVerticals
-                |> updateWithRefOnInput ref
-                    (\v ->
-                        setColumnAlignment ast <|
-                            Just
-                                { thisAlign
-                                    | vertical = lookupWithDefault defaultColumn.vertical v columnVerticals
-                                }
-                    )
-                |> setValue (encodeColumnVertical <| thisAlign.vertical)
+            , View.select
+                { options = doubleKeys columnVerticals
+                , onChange = \v ->
+                    align.set
+                        { current
+                            | vertical = lookupWithDefault defaultColumn.vertical columnVerticals v
+                        }
+                }
+                (encodeColumnVertical align.current.vertical)
             ]
         , row
             [ textBlock "  , horizontal = "
-            , selectForEnum columnHorizontals
-                |> updateWithRefOnInput ref
-                    (\v ->
-                        setColumnAlignment ast <|
-                            Just
-                                { thisAlign
-                                    | horizontal = lookupWithDefault defaultColumn.horizontal v columnHorizontals
-                                }
-                    )
-                |> setValue (encodeColumnHorizontal <| thisAlign.horizontal)
+            , View.select
+                { options = doubleKeys columnHorizontals
+                , onChange = \v ->
+                    align.set
+                        { current
+                            | horizontal = lookupWithDefault defaultColumn.horizontal columnHorizontals v
+                        }
+                }
+                (encodeColumnVertical align.current.horizontal)
             ]
         , row
             [ textBlock "  , wrap = "
-            , selectForEnum columnWraps
-                |> updateWithRefOnInput ref
-                    (\v ->
-                        setColumnAlignment ast <|
-                            Just
-                                { thisAlign
-                                    | wrap = lookupWithDefault defaultColumn.wrap v columnWraps
-                                }
-                    )
-                |> setValue (encodeColumnWrap <| thisAlign.wrap)
+            , View.select
+                { options = doubleKeys columnWraps
+                , onChange = \v ->
+                    align.set
+                        { current
+                            | wrap = lookupWithDefault defaultColumn.wrap columnWraps v
+                        }
+                }
+                (encodeColumnVertical align.current.wrap)
             ]
         , textBlock "}"
         ]
 
 
-unselectedEditor : Reference Ast Ast -> View NoGap Msg
-unselectedEditor ref =
+unselectedEditor : Node Ast -> View NoGap Msg
+unselectedEditor ast =
     row
-        [ selectWith
-            [ ( "empty", "empty" )
-            , ( "textBlock \"\"", "textBlock" )
-            , ( "row []", "row" )
-            , ( "column []", "column" )
-            ]
-            |> updateWithRefOnInput ref parseAstNode
-            |> setValue ""
+        [ View.select
+            { options =
+                [ ( "empty", "empty" )
+                , ( "textBlock \"\"", "textBlock" )
+                , ( "row []", "row" )
+                , ( "column []", "column" )
+                ]
+            , onChange = UpdateAst (ast.set << parseAstNode)
+            }
+            ""
         ]
 
 
-editorMod : Config -> Reference ( AstGap, Modifier ) Ast -> View NoGap Msg
-editorMod config ref =
+editorMod : Config -> Node ( AccumGap, Modifier ) Ast -> View NoGap Msg
+editorMod config node =
     let
-        ( accumGap, mod ) =
-            Reference.this ref
+        ( accumGap, mod ) = node.current
     in
     case mod of
         SetClass str ->
-            editorModSetClass ref str
+            editorModSetClass str node
 
         SetLayoutFill ->
             row
                 [ textBlock "|> setLayout Layout.fill"
-                , gapAnnotation <| AstGap.mappend accumGap AstGap.Undetermined
+                , gapAnnotation <| AccumGap.mappend accumGap AccumGap.Undetermined
                 ]
 
         SetLayoutFillBy n ->
@@ -510,13 +513,13 @@ editorMod config ref =
                             )
                         )
                 , textBlock ")"
-                , gapAnnotation <| AstGap.mappend accumGap AstGap.Undetermined
+                , gapAnnotation <| AccumGap.mappend accumGap AccumGap.Undetermined
                 ]
 
         SetLayoutNoShrink ->
             row
                 [ textBlock "|> setLayout Layout.noShrink"
-                , gapAnnotation <| AstGap.mappend accumGap AstGap.Undetermined
+                , gapAnnotation <| AccumGap.mappend accumGap AccumGap.Undetermined
                 ]
 
         SetLayoutShrinkBy n ->
@@ -533,14 +536,14 @@ editorMod config ref =
                             )
                         )
                 , textBlock ")"
-                , gapAnnotation <| AstGap.mappend accumGap AstGap.Undetermined
+                , gapAnnotation <| AccumGap.mappend accumGap AccumGap.Undetermined
                 ]
 
         ExpandTo mgap2 ->
             editorModExpandTo config accumGap ref mgap2
 
 
-editorModSetClass : Reference ( AstGap, Modifier ) Ast -> String -> View NoGap Msg
+editorModSetClass : Reference ( AccumGap, Modifier ) Ast -> String -> View NoGap Msg
 editorModSetClass ref str =
     let
         ( accumGap, _ ) =
@@ -552,11 +555,11 @@ editorModSetClass ref str =
             |> updateWithRefOnInput ref (\v -> ( accumGap, SetClass v ))
             |> setValue str
         , textBlock "\")"
-        , gapAnnotation <| AstGap.mappend accumGap AstGap.Undetermined
+        , gapAnnotation <| AccumGap.mappend accumGap AccumGap.Undetermined
         ]
 
 
-editorModExpandTo : Config -> AstGap -> Reference ( AstGap, Modifier ) Ast -> Maybe AstGap -> View NoGap Msg
+editorModExpandTo : Config -> AccumGap -> Reference ( AccumGap, Modifier ) Ast -> Maybe AccumGap -> View NoGap Msg
 editorModExpandTo { gapEditor } accumGap ref mgap2 =
     case FD.run GapEditor.decoder gapEditor of
         Err _ ->
@@ -566,7 +569,7 @@ editorModExpandTo { gapEditor } accumGap ref mgap2 =
             editorModExpandTo_ gaps accumGap ref mgap2
 
 
-editorModExpandTo_ : List ( String, GapSize ) -> AstGap -> Reference ( AstGap, Modifier ) Ast -> Maybe AstGap -> View NoGap Msg
+editorModExpandTo_ : List ( String, AccumGap.Size ) -> AccumGap -> Reference ( AccumGap, Modifier ) Ast -> Maybe AccumGap -> View NoGap Msg
 editorModExpandTo_ gaps accumGap ref mgap2 =
     row
         [ textBlock <| labelExpandTo accumGap
@@ -575,29 +578,29 @@ editorModExpandTo_ gaps accumGap ref mgap2 =
                 (\a ->
                     ( accumGap
                     , Dict.get a (Dict.fromList gaps)
-                        |> Maybe.map (AstGap.Gap a)
+                        |> Maybe.map (AccumGap.Gap a)
                         |> ExpandTo
                     )
                 )
             |> setValue
                 (case mgap2 of
-                    Just (AstGap.Gap name _) ->
+                    Just (AccumGap.Gap name _) ->
                         name
 
                     _ ->
                         ""
                 )
-        , gapAnnotation <| AstGap.mappend accumGap (Maybe.withDefault AstGap.Undetermined mgap2)
+        , gapAnnotation <| AccumGap.mappend accumGap (Maybe.withDefault AccumGap.Undetermined mgap2)
         ]
 
 
-labelExpandTo : AstGap -> String
+labelExpandTo : AccumGap -> String
 labelExpandTo gap =
     case gap of
-        AstGap.NoGap ->
+        AccumGap.NoGap ->
             "|> fromNoGap Gap."
 
-        AstGap.Gap name _ ->
+        AccumGap.Gap name _ ->
             "|> expand Gap." ++ name ++ " Gap."
 
         _ ->
@@ -634,25 +637,21 @@ appendMods ref mods =
         ]
 
 
-editMods : Config -> Reference Ast Ast -> List Modifier -> View NoGap Msg
-editMods config ref mods =
-    column <|
-        Reference.List.unwrap
-            (identity
-                >> editorMod config
-                >> (\v ->
-                        row
-                            [ indent
-                            , v
-                            ]
-                   )
+editMods : Config -> Node (EList Modifier) -> View NoGap Msg
+editMods config mods =
+    asts
+        |> unwrapNodeEList identity
+        |> EList.zipWithList
+            setAccumulatedGaps (unmodifiedGap <| EList.toList <| mods.current)
+        |> EList.toKeyedList
+        |> Column.optimized
+            (\(k, _) -> EList.uniqueString k)
+            (\(k, node) ->
+                row
+                    [ indent
+                    , Html.lazy3 editorMod config node
+                    ]
             )
-        <|
-            Reference.fromRecord
-                { rootWith = List.map Tuple.second >> rootWithModifiers ref
-                , this = setAccumulatedGaps (unmodifiedGap <| Reference.this ref) mods
-                }
-
 
 
 -- Data
@@ -935,14 +934,6 @@ selectForEnum kvs =
 doubleKeys : List (String, v) -> List (String, String)
 doubleKeys = List.map (\( k, _ ) -> (k, k))
 
-
-
-numberInput : Int -> View NoGap msg
-numberInput n =
-    Neat.input
-        |> setAttribute (Attributes.type_ "number")
-        |> setAttribute (Attributes.value <| String.fromInt n)
-        |> setClass "input"
 
 
 

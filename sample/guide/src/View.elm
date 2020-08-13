@@ -2,6 +2,8 @@ module View exposing
     ( emptyLine
     , textInput
     , TextInput
+    , select
+    , Select
     )
 
 {-| Utility view functions
@@ -9,9 +11,12 @@ module View exposing
 @docs emptyLine
 @docs textInput
 @docs TextInput
+@docs select
+@docs Select
 
 -}
 
+import Html
 import Html.Attributes as Attributes
 import Html.Attributes.Classname exposing (classMixinWith)
 import Html.Events as Events
@@ -55,9 +60,9 @@ select : Select msg -> String -> View NoGap msg
 select o value =
     Neat.select []
         (List.map
-            (\( label, value ) ->
+            (\( label, v ) ->
                 Neat.textNode Html.option label
-                    |> setValue value
+                    |> setValue v
             )
             (( "", "" ) :: o.options)
         )

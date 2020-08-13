@@ -2,7 +2,15 @@ module EList exposing
     ( EList
     , Key
     , fromList
+    , toList
     , toKeyedList
+    , empty
+    , singleton
+    , length
+    , map
+    , keyedMap
+    , indexedMap
+    , zipWithList
     , concat
     , find
     , append
@@ -24,13 +32,27 @@ module EList exposing
 @docs EList
 @docs Key
 @docs fromList
+@docs toList
 @docs toKeyedList
+@docs length
+
+# Special values
+
+@docs empty
+@docs singleton
+
+# Transform
+
+@docs map
+@docs keyedMap
+@docs indexedMap
+@docs zipWithList
+@docs concat
+@docs append
 
 # Operators
 
 @docs find
-@docs concat
-@docs append
 @docs insertBefore
 @docs insertAfter
 @docs swap
@@ -71,9 +93,59 @@ fromList ls =
 
 
 {-| -}
+toList : EList a -> List a
+toList (EList o) =
+    List.map Tuple.second o.list
+
+
+{-| -}
 toKeyedList : EList a -> List ( Key, a )
 toKeyedList (EList o) =
     List.map (\( n, a ) -> ( Key n, a )) o.list
+
+
+{-| -}
+length : EList a -> Int
+length (EList { list }) =
+    List.length list
+
+
+-- Special values
+
+empty : EList a
+empty = fromList []
+
+
+singleton : a -> EList a
+singleton a = fromList [a]
+
+-- Transform
+
+{-| -}
+map : (a -> b) -> EList a -> EList b
+map f (EList o) =
+    EList
+        { next = o.next
+        , list = List.map (\(k, v) -> (k, f v)) o.list
+        }
+
+
+{-| -}
+keyedMap : (Key -> a -> b) -> EList a -> EList b
+keyedMap f (EList o) =
+    EList
+        { next = o.next
+        , list = List.map (\(k, v) -> (k, f (Key k) v)) o.list
+        }
+
+
+{-| -}
+indexedMap : (Int -> a -> b) -> EList a -> EList b
+indexedMap f (EList o) =
+    EList
+        { next = o.next
+        , list = List.indexedMap (\n (k, v) -> (k, f n v)) o.list
+        }
 
 
 {-| -}
@@ -82,6 +154,17 @@ append (EList a) (EList b) =
     EList
         { next = a.next + b.next
         , list = a.list ++ List.map (\( n, x ) -> ( n + a.next, x )) b.list
+        }
+
+{-|
+    EList.toList <| zipWithList [1,2,3,4,5,6,7] (EList.fromList [5,4,3])
+    --> [(1,5), (2, 4), (3, 3)]
+-}
+zipWithList : List a -> EList b -> EList (a, b)
+zipWithList ls (EList o) =
+    EList
+        { next = o.next
+        , list = List.map2 (\a (n, b) -> (n, (a, b))) ls (o.list)
         }
 
 
@@ -105,6 +188,8 @@ concat (EList o) =
         )
         (List.map Tuple.second o.list)
 
+
+-- Operators
 
 {-| -}
 find : Key -> EList a -> Maybe a

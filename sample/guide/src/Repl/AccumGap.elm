@@ -1,19 +1,19 @@
-module Repl.Ast.Gap exposing
-    ( AstGap(..)
-    , GapSize
+module Repl.AccumGap exposing
+    ( AccumGap(..)
+    , Size
     , Error(..)
     , isInvalid
     , mappend
     , reduceChildGaps
     )
 
-{-| Gap representation for AST.
+{-| Accumulated gaps for rendering AST.
 
 
 # Core
 
-@docs AstGap
-@docs GapSize
+@docs AccumGap
+@docs Size
 @docs Error
 @docs isInvalid
 
@@ -30,20 +30,16 @@ module Repl.Ast.Gap exposing
 
 {-| Main type
 -}
-type AstGap
+type AccumGap
     = NoGap
-    | Gap String GapSize
+    | Gap String Size
     | Invalid Error
     | Undetermined
 
 
-type CustomGap
-    = GustomGap String GapSize
-
-
 {-| Size definition for a Gap
 -}
-type alias GapSize =
+type alias Size =
     { width : Float
     , height : Float
     }
@@ -58,7 +54,7 @@ type Error
 
 {-| Checks whether a Gap is `Invalid _`.
 -}
-isInvalid : AstGap -> Bool
+isInvalid : AccumGap -> Bool
 isInvalid gap =
     case gap of
         Invalid _ ->
@@ -73,7 +69,7 @@ isInvalid gap =
 
 
 {-| -}
-mappend : AstGap -> AstGap -> AstGap
+mappend : AccumGap -> AccumGap -> AccumGap
 mappend g1 g2 =
     case ( g1, g2 ) of
         ( Invalid _, _ ) ->
@@ -87,7 +83,7 @@ mappend g1 g2 =
 
 
 {-| -}
-reduceChildGaps : List AstGap -> AstGap
+reduceChildGaps : List AccumGap -> AccumGap
 reduceChildGaps gs =
     case List.filter (\a -> a /= Undetermined) gs of
         [] ->

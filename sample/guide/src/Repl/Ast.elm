@@ -24,6 +24,7 @@ Usually, you should define and use the appropriate type for each gap.
 -}
 
 import Dict
+import EList exposing (EList)
 import Gap
 import Html
 import Html.Attributes as Attributes
@@ -47,10 +48,10 @@ import Repl.Ast.Gap as AstGap exposing (AstGap, GapSize)
 
 {-| -}
 type Ast
-    = TextBlock String (List Modifier)
-    | Empty (List Modifier)
-    | RowWith (Maybe Row) (List Ast) (List Modifier)
-    | ColumnWith (Maybe Column) (List Ast) (List Modifier)
+    = TextBlock String (EList Modifier)
+    | Empty (EList Modifier)
+    | RowWith (Maybe Row) (EList Ast) (EList Modifier)
+    | ColumnWith (Maybe Column) (EList Ast) (EList Modifier)
     | Unselected
 
 
@@ -69,9 +70,9 @@ type Modifier
 -- Gap calculations
 
 
-modifiedGap : AstGap -> List Modifier -> AstGap
+modifiedGap : AstGap -> EList Modifier -> AstGap
 modifiedGap init =
-    List.foldl (\mod acc -> AstGap.mappend acc <| gapOfModifier mod) init
+    List.foldl (\mod acc -> AstGap.mappend acc <| gapOfModifier mod) init << EList.toList
 
 
 {-| -}
@@ -96,12 +97,14 @@ unmodifiedGap ast =
             AstGap.NoGap
 
         RowWith _ children _ ->
-            AstGap.reduceChildGaps <|
-                List.map resultingGap children
+            EList.toList children
+                |> List.map resultingGap
+                |> AstGap.reduceChildGaps
 
         ColumnWith _ children _ ->
-            AstGap.reduceChildGaps <|
-                List.map resultingGap children
+            EList.toList children
+                |> List.map resultingGap
+                |> AstGap.reduceChildGaps
 
         Unselected ->
             AstGap.Undetermined
@@ -114,7 +117,7 @@ resultingGap ast =
 
 
 {-| -}
-modifiersOf : Ast -> List Modifier
+modifiersOf : Ast -> EList Modifier
 modifiersOf ast =
     case ast of
         TextBlock _ mods ->
@@ -130,12 +133,12 @@ modifiersOf ast =
             mods
 
         Unselected ->
-            []
+            EList.empty
 
 
 {-| -}
-setAccumulatedGaps : AstGap -> List Modifier -> List ( AstGap, Modifier )
+setAccumulatedGaps : AstGap -> EList Modifier -> EList ( AstGap, Modifier )
 setAccumulatedGaps init mods =
-    List.zip
-        (List.scanl (\mod acc -> AstGap.mappend acc <| gapOfModifier mod) init mods)
+    EList.zipWithList
+        (List.scanl (\mod acc -> AstGap.mappend acc <| gapOfModifier mod) init <| EList.toList mods)
         mods
