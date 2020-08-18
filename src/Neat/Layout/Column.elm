@@ -112,7 +112,6 @@ type alias Column =
 type Wrap
     = NoWrap
     | Wrap
-    | WrapInto Int
 
 
 toFlex : Column -> Flex
@@ -131,9 +130,6 @@ toFlexWrap wrap =
 
         Wrap ->
             Flex.Wrap
-
-        WrapInto n ->
-            Flex.WrapInto n
 
 
 {-| Default `Column` configuration.

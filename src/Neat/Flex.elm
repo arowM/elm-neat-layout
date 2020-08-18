@@ -76,7 +76,6 @@ type alias Flex =
 type Wrap
     = NoWrap
     | Wrap
-    | WrapInto Int
 
 
 
@@ -112,21 +111,10 @@ flexWrap wrap =
                 , style "flex-wrap" "wrap"
                 ]
 
-        WrapInto _ ->
-            Mixin.batch
-                [ style "-ms-flex-wrap" "wrap"
-                , style "flex-wrap" "wrap"
-                ]
-
 
 setChildBasis : Wrap -> Layout msg
-setChildBasis wrap =
-    case wrap of
-        WrapInto n ->
-            basis <| String.fromFloat (100 / toFloat n) ++ "%"
-
-        _ ->
-            Layout.none
+setChildBasis _ =
+    Layout.none
 
 
 {-| basis

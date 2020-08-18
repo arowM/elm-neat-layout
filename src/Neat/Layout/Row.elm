@@ -118,7 +118,6 @@ type alias Row =
 type Wrap
     = NoWrap
     | Wrap
-    | WrapInto Int
 
 
 toFlex : Row -> Flex
@@ -137,10 +136,6 @@ toFlexWrap wrap =
 
         Wrap ->
             Flex.Wrap
-
-        WrapInto n ->
-            Flex.WrapInto n
-
 
 {-| Default `Row` configuration.
 

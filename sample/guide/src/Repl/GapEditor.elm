@@ -6,6 +6,7 @@ module Repl.GapEditor exposing
     , capitalizeHead
     , fromList
     , toList
+    , find
     )
 
 {-| Gap editor for REPL.
@@ -20,6 +21,7 @@ module Repl.GapEditor exposing
 @docs capitalizeHead
 @docs fromList
 @docs toList
+@docs find
 
 -}
 
@@ -63,6 +65,15 @@ fromList ls =
 toList : GapEditor -> List Gap
 toList (GapEditor o) =
     o.gaps
+
+
+{-| Search an available Gap by its name.
+-}
+find : String -> GapEditor -> Maybe Gap
+find str (GapEditor { gaps }) =
+    gaps
+        |> List.filter (\g -> str == g.name)
+        |> List.head
 
 
 type alias Model =

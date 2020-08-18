@@ -1,8 +1,8 @@
 module Repl.AccumGap exposing
     ( AccumGap(..)
-    , Size
     , Error(..)
     , isInvalid
+    , inheritedError
     , mappend
     , reduceChildGaps
     )
@@ -13,17 +13,20 @@ module Repl.AccumGap exposing
 # Core
 
 @docs AccumGap
-@docs Size
 @docs Error
 @docs isInvalid
-
 
 # Gap calculations
 
 @docs mappend
 @docs reduceChildGaps
 
+# Helper functions
+
+@docs inheritedError
 -}
+
+import Repl.Gap exposing (Gap)
 
 -- Core
 
@@ -32,7 +35,7 @@ module Repl.AccumGap exposing
 -}
 type AccumGap
     = NoGap
-    | Gap String Size
+    | Gap Gap
     | Invalid Error
     | Undetermined
 
@@ -50,6 +53,10 @@ type alias Size =
 type Error
     = ChildGapMismatch
     | InheritedError
+
+
+inheritedError : AccumGap
+inheritedError = Invalid InheritedError
 
 
 {-| Checks whether a Gap is `Invalid _`.

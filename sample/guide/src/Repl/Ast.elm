@@ -1,11 +1,16 @@
 module Repl.Ast exposing
-    ( Ast(..)
-    , resultingGap
+    ( Ast
+    , accumGap
+    , Tree(..)
     , unmodifiedGap
     , Modifier(..)
+    , textBlock
+    , empty
+    , row
+    , column
+    , none
+    , accumulatedGaps
     , gapOfModifier
-    , modifiersOf
-    , setAccumulatedGaps
     )
 
 {-| Simplified AST for elm-neat-layout
@@ -14,17 +19,29 @@ To avoid type constrains, this module uses **bad** hack which assumes every gap 
 Usually, you should define and use the appropriate type for each gap.
 
 @docs Ast
-@docs resultingGap
-@docs unmodifiedGap
+@docs accumGap
+@docs Tree
 @docs Modifier
+
+
+# Constructors
+
+@docs textBlock
+@docs empty
+@docs row
+@docs column
+@docs none
+
+
+# Calculators
+
+@docs accumulatedGaps
+@docs unmodifiedGap
 @docs gapOfModifier
-@docs modifiersOf
-@docs setAccumulatedGaps
 
 -}
 
 import Dict
-import EList exposing (EList)
 import Gap
 import Html
 import Html.Attributes as Attributes
@@ -39,7 +56,8 @@ import Neat exposing (IsGap(..), NoGap, View, empty, fromNoGap, setAttribute, se
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
-import Repl.Ast.Gap as AstGap exposing (AstGap, GapSize)
+import Repl.AccumGap as AccumGap exposing (AccumGap)
+import Repl.Gap exposing (Gap)
 
 
 
@@ -48,11 +66,30 @@ import Repl.Ast.Gap as AstGap exposing (AstGap, GapSize)
 
 {-| -}
 type Ast
-    = TextBlock String (EList Modifier)
-    | Empty (EList Modifier)
-    | RowWith (Maybe Row) (EList Ast) (EList Modifier)
-    | ColumnWith (Maybe Column) (EList Ast) (EList Modifier)
-    | Unselected
+    = Ast Model
+
+
+type alias Model =
+    { tree : Tree
+    , modifier : List Modifier
+    , resultingGap : AccumGap -- For memoization
+    }
+
+accumGap : Ast -> AccumGap
+accumGap (Ast model) = model.resultingGap
+
+unAst : Ast -> Model
+unAst (Ast model) =
+    model
+
+
+{-| -}
+type Tree
+    = TextBlock String
+    | Empty
+    | Row Row (List Ast)
+    | Column Column (List Ast)
+    | None
 
 
 {-| Modifiers for View
@@ -60,85 +97,109 @@ type Ast
 type Modifier
     = SetClass String
     | SetLayoutFill
-    | SetLayoutFillBy Int
+    | SetLayoutFillBy Float
     | SetLayoutNoShrink
-    | SetLayoutShrinkBy Int
-    | ExpandTo (Maybe AstGap)
+    | SetLayoutShrinkBy Float
+    | ExpandTo (Maybe Gap)
+
+
+
+-- Constructors
+
+
+textBlock : String -> List Modifier -> Ast
+textBlock name mods =
+    Ast
+        { tree = TextBlock name
+        , modifier = mods
+        , resultingGap = resultingGap (TextBlock name) mods
+        }
+
+
+empty : List Modifier -> Ast
+empty mods =
+    Ast
+        { tree = Empty
+        , modifier = mods
+        , resultingGap = resultingGap Empty mods
+        }
+
+
+row : Row -> List Ast -> List Modifier -> Ast
+row align children mods =
+    Ast
+        { tree = Row align children
+        , modifier = mods
+        , resultingGap = resultingGap (Row align children) mods
+        }
+
+
+column : Column -> List Ast -> List Modifier -> Ast
+column align children mods =
+    Ast
+        { tree = Column align children
+        , modifier = mods
+        , resultingGap = resultingGap (Column align children) mods
+        }
+
+
+none : Ast
+none =
+    Ast
+        { tree = None
+        , resultingGap = AccumGap.Undetermined
+        , modifier = []
+        }
 
 
 
 -- Gap calculations
 
 
-modifiedGap : AstGap -> EList Modifier -> AstGap
+modifiedGap : AccumGap -> List Modifier -> AccumGap
 modifiedGap init =
-    List.foldl (\mod acc -> AstGap.mappend acc <| gapOfModifier mod) init << EList.toList
+    List.foldl (\mod acc -> AccumGap.mappend acc <| gapOfModifier mod) init
 
 
-{-| -}
-gapOfModifier : Modifier -> AstGap
+gapOfModifier : Modifier -> AccumGap
 gapOfModifier mod =
     case mod of
         ExpandTo (Just gap) ->
-            gap
+            AccumGap.Gap gap
 
         _ ->
-            AstGap.Undetermined
+            AccumGap.Undetermined
+
+
+unmodifiedGap : Tree -> AccumGap
+unmodifiedGap tree =
+    case tree of
+        TextBlock _ ->
+            AccumGap.NoGap
+
+        Empty ->
+            AccumGap.NoGap
+
+        Row _ children ->
+            children
+                |> List.map (.resultingGap << unAst)
+                |> AccumGap.reduceChildGaps
+
+        Column _ children ->
+            children
+                |> List.map (.resultingGap << unAst)
+                |> AccumGap.reduceChildGaps
+
+        None ->
+            AccumGap.Undetermined
+
+
+resultingGap : Tree -> List Modifier -> AccumGap
+resultingGap tree mods =
+    modifiedGap (unmodifiedGap tree) mods
 
 
 {-| -}
-unmodifiedGap : Ast -> AstGap
-unmodifiedGap ast =
-    case ast of
-        TextBlock _ _ ->
-            AstGap.NoGap
-
-        Empty _ ->
-            AstGap.NoGap
-
-        RowWith _ children _ ->
-            EList.toList children
-                |> List.map resultingGap
-                |> AstGap.reduceChildGaps
-
-        ColumnWith _ children _ ->
-            EList.toList children
-                |> List.map resultingGap
-                |> AstGap.reduceChildGaps
-
-        Unselected ->
-            AstGap.Undetermined
-
-
-{-| -}
-resultingGap : Ast -> AstGap
-resultingGap ast =
-    modifiedGap (unmodifiedGap ast) (modifiersOf ast)
-
-
-{-| -}
-modifiersOf : Ast -> EList Modifier
-modifiersOf ast =
-    case ast of
-        TextBlock _ mods ->
-            mods
-
-        Empty mods ->
-            mods
-
-        RowWith _ _ mods ->
-            mods
-
-        ColumnWith _ _ mods ->
-            mods
-
-        Unselected ->
-            EList.empty
-
-
-{-| -}
-setAccumulatedGaps : AstGap -> EList Modifier -> EList ( AstGap, Modifier )
-setAccumulatedGaps init mods =
-    EList.zipWithList
-        (List.scanl (\mod acc -> AstGap.mappend acc <| gapOfModifier mod) init <| EList.toList mods)
-        mods
+accumulatedGaps : AccumGap -> List Modifier -> List AccumGap
+accumulatedGaps init mods =
+    List.scanl (\mod acc -> AccumGap.mappend acc <| gapOfModifier mod) init mods
