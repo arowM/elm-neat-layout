@@ -2,8 +2,10 @@ module Repl.Ast exposing
     ( Ast
     , accumGap
     , Tree(..)
+    , tree
     , unmodifiedGap
     , Modifier(..)
+    , modifiers
     , textBlock
     , empty
     , row
@@ -21,7 +23,9 @@ Usually, you should define and use the appropriate type for each gap.
 @docs Ast
 @docs accumGap
 @docs Tree
+@docs tree
 @docs Modifier
+@docs modifiers
 
 
 # Constructors
@@ -82,6 +86,13 @@ unAst : Ast -> Model
 unAst (Ast model) =
     model
 
+{-| -}
+tree : Ast -> Tree
+tree = .tree << unAst
+
+{-| -}
+modifiers : Ast -> List Modifier
+modifiers = .modifier << unAst
 
 {-| -}
 type Tree
@@ -172,8 +183,8 @@ gapOfModifier mod =
 
 
 unmodifiedGap : Tree -> AccumGap
-unmodifiedGap tree =
-    case tree of
+unmodifiedGap t =
+    case t of
         TextBlock _ ->
             AccumGap.NoGap
 
@@ -195,8 +206,8 @@ unmodifiedGap tree =
 
 
 resultingGap : Tree -> List Modifier -> AccumGap
-resultingGap tree mods =
-    modifiedGap (unmodifiedGap tree) mods
+resultingGap t mods =
+    modifiedGap (unmodifiedGap t) mods
 
 
 {-| -}

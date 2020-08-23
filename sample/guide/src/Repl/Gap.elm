@@ -1,5 +1,6 @@
 module Repl.Gap exposing
     ( Gap
+    , toIsGap
     )
 
 {-| Gap
@@ -8,8 +9,11 @@ module Repl.Gap exposing
 # Core
 
 @docs Gap
+@docs toIsGap
 
 -}
+
+import Neat exposing (IsGap(..))
 
 -- Core
 
@@ -21,3 +25,11 @@ type alias Gap =
     , width : Float
     , height : Float
     }
+
+
+toIsGap : Gap -> IsGap gap
+toIsGap gap =
+    IsGap
+        { width = gap.width
+        , height = gap.height
+        }

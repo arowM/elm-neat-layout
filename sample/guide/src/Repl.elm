@@ -42,8 +42,8 @@ import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMa
 import Reference exposing (Reference)
 import Repl.Ast as Ast exposing (Ast)
 import Repl.GapEditor as GapEditor exposing (GapEditor, gapEditor)
-import Repl.Preview as Preview exposing (preview)
-import Repl.ViewEditor as ViewEditor exposing (ViewEditor, viewEditor)
+import Repl.Preview as Preview
+import Repl.ViewEditor as ViewEditor exposing (ViewEditor)
 
 
 {-| State of REPL.
@@ -75,7 +75,7 @@ default : Repl
 default =
     Repl
     { gapEditor = GapEditor.fromList []
-    , viewEditor = ViewEditor.fromAst Ast.Unselected
+    , viewEditor = ViewEditor.fromAst <| Ast.none
     , showGapEditor = False
     , showViewEditor = False
     }
@@ -166,7 +166,7 @@ repl_ f model =
             |> Neat.setBoundary Gap.editor
             |> setClass "repl_title"
         , column
-            [ preview
+            [ Preview.view
                 { viewEditor = model.viewEditor }
                 |> fromNoGap Gap.repl
                 |> setLayout Layout.fill
@@ -175,7 +175,7 @@ repl_ f model =
                 { toMsg = UpdateViewEditor
                 , title = "View"
                 }
-                [ viewEditor
+                [ ViewEditor.view
                     { gapEditor = model.gapEditor
                     }
                     model.viewEditor

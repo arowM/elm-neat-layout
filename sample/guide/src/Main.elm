@@ -43,6 +43,8 @@ init =
     ( { repl1 =
             Repl.default
                 |> Repl.setGapEditor defaultGapEditor
+                |> Repl.showViewEditor
+                |> Repl.setViewEditor defaultViewEditor
       }
     , Cmd.none
     )
@@ -50,23 +52,26 @@ init =
 
 defaultViewEditor : ViewEditor
 defaultViewEditor =
-    ViewEditor.fromAst
-        Ast.Unselected
+    ViewEditor.fromAst <|
+        Ast.row
+            { defaultRow
+                | horizontal = Row.Right
+            }
+            []
+            []
 
 
 defaultGapEditor : GapEditor
 defaultGapEditor =
     GapEditor.fromList
-        [ ( "narrow"
-          , { width = 0.4
-            , height = 0.4
-            }
-          )
-        , ( "wide"
-          , { width = 2
-            , height = 2
-            }
-          )
+        [ { name = "narrow"
+          , width = 0.4
+          , height = 0.4
+          }
+        , { name = "wide"
+          , width = 2
+          , height = 2
+          }
         ]
 
 

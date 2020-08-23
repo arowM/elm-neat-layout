@@ -3,6 +3,7 @@ module View exposing
     , textInput
     , TextInput
     , select
+    , selectWithoutEmpty
     , Select
     )
 
@@ -54,24 +55,33 @@ type alias TextInput msg =
 
 
 
-{-| Select box
+{-| Select box without empty option
 -}
-select : Select msg -> String -> View NoGap msg
-select o value =
+selectWithoutEmpty : Select msg -> String -> View NoGap msg
+selectWithoutEmpty o value =
     Neat.select []
         (List.map
             (\( label, v ) ->
                 Neat.textNode Html.option label
                     |> setValue v
+                    |> Neat.setAttribute
+                        (Attributes.selected (v == value))
             )
-            (( "", "" ) :: o.options)
+            o.options
         )
         |> setClass "select"
         |> Neat.setAttributes
             [ Events.onChange o.onChange
             ]
-        |> setValue value
 
+{-| Select box with empty option
+-}
+select : Select msg -> String -> View NoGap msg
+select o =
+    selectWithoutEmpty
+        { o
+            | options = ("", "") :: o.options
+        }
 
 type alias Select msg =
     { options : List (String, String)

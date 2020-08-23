@@ -1,18 +1,22 @@
 module Repl.ViewEditor.Form exposing
     ( Form
     , view
+    , Config
+    , Msg
     , update
     , fromAst
+    , toAst
     )
 
 {-| Form for ViewForm
 
 @docs Form
 @docs view
+@docs Config
+@docs Msg
 @docs update
-
-# Constructor
 @docs fromAst
+@docs toAst
 
 -}
 
@@ -28,7 +32,7 @@ import Html.Events.Extra as Events
 import Html.Lazy as Html
 import Mixin exposing (Mixin)
 import Neat exposing (IsGap(..), NoGap, Protected, Renderer, View, empty, fromNoGap, setAttribute, setBoundaryWith, setLayout, setMixin, setMixins, textBlock)
-import Neat.Boundary exposing (defaultBoundary)
+import Neat.Boundary as Boundary exposing (defaultBoundary)
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
@@ -57,6 +61,10 @@ type alias Model =
     { element : ElementForm
     , ast : ResAst -- For memoization
     }
+
+{-| -}
+toAst : Form -> Maybe Ast
+toAst (Form { ast }) = Result.toMaybe ast
 
 
 type alias ResAst =
@@ -99,7 +107,50 @@ type alias ColumnForm =
 
 
 fromAst : Ast -> Form
-fromAst = Debug.todo
+fromAst ast =
+    Form
+    { element = parseAst (Ast.tree ast) (Ast.modifiers ast)
+    , ast = Ok ast
+    }
+
+parseAst : Ast.Tree -> List Ast.Modifier -> ElementForm
+parseAst tree mods =
+    case tree of
+        Ast.TextBlock str ->
+            TextBlock str <| parseMods mods
+        Ast.Empty ->
+            Empty <| parseMods mods
+        Ast.Row align children ->
+            Row (align /= defaultRow) align
+                (EList.map fromAst <| EList.fromList children)
+                (parseMods mods)
+        Ast.Column align children ->
+            Column (align /= defaultColumn) align
+                (EList.map fromAst <| EList.fromList children)
+                (parseMods mods)
+        Ast.None ->
+            Unselected
+
+parseMods : List Ast.Modifier -> EList ModifierForm
+parseMods mods =
+    EList.map parseMod <| EList.fromList mods
+
+parseMod : Ast.Modifier -> ModifierForm
+parseMod mod =
+    case mod of
+        Ast.SetClass str ->
+            SetClass str
+        Ast.SetLayoutFill ->
+            SetLayoutFill
+        Ast.SetLayoutFillBy f ->
+            SetLayoutFillBy <| String.fromFloat f
+        Ast.SetLayoutNoShrink ->
+            SetLayoutNoShrink
+        Ast.SetLayoutShrinkBy f ->
+            SetLayoutShrinkBy <| String.fromFloat f
+        Ast.ExpandTo mgap ->
+            ExpandTo mgap
+
 
 -- NODE
 
@@ -155,8 +206,8 @@ update msg (Form model) =
 update_ : Msg -> ElementForm -> ( ElementForm, Cmd Msg )
 update_ msg elem =
     case msg of
-        ModifyForm modifier ->
-            ( modifier elem
+        ModifyForm modifier2 ->
+            ( modifier2 elem
             , Cmd.none
             )
 
@@ -604,17 +655,21 @@ rowNode config res show align children mods =
                 |> Result.withDefault AccumGap.inheritedError
     in
     column
-        [ textBlock "row"
-        , textBlock "..."
-            |> fromNoGap Gap.editor
-            |> setBoundaryWith
-                { defaultBoundary
-                    | nodeName = "button"
-                }
-                Gap.editor
-            |> Neat.setAttributes
-                [ Events.onClick <| ModifyForm <| show.set <| always True
-                ]
+        [ row
+            [ if show.current
+                then
+                    textBlock "rowWith"
+                else
+                    View.selectWithoutEmpty
+                        { options =
+                            [ ( "row", "row" )
+                            , ( "rowWith", "rowWith" )
+                            ]
+                        , onChange = \_ ->
+                            ModifyForm <| show.set <| always True
+                        }
+                        "row"
+            ]
         , Neat.when show.current <|
             row
                 [ indent
@@ -626,18 +681,26 @@ rowNode config res show align children mods =
             |> sequence
             |> EList.zipWithList ("[" :: List.repeat (EList.length children.current) ",")
             |> EList.toKeyedList
-            |> Column.optimized
-                (\( k, _ ) -> EList.uniqueString k)
-                (\( k, ( char, v ) ) ->
-                    Html.lazy5 childNode_ config char v
-                )
-                defaultColumn
-        , rowWith
-            { defaultRow
-                | horizontal = Row.Left
-            }
-            [ indent
-            , unselectedNode (appendChildNode children)
+            |> List.map
+                    (\( k, ( char, v ) ) ->
+                        ( EList.uniqueString k
+                        , row
+                            [ textBlock <| "    " ++ char ++ " "
+                            , childNode config v
+                            ]
+                        )
+                    )
+            |> Column.keyed
+        , Neat.keyed "div" []
+            [ ( String.fromInt (EList.length <| sequence <| children)
+              , rowWith
+                { defaultRow
+                    | horizontal = Row.Left
+                }
+                [ indent
+                , unselectedNode (appendChildNode children)
+                ]
+              )
             ]
         , row
             [ textBlock "    ]"
@@ -877,19 +940,23 @@ columnNode config res show align children mods =
                 |> Result.withDefault AccumGap.inheritedError
     in
     column
-        [ textBlock "column"
-        , textBlock "..."
-            |> fromNoGap Gap.editor
-            |> setBoundaryWith
-                { defaultBoundary
-                    | nodeName = "button"
-                }
-                Gap.editor
-            |> Neat.setAttributes
-                [ Events.onClick <| ModifyForm <| show.set <| always True
-                ]
+        [ row
+            [ if show.current
+                then
+                    textBlock "columnWith"
+                else
+                    View.selectWithoutEmpty
+                        { options =
+                            [ ( "column", "column" )
+                            , ( "columnWith", "columnWith" )
+                            ]
+                        , onChange = \_ ->
+                            ModifyForm <| show.set <| always True
+                        }
+                        "column"
+            ]
         , Neat.when show.current <|
-            column
+            row
                 [ indent
                 , columnAlignmentNode align
                 ]
@@ -899,18 +966,26 @@ columnNode config res show align children mods =
             |> sequence
             |> EList.zipWithList ("[" :: List.repeat (EList.length children.current) ",")
             |> EList.toKeyedList
-            |> Column.optimized
-                (\( k, _ ) -> EList.uniqueString k)
-                (\( k, ( char, v ) ) ->
-                    Html.lazy5 childNode_ config char v
-                )
-                defaultColumn
-        , columnWith
-            { defaultColumn
-                | horizontal = Column.Left
-            }
-            [ indent
-            , unselectedNode (appendChildNode children)
+            |> List.map
+                    (\( k, ( char, v ) ) ->
+                        ( EList.uniqueString k
+                        , row
+                            [ textBlock <| "    " ++ char ++ " "
+                            , childNode config v
+                            ]
+                        )
+                    )
+            |> Column.keyed
+        , Neat.keyed "div" []
+            [ ( String.fromInt (EList.length <| sequence <| children)
+              , rowWith
+                { defaultRow
+                    | horizontal = Row.Left
+                }
+                [ indent
+                , unselectedNode (appendChildNode children)
+                ]
+              )
             ]
         , column
             [ textBlock "    ]"
@@ -925,15 +1000,15 @@ columnAlignmentNode : Node Column -> View NoGap Msg
 columnAlignmentNode ({ current } as align) =
     column
         [ textBlock "{ defaultColumn"
-        , column
+        , row
             [ textBlock "  | vertical = "
             , columnVerticalSelector align
             ]
-        , column
+        , row
             [ textBlock "  , horizontal = "
             , columnHorizontalSelector align
             ]
-        , column
+        , row
             [ textBlock "  , wrap = "
             , columnWrapSelector align
             ]
@@ -1302,43 +1377,47 @@ labelExpandTo gap =
 
 appendModNode : AccumGap -> Node (EList ModifierForm) -> View NoGap Msg
 appendModNode unmodifiedGap mods =
-    rowWith
-        { defaultRow
-            | horizontal = Row.Left
-        }
-        [ indent
-        , View.select
-            { options =
-                [ ( "|> setAttribute (class \"\")", "setClass" )
-                , ( "|> setLayout Layout.fill", "setLayoutFill" )
-                , ( "|> setLayout (Layout.fillBy n)", "setLayoutFillBy" )
-                , ( "|> setLayout Layout.noShrink", "setLayoutNoShrink" )
-                , ( "|> setLayout (Layout.shrinkBy n)", "setLayoutShrinkBy" )
-                , ( labelExpandTo
-                        (mods.current
-                            |> EList.toList
-                            |> FD.run (FD.list modifierDecoder)
-                            |> Result.map
-                                (List.foldl (\a acc -> AccumGap.mappend acc <| Ast.gapOfModifier a) unmodifiedGap)
-                            |> Result.withDefault AccumGap.inheritedError
-                        )
-                        ++ " _"
-                  , "expandTo"
-                  )
-                ]
-            , onChange =
-                \v ->
-                    ModifyForm <|
-                        mods.set <|
-                            \ms ->
-                                case decodeModifier v of
-                                    Just m ->
-                                        EList.append ms (EList.singleton m)
-
-                                    Nothing ->
-                                        ms
+    Neat.keyed "div" []
+        [ ( mods |> sequence |> EList.length |> String.fromInt
+          , rowWith
+            { defaultRow
+                | horizontal = Row.Left
             }
-            ""
+            [ indent
+            , View.select
+                { options =
+                    [ ( "|> setAttribute (class \"\")", "setClass" )
+                    , ( "|> setLayout Layout.fill", "setLayoutFill" )
+                    , ( "|> setLayout (Layout.fillBy n)", "setLayoutFillBy" )
+                    , ( "|> setLayout Layout.noShrink", "setLayoutNoShrink" )
+                    , ( "|> setLayout (Layout.shrinkBy n)", "setLayoutShrinkBy" )
+                    , ( labelExpandTo
+                            (mods.current
+                                |> EList.toList
+                                |> FD.run (FD.list modifierDecoder)
+                                |> Result.map
+                                    (List.foldl (\a acc -> AccumGap.mappend acc <| Ast.gapOfModifier a) unmodifiedGap)
+                                |> Result.withDefault AccumGap.inheritedError
+                            )
+                            ++ " _"
+                      , "expandTo"
+                      )
+                    ]
+                , onChange =
+                    \v ->
+                        ModifyForm <|
+                            mods.set <|
+                                \ms ->
+                                    case decodeModifier v of
+                                        Just m ->
+                                            EList.append ms (EList.singleton m)
+
+                                        Nothing ->
+                                            ms
+                }
+                ""
+            ]
+          )
         ]
 
 

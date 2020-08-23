@@ -1,11 +1,11 @@
 module Repl.Preview exposing
-    ( preview
+    ( view
     , Config
     )
 
 {-| Preview window for REPL.
 
-@docs preview
+@docs view
 @docs Config
 
 -}
@@ -17,8 +17,9 @@ import Neat exposing (IsGap(..), NoGap, View, empty, fromNoGap, setAttribute, se
 import Neat.Layout as Layout
 import Neat.Layout.Column as Column exposing (Column, column, columnWith, defaultColumn)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
-import Repl.Ast as Ast exposing (Ast(..), Modifier(..), modifiersOf, resultingGap, setAccumulatedGaps, unmodifiedGap)
-import Repl.Ast.Gap as AstGap exposing (AstGap)
+import Repl.AccumGap as AccumGap exposing (AccumGap)
+import Repl.Ast as Ast exposing (Ast(..), Modifier(..), unmodifiedGap)
+import Repl.Gap as Gap
 import Repl.ViewEditor as ViewEditor exposing (ViewEditor)
 
 
@@ -29,33 +30,36 @@ type alias Config =
 
 {-| View for preview window
 -}
-preview : Config -> View NoGap msg
-preview config =
-    let
-        ast =
-            ViewEditor.toAst config.viewEditor
-    in
+view : Config -> View NoGap msg
+view config =
     column
         [ textBlock "Preview"
             |> Neat.fromNoGap Gap.preview
             |> Neat.setBoundary Gap.preview
             |> setClass "preview-title"
-        , row
-            [ previewCore ast
-            ]
-            |> (case resultingGap ast of
-                    AstGap.Gap name size ->
-                        Neat.setBoundary (IsGap size)
+        , (case ViewEditor.toAst config.viewEditor of
+            Nothing ->
+                Neat.none
 
-                    AstGap.NoGap ->
-                        identity
+            Just ast ->
+                row
+                    [ previewCore ast
+                        |> setLayout Layout.fill
+                    ]
+                    |> (case Ast.accumGap ast of
+                            AccumGap.Gap gap ->
+                                Neat.setBoundary (Gap.toIsGap gap)
 
-                    AstGap.Invalid _ ->
-                        setClass "invalid"
+                            AccumGap.NoGap ->
+                                identity
 
-                    AstGap.Undetermined ->
-                        identity
-               )
+                            AccumGap.Invalid _ ->
+                                setClass "invalid"
+
+                            AccumGap.Undetermined ->
+                                identity
+                       )
+          )
             |> setClass "preview-body-inner"
             |> Neat.fromNoGap Gap.preview
             |> Neat.setBoundary Gap.preview
@@ -73,19 +77,19 @@ previewCore ast =
 
 previewUnmodified : Ast -> View NoGap msg
 previewUnmodified ast =
-    case ast of
-        TextBlock str mods ->
+    case Ast.tree ast of
+        Ast.TextBlock str ->
             textBlock str
 
-        Empty mods ->
+        Ast.Empty ->
             empty
 
-        RowWith align asts mods ->
-            rowWith (Maybe.withDefault defaultRow align)
+        Ast.Row align asts ->
+            rowWith align
                 (List.map previewCore asts)
 
-        ColumnWith align asts mods ->
-            columnWith (Maybe.withDefault defaultColumn align)
+        Ast.Column align asts ->
+            columnWith align
                 (List.map previewCore asts)
 
         _ ->
@@ -94,13 +98,20 @@ previewUnmodified ast =
 
 applyModifiers : Ast -> View NoGap msg -> View NoGap msg
 applyModifiers ast =
+    let
+        mods =
+            Ast.modifiers ast
+    in
     List.foldr (>>)
         identity
-        (List.map previewMod <| setAccumulatedGaps (unmodifiedGap ast) (modifiersOf ast))
+        (List.map2 previewMod
+            (Ast.accumulatedGaps (unmodifiedGap <| Ast.tree ast) mods)
+            mods
+        )
 
 
-previewMod : ( AstGap, Modifier ) -> View NoGap msg -> View NoGap msg
-previewMod ( accumGap, mod ) =
+previewMod : AccumGap -> Modifier -> View NoGap msg -> View NoGap msg
+previewMod accumGap mod =
     case mod of
         SetClass str ->
             setClass str
@@ -119,11 +130,11 @@ previewMod ( accumGap, mod ) =
 
         ExpandTo mgap2 ->
             case ( mgap2, accumGap ) of
-                ( Just (AstGap.Gap _ gap2), AstGap.Gap _ gap1 ) ->
-                    Neat.expand (IsGap gap1) (IsGap gap2)
+                ( Just gap2, AccumGap.Gap gap1 ) ->
+                    Neat.expand (Gap.toIsGap gap1) (Gap.toIsGap gap2)
 
-                ( Just (AstGap.Gap _ gap2), AstGap.NoGap ) ->
-                    Neat.expand (IsGap { width = 0, height = 0 }) (IsGap gap2)
+                ( Just gap2, AccumGap.NoGap ) ->
+                    Neat.expand (IsGap { width = 0, height = 0 }) (Gap.toIsGap gap2)
 
                 _ ->
                     identity
