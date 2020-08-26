@@ -15,3 +15,24 @@
   }
 }
 
+.innerForm {
+  color: $main-color4;
+  border: 1px solid $main-color0;
+  border-radius: 0.3em;
+  background-color: $main-color0;
+}
+
+.formButton {
+  border: solid 2px #ccc;
+  border-radius: 0.3em;
+  background-color: #666;
+  color: #ccc;
+  min-width: 4em;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.formLabel {
+  min-width: 10em;
+  font-weight: bold;
+}

@@ -150,7 +150,7 @@ updateCreateFormField model f =
 
 {-| View for Gap editor window
 -}
-gapEditor : GapEditor -> View NoGap Msg
+gapEditor : GapEditor -> View Gap.Editor Msg
 gapEditor (GapEditor model) =
     column
         (createForm model.showError model.createForm
@@ -158,11 +158,12 @@ gapEditor (GapEditor model) =
         )
 
 
-createForm : Bool -> CreateForm -> View NoGap Msg
+createForm : Bool -> CreateForm -> View Gap.Editor Msg
 createForm showError model =
     column
         [ row
-            [ textBlock "Gap name"
+            [ textBlock "Gap name: "
+                |> setClass "formLabel"
                 |> fromNoGap Gap.editor
             , View.textInput
                 { onChange = UpdateCreateFormName
@@ -171,7 +172,8 @@ createForm showError model =
                 |> fromNoGap Gap.editor
             ]
         , row
-            [ textBlock "Width"
+            [ textBlock "Width: "
+                |> setClass "formLabel"
                 |> fromNoGap Gap.editor
             , View.textInput
                 { onChange = UpdateCreateFormWidth
@@ -180,7 +182,8 @@ createForm showError model =
                 |> fromNoGap Gap.editor
             ]
         , row
-            [ textBlock "Height"
+            [ textBlock "Height: "
+                |> setClass "formLabel"
                 |> fromNoGap Gap.editor
             , View.textInput
                 { onChange = UpdateCreateFormHeight
@@ -204,22 +207,24 @@ createForm showError model =
                 |> Neat.setAttributes
                     [ Events.onClick PrependGap
                     ]
+                |> setClass "formButton"
                 |> fromNoGap Gap.editor
             ]
         ]
         |> setBoundary Gap.editor
         |> setClass "innerForm"
+        |> fromNoGap Gap.editor
 
 
-renderGap : Gap -> View NoGap msg
+renderGap : Gap -> View Gap.Editor msg
 renderGap gap =
     column
         [ textBlock <| gap.name ++ " : IsGap " ++ capitalizeHead gap.name
-        , textBlock <| gap.name ++ " =    IsGap"
+        , textBlock <| gap.name ++ " ="
+        , textBlock <| "    IsGap"
         , textBlock <| "        { width = " ++ String.fromFloat gap.width
-        , textBlock <| "        { height = " ++ String.fromFloat gap.height
+        , textBlock <| "        , height = " ++ String.fromFloat gap.height
         , textBlock <| "        }"
-        , View.emptyLine
         , View.emptyLine
         , column
             [ textBlock <| "type " ++ capitalizeHead gap.name ++ " = " ++ capitalizeHead gap.name
@@ -227,6 +232,11 @@ renderGap gap =
             , View.emptyLine
             ]
         ]
+        |> fromNoGap Gap.editor
+        |> setBoundary Gap.editor
+        |> setClass "innerForm"
+        |> setClass "innerForm-code"
+        |> fromNoGap Gap.editor
 
 
 {-| Convert gap function name into gap type name.
@@ -246,7 +256,7 @@ capitalizeHead name =
 
 class : String -> Mixin msg
 class =
-    classMixinWith <| \name -> "repl_-gapEditor" ++ name
+    classMixinWith <| \name -> "repl_-gapEditor__" ++ name
 
 
 setClass : String -> View NoGap msg -> View NoGap msg

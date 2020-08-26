@@ -43,7 +43,7 @@ init =
     ( { repl1 =
             Repl.default
                 |> Repl.setGapEditor defaultGapEditor
-                |> Repl.showViewEditor
+                |> Repl.showGapEditor
                 |> Repl.setViewEditor defaultViewEditor
       }
     , Cmd.none
