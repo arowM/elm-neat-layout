@@ -108,14 +108,14 @@ fill =
 
 {-| Specifies how much of the remaining space in the row/column should be assigned to the item.
 -}
-fillBy : Int -> Layout msg
+fillBy : Float -> Layout msg
 fillBy n =
     Layout.fromRecord
         { outer =
             Mixin.batch
-                [ style "-webkit-box-flex" <| String.fromInt n
-                , style "-ms-flex-positive" <| String.fromInt n
-                , style "flex-grow" <| String.fromInt n
+                [ style "-webkit-box-flex" <| String.fromFloat n
+                , style "-ms-flex-positive" <| String.fromFloat n
+                , style "flex-grow" <| String.fromFloat n
                 , style "-ms-flex-preferred-size" "0%"
                 , style "flex-basis" "0%"
                 ]
@@ -139,13 +139,13 @@ noShrink =
 
 {-| If the size of all flex items in row/column is larger than the container, items shrink to fit according to `shrinkBy`.
 -}
-shrinkBy : Int -> Layout msg
+shrinkBy : Float -> Layout msg
 shrinkBy n =
     Layout.fromRecord
         { outer =
             Mixin.batch
-                [ style "-ms-flex-negative" <| String.fromInt n
-                , style "flex-shrink" <| String.fromInt n
+                [ style "-ms-flex-negative" <| String.fromFloat n
+                , style "flex-shrink" <| String.fromFloat n
                 ]
         , inner = Mixin.none
         }

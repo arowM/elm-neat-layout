@@ -8,7 +8,6 @@ module Neat exposing
     , document
     , Document
     , application
-    , lift
     , textBlock
     , textNode
     , none
@@ -17,6 +16,7 @@ module Neat exposing
     , input
     , textarea
     , select
+    , lift
     , setMixin
     , setMixins
     , setAttribute
@@ -187,7 +187,6 @@ For custom gaps, see [Custom gaps](#custom-gaps).
 -}
 type NoGap
     = NoGap
-
 
 
 -- `Browser.*` alternatives
@@ -907,6 +906,7 @@ div =
     lift Html.div
 
 
+{-| -}
 noGap : IsGap NoGap
 noGap =
     IsGap
