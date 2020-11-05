@@ -1,6 +1,7 @@
 module Neat exposing
     ( View
     , NoGap
+    , noGap
     , sandbox
     , Renderer
     , defaultRenderer
