@@ -2,7 +2,7 @@ module Repl.GapEditor exposing
     ( GapEditor
     , Msg
     , update
-    , gapEditor
+    , view
     , capitalizeHead
     , fromList
     , toList
@@ -17,7 +17,7 @@ module Repl.GapEditor exposing
 @docs GapEditor
 @docs Msg
 @docs update
-@docs gapEditor
+@docs view
 @docs capitalizeHead
 @docs fromList
 @docs toList
@@ -30,8 +30,9 @@ import Gap
 import Html.Attributes.Classname exposing (classMixinWith)
 import Html.Events as Events
 import Mixin exposing (Mixin)
-import Neat exposing (NoGap, View, fromNoGap, setBoundary, setBoundaryWith, setMixin, textBlock)
+import Neat exposing (IsGap, NoGap, View, fromNoGap, setBoundary, setBoundaryWith, setLayout, setMixin, textBlock)
 import Neat.Boundary as Boundary exposing (Boundary, defaultBoundary)
+import Neat.Layout as Layout
 import Neat.Layout.Column exposing (column)
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith)
 import Repl.Gap exposing (Gap)
@@ -114,6 +115,7 @@ update_ msg model =
                     { model
                         | gaps = gap :: model.gaps
                         , showError = False
+                        , createForm = CreateForm.init
                     }
 
                 Err _ ->
@@ -150,50 +152,77 @@ updateCreateFormField model f =
 
 {-| View for Gap editor window
 -}
-gapEditor : GapEditor -> View Gap.Editor Msg
-gapEditor (GapEditor model) =
-    column
-        (createForm model.showError model.createForm
-            :: List.map renderGap model.gaps
-        )
+view : IsGap g -> GapEditor -> View g Msg
+view gap (GapEditor model) =
+    [ controller model
+    , model.gaps
+        |> List.map renderGap
+        |> List.intersperse
+            (column
+                [ emptyLine
+                , emptyLine
+                ]
+            )
+        |> column
+    ]
+        |> List.map (fromNoGap gap)
+        |> column
 
 
-createForm : Bool -> CreateForm -> View Gap.Editor Msg
-createForm showError model =
-    column
-        [ row
-            [ textBlock "Gap name: "
-                |> setClass "formLabel"
+controller : Model -> View NoGap Msg
+controller { createForm, showError} =
+    let
+        errors = FD.errors CreateForm.decoder createForm
+    in
+    rowWith
+        { defaultRow
+            | wrap = Row.Wrap
+        }
+        [ column
+            [ row
+                [ textBlock "Gap name: "
+                    |> setClass "formLabel"
+                    |> fromNoGap Gap.editor
+                , View.textInput
+                    { onChange = UpdateCreateFormName
+                    }
+                    createForm.name
+                    |> fromNoGap Gap.editor
+                ]
+            , View.errorBlock "    Please input something."
                 |> fromNoGap Gap.editor
-            , View.textInput
-                { onChange = UpdateCreateFormName
-                }
-                model.name
+                |> Neat.when (showError && List.member CreateForm.EmptyName errors)
+            , row
+                [ textBlock "Width: "
+                    |> setClass "formLabel"
+                    |> fromNoGap Gap.editor
+                , View.textInput
+                    { onChange = UpdateCreateFormWidth
+                    }
+                    createForm.width
+                    |> fromNoGap Gap.editor
+                ]
+            , View.errorBlock "    Please input numbers."
                 |> fromNoGap Gap.editor
-            ]
-        , row
-            [ textBlock "Width: "
-                |> setClass "formLabel"
+                |> Neat.when (showError && List.member CreateForm.NotAFloatWidth errors)
+            , row
+                [ textBlock "Height: "
+                    |> setClass "formLabel"
+                    |> fromNoGap Gap.editor
+                , View.textInput
+                    { onChange = UpdateCreateFormHeight
+                    }
+                    createForm.height
+                    |> fromNoGap Gap.editor
+                ]
+            , View.errorBlock "    Please input numbers."
                 |> fromNoGap Gap.editor
-            , View.textInput
-                { onChange = UpdateCreateFormWidth
-                }
-                model.width
-                |> fromNoGap Gap.editor
-            ]
-        , row
-            [ textBlock "Height: "
-                |> setClass "formLabel"
-                |> fromNoGap Gap.editor
-            , View.textInput
-                { onChange = UpdateCreateFormHeight
-                }
-                model.height
-                |> fromNoGap Gap.editor
+                |> Neat.when (showError && List.member CreateForm.NotAFloatHeight errors)
             ]
         , rowWith
             { defaultRow
                 | horizontal = Row.Right
+                , vertical = Row.Bottom
             }
             [ textBlock "Add"
                 |> fromNoGap Gap.editor
@@ -210,13 +239,14 @@ createForm showError model =
                 |> setClass "formButton"
                 |> fromNoGap Gap.editor
             ]
+                |> setLayout Layout.fill
         ]
         |> setBoundary Gap.editor
-        |> setClass "innerForm"
-        |> fromNoGap Gap.editor
+        |> setClass "innerCard"
+        |> setClass "innerCard-form"
 
 
-renderGap : Gap -> View Gap.Editor msg
+renderGap : Gap -> View NoGap msg
 renderGap gap =
     column
         [ textBlock <| gap.name ++ " : IsGap " ++ capitalizeHead gap.name
@@ -228,15 +258,8 @@ renderGap gap =
         , View.emptyLine
         , column
             [ textBlock <| "type " ++ capitalizeHead gap.name ++ " = " ++ capitalizeHead gap.name
-            , View.emptyLine
-            , View.emptyLine
             ]
         ]
-        |> fromNoGap Gap.editor
-        |> setBoundary Gap.editor
-        |> setClass "innerForm"
-        |> setClass "innerForm-code"
-        |> fromNoGap Gap.editor
 
 
 {-| Convert gap function name into gap type name.

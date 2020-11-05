@@ -21,8 +21,8 @@ body {
   font-feature-settings : "pkna";
 }
 
-code {
-  font-family: Consolas, 'Courier New', Courier, Monaco, monospace;
+code, code * {
+  font-family: Consolas, Monaco, monospace;
 }
 
 html {

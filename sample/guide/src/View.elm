@@ -5,6 +5,7 @@ module View exposing
     , select
     , selectWithoutEmpty
     , Select
+    , errorBlock
     )
 
 {-| Utility view functions
@@ -14,6 +15,7 @@ module View exposing
 @docs TextInput
 @docs select
 @docs Select
+@docs errorBlock
 
 -}
 
@@ -87,6 +89,20 @@ type alias Select msg =
     { options : List (String, String)
     , onChange : String -> msg
     }
+
+
+
+annotationBlock : String -> View NoGap msg
+annotationBlock str =
+    Neat.textBlock str
+        |> setClass "annotation"
+
+
+errorBlock : String -> View NoGap msg
+errorBlock str =
+    Neat.textBlock str
+        |> setClass "error"
+
 
 
 -- Helper functions

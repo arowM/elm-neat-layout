@@ -41,7 +41,7 @@ import Neat.Layout.Column as Column exposing (Column, column, columnWith, column
 import Neat.Layout.Row as Row exposing (Row, defaultRow, row, rowWith, rowWithMap)
 import Reference exposing (Reference)
 import Repl.Ast as Ast exposing (Ast)
-import Repl.GapEditor as GapEditor exposing (GapEditor, gapEditor)
+import Repl.GapEditor as GapEditor exposing (GapEditor)
 import Repl.Preview as Preview
 import Repl.ViewEditor as ViewEditor exposing (ViewEditor)
 
@@ -174,52 +174,63 @@ repl_ f model =
             , editor
                 { toMsg = UpdateViewEditor
                 , title = "View"
+                , expand = fromNoGap Gap.repl
+                , white = False
                 }
                 [ ViewEditor.view
                     { gapEditor = model.gapEditor
                     }
                     model.viewEditor
                 ]
-                |> fromNoGap Gap.repl
                 |> setLayout Layout.fill
                 |> Neat.when model.showViewEditor
-            , editor
-                { toMsg = UpdateGapEditor
-                , title = "Gap"
-                }
-                [ gapEditor model.gapEditor
+            , columnWithMap UpdateGapEditor defaultColumn
+                [ windowTitle "Gap"
+                , column
+                    [ GapEditor.view Gap.editor model.gapEditor
+                        |> Neat.setBoundary Gap.editor
+                    ]
+                    |> setClass "window_body"
+                    |> setLayout Layout.fill
                 ]
-                |> fromNoGap Gap.repl
-                |> setLayout Layout.fill
+                |> setClass "window"
+                |> Neat.fromNoGap Gap.repl
                 |> Neat.when model.showGapEditor
             ]
-            |> Neat.fromNoGap Gap.editor
-            |> Neat.setBoundary Gap.editor
+            |> Neat.setBoundary Gap.repl
             |> setClass "repl_body"
             |> setLayout Layout.fill
         ]
         |> setClass "window"
 
 
-editor : { toMsg : msg -> Msg, title : String } -> List (View NoGap msg) -> View NoGap Msg
-editor { title, toMsg } view =
+editor : { toMsg : msg -> Msg, title : String, expand : View g Msg -> View Gap.Editor Msg, white : Bool } -> List (View g msg) -> View Gap.Repl Msg
+editor { title, toMsg, expand, white } view =
     column
-        [ row
+        [ windowTitle title
+        , columnWithMap
+            toMsg
+            defaultColumn
+            view
+            |> expand
+            |> Neat.setBoundary Gap.editor
+            |> setClass "window_body"
+            |> setLayout Layout.fill
+            |> setMixin
+                (Mixin.when white (class "window_body-white"))
+        ]
+        |> setClass "window"
+        |> Neat.fromNoGap Gap.repl
+
+
+windowTitle : String -> View NoGap msg
+windowTitle title =
+        row
             [ textBlock title
                 |> Neat.fromNoGap Gap.editor
             ]
             |> Neat.setBoundary Gap.editor
             |> setClass "window_title"
-        , columnWithMap
-            toMsg
-            defaultColumn
-            view
-            |> Neat.fromNoGap Gap.editor
-            |> Neat.setBoundary Gap.editor
-            |> setClass "window_body"
-            |> setLayout Layout.fill
-        ]
-        |> setClass "window"
 
 
 editorTabButton : { onClick : Msg, label : String } -> Bool -> View Gap.Editor Msg

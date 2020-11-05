@@ -1,4 +1,4 @@
-module Repl.GapEditor.CreateForm exposing (Error, CreateForm, decoder, init)
+module Repl.GapEditor.CreateForm exposing (Error(..), CreateForm, decoder, init)
 
 import Form.Decoder as FD exposing (Decoder)
 import Repl.Gap exposing (Gap)

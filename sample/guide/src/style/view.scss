@@ -11,10 +11,11 @@
 
 .annotation {
   color: #cc6;
+  user-select: none;
+}
 
-  &-error {
-    color: #f66;
-  }
+.error {
+  color: $error-color;
 }
 
 .emptyLine {

@@ -15,11 +15,18 @@
   }
 }
 
-.innerForm {
-  color: $main-color4;
-  border: 1px solid $main-color0;
-  border-radius: 0.3em;
-  background-color: $main-color0;
+.innerCard {
+  &-form {
+    color: $main-color4;
+    background-color: $main-color2;
+  }
+
+  &-code {
+    color: $main-color0;
+    background-color: $main-color4;
+    border-radius: 0.3em;
+    border: 1px solid $main-color0;
+  }
 }
 
 .formButton {
@@ -34,5 +41,4 @@
 
 .formLabel {
   min-width: 10em;
-  font-weight: bold;
 }
