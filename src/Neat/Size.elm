@@ -56,7 +56,7 @@ width v = Size.Size <| \renderer gap ->
         { outer =
             Mixin.batch
                 [ style "width" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.width ++ " * " ++ renderer.baseGapSize ++ ")"
+                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.width ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
                 ]
         , inner = Mixin.batch
             [ style "width" "100%"
@@ -72,7 +72,7 @@ minWidth v = Size.Size <| \renderer gap ->
         { outer =
             Mixin.batch
                 [ style "min-width" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.width ++ " * " ++ renderer.baseGapSize ++ ")"
+                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.width ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
                 ]
         , inner = Mixin.none
         }
@@ -85,7 +85,7 @@ maxWidth v = Size.Size <| \renderer gap ->
         { outer =
             Mixin.batch
                 [ style "max-width" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.width ++ " * " ++ renderer.baseGapSize ++ ")"
+                    "calc(" ++ v ++ " + " ++ String.fromFloat (Debug.log "gap" gap).width ++ " * 2 * " ++ Debug.log "base" renderer.baseGapSize ++ ")"
                 ]
         , inner = Mixin.none
         }
@@ -102,7 +102,7 @@ height v = Size.Size <| \renderer gap ->
         { outer =
             Mixin.batch
                 [ style "height" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * " ++ renderer.baseGapSize ++ ")"
+                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
                 ]
         , inner = Mixin.batch
             [ style "height" "100%"
@@ -118,7 +118,7 @@ minHeight v = Size.Size <| \renderer gap ->
         { outer =
             Mixin.batch
                 [ style "min-height" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * " ++ renderer.baseGapSize ++ ")"
+                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
                 ]
         , inner = Mixin.none
         }
@@ -131,7 +131,7 @@ maxHeight v = Size.Size <| \renderer gap ->
         { outer =
             Mixin.batch
                 [ style "max-height" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * " ++ renderer.baseGapSize ++ ")"
+                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
                 ]
         , inner = Mixin.none
         }

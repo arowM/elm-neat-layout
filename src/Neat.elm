@@ -542,7 +542,7 @@ setLayout layout view =
                 appearance
 
 {-| -}
-setSize : Size msg -> View g msg -> View g msg
+setSize : Size msg -> View NoGap msg -> View NoGap msg
 setSize (Size size) view =
     fromHtml <|
         \renderer gap extra appearance ->
