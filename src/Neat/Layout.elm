@@ -9,15 +9,32 @@ module Neat.Layout exposing
     , noShrink
     , shrinkBy
     , basis
+    , width
+    , minWidth
+    , maxWidth
+    , height
+    , minHeight
+    , maxHeight
     )
 
-{-| Alignment functions.
+{-| Layout functions.
 
 
 # Core
 
 @docs Layout
 
+# Width
+
+@docs width
+@docs minWidth
+@docs maxWidth
+
+# Height
+
+@docs height
+@docs minHeight
+@docs maxHeight
 
 # Rows and Columns
 
@@ -160,6 +177,92 @@ basis v =
             Mixin.batch
                 [ style "-ms-flex-preferred-size" v
                 , style "flex-basis" v
+                ]
+        , inner = Mixin.none
+        }
+        |> Layout.makeImportant
+
+
+-- Width
+
+
+{-| -}
+width : String -> Layout msg
+width v =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "width" v
+                ]
+        , inner = Mixin.batch
+            [ style "width" "100%"
+            ]
+        }
+        |> Layout.makeImportant
+
+
+{-| -}
+minWidth : String -> Layout msg
+minWidth v =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "min-width" v
+                ]
+        , inner = Mixin.none
+        }
+        |> Layout.makeImportant
+
+{-| -}
+maxWidth : String -> Layout msg
+maxWidth v =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "max-width" v
+                ]
+        , inner = Mixin.none
+        }
+        |> Layout.makeImportant
+
+
+-- Height
+
+
+{-| -}
+height : String -> Layout msg
+height v =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "height" v
+                ]
+        , inner = Mixin.batch
+            [ style "height" "100%"
+            ]
+        }
+        |> Layout.makeImportant
+
+
+{-| -}
+minHeight : String -> Layout msg
+minHeight v =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "min-height" v
+                ]
+        , inner = Mixin.none
+        }
+        |> Layout.makeImportant
+
+{-| -}
+maxHeight : String -> Layout msg
+maxHeight v =
+    Layout.fromRecord
+        { outer =
+            Mixin.batch
+                [ style "max-height" v
                 ]
         , inner = Mixin.none
         }
