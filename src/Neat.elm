@@ -24,6 +24,7 @@ module Neat exposing
     , setAttribute
     , setAttributes
     , setLayout
+    , setSize
     , when
     , unless
     , keyed
@@ -87,6 +88,7 @@ module Neat exposing
 @docs setAttribute
 @docs setAttributes
 @docs setLayout
+@docs setSize
 
 
 # Handle cases
@@ -164,6 +166,7 @@ import Neat.Boundary as Boundary exposing (Boundary)
 import Neat.Flex as Flex exposing (Flex)
 import Neat.Internal as Internal exposing (Gap, fromHtml, toHtml, unwrap)
 import Neat.Layout.Internal as Layout exposing (Layout(..))
+import Neat.Size.Internal as Size exposing (Size(..))
 import Url exposing (Url)
 
 
@@ -536,6 +539,17 @@ setLayout layout view =
                  else
                     Layout.batch [ layout, extra ]
                 )
+                appearance
+
+{-| -}
+setSize : Size msg -> View g msg -> View g msg
+setSize (Size size) view =
+    fromHtml <|
+        \renderer gap extra appearance ->
+            unwrap view
+                renderer
+                gap
+                ( Layout.batch [ size renderer gap, extra ])
                 appearance
 
 
