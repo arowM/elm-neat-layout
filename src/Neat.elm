@@ -9,15 +9,16 @@ module Neat exposing
     , document
     , Document
     , application
+    , lift
     , textBlock
     , textNode
+    , scalableBlock
     , none
     , empty
     , emptyNode
     , input
     , textarea
     , select
-    , lift
     , setMixin
     , setMixins
     , setAttribute
@@ -47,6 +48,7 @@ module Neat exposing
 
 @docs View
 @docs NoGap
+@docs noGap
 
 
 # `Browser.*` alternatives
@@ -65,6 +67,7 @@ module Neat exposing
 @docs lift
 @docs textBlock
 @docs textNode
+@docs scalableBlock
 @docs none
 @docs empty
 @docs emptyNode
@@ -188,6 +191,7 @@ For custom gaps, see [Custom gaps](#custom-gaps).
 -}
 type NoGap
     = NoGap
+
 
 
 -- `Browser.*` alternatives
@@ -434,14 +438,14 @@ resetCss =
     view1 =
         Neat.div
             []
-            [ Neat.text "view1"
+            [ Neat.textBlock "view1"
             ]
 
     view2 : View NoGap msg
     view2 =
         Neat.div
             []
-            [ Neat.text "view2"
+            [ Neat.textBlock "view2"
             ]
 
     composed : View NoGap msg
@@ -632,6 +636,25 @@ textNode f str =
 textBlock : String -> View NoGap msg
 textBlock =
     textNode Html.div
+
+
+{-| Create a block that scale in a fixed aspect ratio.
+Take `height / width` value as an argument.
+-}
+scalableBlock : Float -> View NoGap msg
+scalableBlock ratio =
+    lift Html.div
+        []
+        [ lift_ True
+            Html.div
+            [ Mixin.fromAttribute <|
+                Attributes.style "padding-top" <|
+                    "calc(100% * "
+                        ++ String.fromFloat ratio
+                        ++ ")"
+            ]
+            []
+        ]
 
 
 {-| -}
