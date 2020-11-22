@@ -166,7 +166,7 @@ import Neat.Boundary as Boundary exposing (Boundary)
 import Neat.Flex as Flex exposing (Flex)
 import Neat.Internal as Internal exposing (Gap, fromHtml, toHtml, unwrap)
 import Neat.Layout.Internal as Layout exposing (Layout(..))
-import Neat.Size.Internal as Size exposing (Size(..))
+import Neat.Size.Internal exposing (Size(..))
 import Url exposing (Url)
 
 
@@ -541,6 +541,7 @@ setLayout layout view =
                 )
                 appearance
 
+
 {-| -}
 setSize : Size msg -> View NoGap msg -> View NoGap msg
 setSize (Size size) view =
@@ -549,7 +550,7 @@ setSize (Size size) view =
             unwrap view
                 renderer
                 gap
-                ( Layout.batch [ size renderer gap, extra ])
+                (Layout.batch [ size renderer gap, extra ])
                 appearance
 
 

@@ -1,8 +1,8 @@
 module Neat.Boundary exposing
     ( Boundary
+    , defaultBoundary
     , Vertical(..)
     , Horizontal(..)
-    , defaultBoundary
     )
 
 {-|

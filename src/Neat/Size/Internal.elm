@@ -1,6 +1,4 @@
-module Neat.Size.Internal exposing
-    ( Size(..)
-    )
+module Neat.Size.Internal exposing (Size(..))
 
 {-| A brief module for Size.
 
@@ -13,6 +11,7 @@ module Neat.Size.Internal exposing
 
 import Neat.Internal exposing (Gap, Renderer)
 import Neat.Layout.Internal exposing (Layout)
+
 
 
 -- Core

@@ -28,11 +28,13 @@ module Neat.Layout.Column exposing
 @docs Vertical
 @docs Horizontal
 
+
 # Keyed
 
 @docs keyed
 @docs keyedWith
 @docs keyedWithMap
+
 
 # Optimization
 
@@ -291,13 +293,14 @@ vertical ver =
 
 {-| Keyed version of column.
 -}
-keyed : List (String, View p msg) -> View p msg
+keyed : List ( String, View p msg ) -> View p msg
 keyed =
     keyedWith defaultColumn
 
+
 {-| Keyed version of columnWith
 -}
-keyedWith : Column -> List (String, View p msg) -> View p msg
+keyedWith : Column -> List ( String, View p msg ) -> View p msg
 keyedWith align children =
     Neat.keyed align.nodeName (columnMixins align) <|
         List.map (Tuple.mapSecond (expandChild align)) children
@@ -305,10 +308,11 @@ keyedWith align children =
 
 {-| Keyed version of columnWithMap
 -}
-keyedWithMap : (a -> b) -> Column -> List (String, View p a) -> View p b
+keyedWithMap : (a -> b) -> Column -> List ( String, View p a ) -> View p b
 keyedWithMap f align children =
     Neat.keyed align.nodeName (columnMixins align) <|
         List.map (Tuple.mapSecond (unsafeMap f << expandChild align)) children
+
 
 
 -- Optimization

@@ -117,21 +117,6 @@ setChildBasis _ =
     Layout.none
 
 
-{-| basis
--}
-basis : String -> Layout msg
-basis v =
-    Layout.fromRecord
-        { outer =
-            Mixin.batch
-                [ style "-ms-flex-preferred-size" v
-                , style "flex-basis" v
-                ]
-        , inner = Mixin.none
-        }
-        |> Layout.makeImportant
-
-
 
 -- Horizontal alignment
 

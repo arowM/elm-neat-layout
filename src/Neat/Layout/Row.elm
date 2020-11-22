@@ -28,11 +28,13 @@ module Neat.Layout.Row exposing
 @docs Vertical
 @docs Horizontal
 
+
 # Keyed
 
 @docs keyed
 @docs keyedWith
 @docs keyedWithMap
+
 
 # Optimization
 
@@ -145,6 +147,7 @@ toFlexWrap wrap =
         Wrap ->
             Flex.Wrap
 
+
 {-| Default `Row` configuration.
 
     { vertical = Stretch
@@ -229,13 +232,14 @@ toFlexVertical v =
 
 {-| Keyed version of row.
 -}
-keyed : List (String, View p msg) -> View p msg
+keyed : List ( String, View p msg ) -> View p msg
 keyed =
     keyedWith defaultRow
 
+
 {-| Keyed version of rowWith
 -}
-keyedWith : Row -> List (String, View p msg) -> View p msg
+keyedWith : Row -> List ( String, View p msg ) -> View p msg
 keyedWith align children =
     Neat.keyed align.nodeName (rowMixins align) <|
         List.map (Tuple.mapSecond (expandChild align)) children
@@ -243,10 +247,11 @@ keyedWith align children =
 
 {-| Keyed version of rowWithMap
 -}
-keyedWithMap : (a -> b) -> Row -> List (String, View p a) -> View p b
+keyedWithMap : (a -> b) -> Row -> List ( String, View p a ) -> View p b
 keyedWithMap f align children =
     Neat.keyed align.nodeName (rowMixins align) <|
         List.map (Tuple.mapSecond (unsafeMap f << expandChild align)) children
+
 
 
 -- Optimization

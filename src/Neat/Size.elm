@@ -15,11 +15,13 @@ module Neat.Size exposing
 
 @docs Size
 
+
 # Width
 
 @docs width
 @docs minWidth
 @docs maxWidth
+
 
 # Height
 
@@ -31,7 +33,6 @@ module Neat.Size exposing
 
 import Html.Attributes as Attributes
 import Mixin exposing (Mixin)
-import Neat exposing (View)
 import Neat.Layout.Internal as Layout
 import Neat.Size.Internal as Size
 
@@ -51,45 +52,72 @@ type alias Size msg =
 
 {-| -}
 width : String -> Size msg
-width v = Size.Size <| \renderer gap ->
-    Layout.fromRecord
-        { outer =
-            Mixin.batch
-                [ style "width" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.width ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
-                ]
-        , inner = Mixin.batch
-            [ style "width" "100%"
-            ]
-        }
-        |> Layout.makeImportant
+width v =
+    Size.Size <|
+        \renderer gap ->
+            Layout.fromRecord
+                { outer =
+                    Mixin.batch
+                        [ style "width" <|
+                            "calc("
+                                ++ v
+                                ++ " + "
+                                ++ String.fromFloat gap.width
+                                ++ " * 2 * "
+                                ++ renderer.baseGapSize
+                                ++ ")"
+                        ]
+                , inner =
+                    Mixin.batch
+                        [ style "width" "100%"
+                        ]
+                }
+                |> Layout.makeImportant
 
 
 {-| -}
 minWidth : String -> Size msg
-minWidth v = Size.Size <| \renderer gap ->
-    Layout.fromRecord
-        { outer =
-            Mixin.batch
-                [ style "min-width" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.width ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
-                ]
-        , inner = Mixin.none
-        }
-        |> Layout.makeImportant
+minWidth v =
+    Size.Size <|
+        \renderer gap ->
+            Layout.fromRecord
+                { outer =
+                    Mixin.batch
+                        [ style "min-width" <|
+                            "calc("
+                                ++ v
+                                ++ " + "
+                                ++ String.fromFloat gap.width
+                                ++ " * 2 * "
+                                ++ renderer.baseGapSize
+                                ++ ")"
+                        ]
+                , inner = Mixin.none
+                }
+                |> Layout.makeImportant
+
 
 {-| -}
 maxWidth : String -> Size msg
-maxWidth v = Size.Size <| \renderer gap ->
-    Layout.fromRecord
-        { outer =
-            Mixin.batch
-                [ style "max-width" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat (Debug.log "gap" gap).width ++ " * 2 * " ++ Debug.log "base" renderer.baseGapSize ++ ")"
-                ]
-        , inner = Mixin.none
-        }
-        |> Layout.makeImportant
+maxWidth v =
+    Size.Size <|
+        \renderer gap ->
+            Layout.fromRecord
+                { outer =
+                    Mixin.batch
+                        [ style "max-width" <|
+                            "calc("
+                                ++ v
+                                ++ " + "
+                                ++ String.fromFloat gap.width
+                                ++ " * 2 * "
+                                ++ renderer.baseGapSize
+                                ++ ")"
+                        ]
+                , inner = Mixin.none
+                }
+                |> Layout.makeImportant
+
 
 
 -- Height
@@ -97,45 +125,71 @@ maxWidth v = Size.Size <| \renderer gap ->
 
 {-| -}
 height : String -> Size msg
-height v = Size.Size <| \renderer gap ->
-    Layout.fromRecord
-        { outer =
-            Mixin.batch
-                [ style "height" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
-                ]
-        , inner = Mixin.batch
-            [ style "height" "100%"
-            ]
-        }
-        |> Layout.makeImportant
+height v =
+    Size.Size <|
+        \renderer gap ->
+            Layout.fromRecord
+                { outer =
+                    Mixin.batch
+                        [ style "height" <|
+                            "calc("
+                                ++ v
+                                ++ " + "
+                                ++ String.fromFloat gap.height
+                                ++ " * 2 * "
+                                ++ renderer.baseGapSize
+                                ++ ")"
+                        ]
+                , inner =
+                    Mixin.batch
+                        [ style "height" "100%"
+                        ]
+                }
+                |> Layout.makeImportant
 
 
 {-| -}
 minHeight : String -> Size msg
-minHeight v = Size.Size <| \renderer gap ->
-    Layout.fromRecord
-        { outer =
-            Mixin.batch
-                [ style "min-height" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
-                ]
-        , inner = Mixin.none
-        }
-        |> Layout.makeImportant
+minHeight v =
+    Size.Size <|
+        \renderer gap ->
+            Layout.fromRecord
+                { outer =
+                    Mixin.batch
+                        [ style "min-height" <|
+                            "calc("
+                                ++ v
+                                ++ " + "
+                                ++ String.fromFloat gap.height
+                                ++ " * 2 * "
+                                ++ renderer.baseGapSize
+                                ++ ")"
+                        ]
+                , inner = Mixin.none
+                }
+                |> Layout.makeImportant
+
 
 {-| -}
 maxHeight : String -> Size msg
-maxHeight v = Size.Size <| \renderer gap ->
-    Layout.fromRecord
-        { outer =
-            Mixin.batch
-                [ style "max-height" <|
-                    "calc(" ++ v ++ " + " ++ String.fromFloat gap.height ++ " * 2 * " ++ renderer.baseGapSize ++ ")"
-                ]
-        , inner = Mixin.none
-        }
-        |> Layout.makeImportant
+maxHeight v =
+    Size.Size <|
+        \renderer gap ->
+            Layout.fromRecord
+                { outer =
+                    Mixin.batch
+                        [ style "max-height" <|
+                            "calc("
+                                ++ v
+                                ++ " + "
+                                ++ String.fromFloat gap.height
+                                ++ " * 2 * "
+                                ++ renderer.baseGapSize
+                                ++ ")"
+                        ]
+                , inner = Mixin.none
+                }
+                |> Layout.makeImportant
 
 
 
@@ -145,4 +199,3 @@ maxHeight v = Size.Size <| \renderer gap ->
 style : String -> String -> Mixin msg
 style k v =
     Mixin.fromAttribute <| Attributes.style k v
-
