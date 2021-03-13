@@ -1,111 +1,260 @@
 module Neat exposing
     ( View
+    , map
     , NoGap
-    , sandbox
     , Renderer
     , defaultRenderer
+    , setBaseSizeInRem
+    , sandbox
+    , Model
+    , Msg
     , element
     , document
     , Document
     , application
-    , lift
     , textBlock
-    , textNode
-    , none
     , empty
-    , emptyNode
-    , input
-    , textarea
-    , select
+    , none
+    , scalableBlock
     , setMixin
     , setMixins
     , setAttribute
     , setAttributes
-    , setLayout
-    , when
-    , unless
-    , keyed
-    , IsGap(..)
-    , fromNoGap
-    , expand
-    , setBoundary
-    , setBoundaryWith
-    , setBoundaryWithMap
     , setRole
     , setAria
     , setBoolAria
-    , optimized
-    , toProtected
-    , Protected
+    , setLineHeight
+    , setMinWidthContain
+    , setMinWidthInBs
+    , setMinWidthInEm
+    , setMinWidthInRem
+    , setMinHeightContain
+    , setMinHeightInBs
+    , setMinHeightInEm
+    , setMinHeightInRem
+    , setMaxWidthInfinite
+    , setMaxWidthFit
+    , setMaxWidthInBs
+    , setMaxWidthInEm
+    , setMaxWidthInRem
+    , setMaxHeightInfinite
+    , setMaxHeightFit
+    , setMaxHeightInBs
+    , setMaxHeightInEm
+    , setMaxHeightInRem
+    , enableWrap
+    , disableWrap
+    , setHorizontalSpaceBehind
+    , setHorizontalSpaceForward
+    , setHorizontalSpaceBoth
+    , setHorizontalSpaceAround
+    , setHorizontalSpaceBetween
+    , setVerticalSpaceBehind
+    , setVerticalSpaceForward
+    , setVerticalSpaceBoth
+    , setVerticalSpaceAround
+    , setVerticalSpaceBetween
+    , setGap
+    , setBoundary
+    , row
+    , keyedRow
+    , setRow
+    , column
+    , keyedColumn
+    , setColumn
+    , putLayer
+    , Layer
+    , defaultLayer
+    , InLayer
+    , toLayerView
+    , when
+    , unless
+    , IsGap(..)
+    , Gap
+    , setNodeName
+    , toTemporaryHtml
+    , setBoundaryToTemporaryHtml
     )
 
 {-| Main module for elm-neat-layout.
 
 
+# What's still missing for ver. 3
+
+* add setMaxWidthCover and setMaxHeightCover
+* make default width and height of views _cover_
+* implement debug mode
+* add withWindowSize function
+* add functions to handle borders
+
+
 # Core
 
 @docs View
+@docs map
 @docs NoGap
+
+
+# Renderer
+
+@docs Renderer
+@docs defaultRenderer
+@docs setBaseSizeInRem
 
 
 # `Browser.*` alternatives
 
 @docs sandbox
-@docs Renderer
-@docs defaultRenderer
+@docs Model
+@docs Msg
 @docs element
 @docs document
 @docs Document
 @docs application
 
 
-# Constructors
+# Primitive constructors
 
-@docs lift
 @docs textBlock
-@docs textNode
-@docs none
 @docs empty
-@docs emptyNode
+@docs none
+@docs scalableBlock
 
 
-# Special nodes
+# Attributes
 
-@docs input
-@docs textarea
-@docs select
+Functions to set arbitrary attributes.
+The following styles are not reflected by the `style` attribute or CSS files.
 
-
-# Modifiers
+  - padding / margin
+      - Use functions for gaps.
+  - min-width / max-width / min-height / max-height / line-height
+      - Use functions for sizes.
+  - width / height
+      - Use min-\* and max-\*.
+  - white-space
+      - Determined by wrapping style
+  - display / position
+      - Determined automatically by its context
+  - z-index
+      - Enforced to be "auto"
+  - box-sizing
+      - Determined by each type of view.
+          - `scalableBlock` is "content-box"
+          - otherwise, "border-box"
 
 @docs setMixin
 @docs setMixins
 @docs setAttribute
 @docs setAttributes
-@docs setLayout
 
 
-# Handle cases
+# WAI-ARIA
+
+@docs setRole
+@docs setAria
+@docs setBoolAria
+
+
+# Sizes
+
+You can only use a limited kind of units.
+This may seem inconvenient, but it prevents you to build unmaintainable broken views.
+
+
+## line height
+
+@docs setLineHeight
+
+
+## minimum width
+
+@docs setMinWidthContain
+@docs setMinWidthInBs
+@docs setMinWidthInEm
+@docs setMinWidthInRem
+
+
+## minimum height
+
+@docs setMinHeightContain
+@docs setMinHeightInBs
+@docs setMinHeightInEm
+@docs setMinHeightInRem
+
+
+## maximum width
+
+@docs setMaxWidthInfinite
+@docs setMaxWidthFit
+@docs setMaxWidthInBs
+@docs setMaxWidthInEm
+@docs setMaxWidthInRem
+
+
+## maximum height
+
+@docs setMaxHeightInfinite
+@docs setMaxHeightFit
+@docs setMaxHeightInBs
+@docs setMaxHeightInEm
+@docs setMaxHeightInRem
+
+
+# Wrap style
+
+@docs enableWrap
+@docs disableWrap
+
+
+# Spacing
+
+@docs setHorizontalSpaceBehind
+@docs setHorizontalSpaceForward
+@docs setHorizontalSpaceBoth
+@docs setHorizontalSpaceAround
+@docs setHorizontalSpaceBetween
+@docs setVerticalSpaceBehind
+@docs setVerticalSpaceForward
+@docs setVerticalSpaceBoth
+@docs setVerticalSpaceAround
+@docs setVerticalSpaceBetween
+
+
+# Gaps
+
+@docs setGap
+@docs setBoundary
+
+
+# Rows and Columns
+
+@docs row
+@docs keyedRow
+@docs setRow
+@docs column
+@docs keyedColumn
+@docs setColumn
+
+
+# Overlay
+
+@docs putLayer
+@docs Layer
+@docs defaultLayer
+@docs InLayer
+@docs toLayerView
+
+
+# Handle conditions
 
 @docs when
 @docs unless
 
 
-# Keyed
-
-@docs keyed
-
-
 # Custom gaps
 
-You can use custom gaps just by declaring their types and `IsGap` values.
-
-e.g.,
-
-    module MyGap exposing
-        ( ButtonGroup
-        , buttonGroup
-        )
+You can use custom gaps just by declaring new types and `IsGap` values for them.
 
     import Neat exposing (IsGap)
 
@@ -115,51 +264,31 @@ e.g.,
     buttonGroup : IsGap ButtonGroup
     buttonGroup =
         IsGap
-            { width = 0.6
-            , height = 0.6
+            { horizontal = 0.6
+            , vertical = 0.6
             }
 
 @docs IsGap
+@docs Gap
 
 
-# Convert between gaps
+# Lower level functions for HTML
 
-@docs fromNoGap
-@docs expand
-@docs setBoundary
-@docs setBoundaryWith
-@docs setBoundaryWithMap
-
-
-# Accessibility
-
-@docs setRole
-@docs setAria
-@docs setBoolAria
-
-
-# Lower level functions for performance optimization
-
-These are lower level functions, so all you need would be `Neat.Layout.Row.optimized` and `Neat.Layout.Column.optimized`.
-
-Do not worry even if you cannot understand how to use these functions.
-
-@docs optimized
-@docs toProtected
-@docs Protected
+@docs setNodeName
+@docs toTemporaryHtml
+@docs setBoundaryToTemporaryHtml
 
 -}
 
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
+import Dict exposing (Dict)
 import Html exposing (Attribute, Html)
 import Html.Attributes as Attributes
 import Html.Keyed as Keyed
 import Mixin exposing (Mixin)
-import Neat.Boundary as Boundary exposing (Boundary)
-import Neat.Flex as Flex exposing (Flex)
-import Neat.Internal as Internal exposing (Gap, fromHtml, toHtml, unwrap)
-import Neat.Layout.Internal as Layout exposing (Layout(..))
+import Mixin.Html as Mixin
+import Neat.KeyableList as KeyableList exposing (KeyableList)
 import Url exposing (Url)
 
 
@@ -167,20 +296,161 @@ import Url exposing (Url)
 -- Core
 
 
-{-| Html alternative type.
+{-| A gap-sensible `Html msg` alternative.
 -}
-type alias View gap msg =
-    Internal.View gap msg
+type View gap msg
+    = View (View_ msg)
 
 
-emptyGap : Gap
-emptyGap =
-    { width = 0
-    , height = 0
+{-| Internal view.
+Some variants have gaps for caching purpose.
+-}
+type View_ msg
+    = Row
+        { childGap : Gap
+        , mixin : Mixin msg
+        , layout : Layout
+        , overlays : Overlays msg
+        , children : KeyableList (View_ msg)
+        }
+    | Column
+        { childGap : Gap
+        , mixin : Mixin msg
+        , layout : Layout
+        , overlays : Overlays msg
+        , children : KeyableList (View_ msg)
+        }
+    | TextNode
+        { mixin : Mixin msg
+        , layout : Layout
+        , overlays : Overlays msg
+        , text : String
+        }
+    | Scalable
+        { mixin : Mixin msg
+        , layout : Layout
+        , overlays : Overlays msg
+        , rate : Float
+        }
+    | None
+    | Boundary
+        { childGap : Gap
+        , mixin : Mixin msg
+        , layout : Layout
+        , overlays : Overlays msg
+        , child : View_ msg
+        }
+    | Rendered
+        { childGap : Gap
+        , toHtml : Renderer_ -> Html msg
+        }
+
+
+type alias Overlays msg =
+    List ( Layer, View_ msg )
+
+
+{-| -}
+map : (a -> b) -> View gap a -> View gap b
+map f =
+    liftInternal (map_ f)
+
+
+liftInternal : (View_ a -> View_ b) -> View g1 a -> View g2 b
+liftInternal f (View view) =
+    View <| f view
+
+
+map_ : (a -> b) -> View_ a -> View_ b
+map_ f view =
+    case view of
+        Row o ->
+            Row
+                { childGap = o.childGap
+                , mixin = Mixin.map f o.mixin
+                , layout = o.layout
+                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , children = KeyableList.map (map_ f) o.children
+                }
+
+        Column o ->
+            Column
+                { childGap = o.childGap
+                , mixin = Mixin.map f o.mixin
+                , layout = o.layout
+                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , children = KeyableList.map (map_ f) o.children
+                }
+
+        TextNode o ->
+            TextNode
+                { mixin = Mixin.map f o.mixin
+                , layout = o.layout
+                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , text = o.text
+                }
+
+        Scalable o ->
+            Scalable
+                { mixin = Mixin.map f o.mixin
+                , layout = o.layout
+                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , rate = o.rate
+                }
+
+        None ->
+            None
+
+        Boundary o ->
+            Boundary
+                { childGap = o.childGap
+                , mixin = Mixin.map f o.mixin
+                , layout = o.layout
+                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , child = map_ f o.child
+                }
+
+        Rendered o ->
+            Rendered
+                { childGap = o.childGap
+                , toHtml = Html.map f << o.toHtml
+                }
+
+
+type alias Layout =
+    { maxWidth : MaxWidth
+    , minWidth : MinWidth
+    , maxHeight : MaxHeight
+    , minHeight : MinHeight
+    , wrap : Bool
+    , verticalSpace : Space
+    , horizontalSpace : Space
+    , expandTo : Maybe Gap -- resulting Gap
+    , lineHeight : Maybe Float
+    , nodeName : String
+    , contentBox : Bool
+    , enforcePointerEvent : Bool
     }
 
 
-{-| Primitive type representing no gap
+defaultLayout : Layout
+defaultLayout =
+    { maxWidth = MaxWidthInfinite
+    , minWidth = MinWidthContain
+    , maxHeight = MaxHeightInfinite
+    , minHeight = MinHeightContain
+    , wrap = False
+    , verticalSpace = SpaceBehind
+    , horizontalSpace = SpaceBehind
+    , expandTo = Nothing
+    , lineHeight = Nothing
+    , nodeName = "div"
+    , contentBox = False
+    , enforcePointerEvent = False
+    }
+
+
+{-| A primitive type that represents that there is no Gap
 
 For custom gaps, see [Custom gaps](#custom-gaps).
 
@@ -189,25 +459,179 @@ type NoGap
     = NoGap
 
 
+emptyGap : Gap
+emptyGap =
+    { vertical = 0
+    , horizontal = 0
+    }
+
+
+
+-- Internal Model
+
+
+{-| -}
+type Model model
+    = Model (Model_ model)
+
+
+type alias Model_ model =
+    { userModel : model
+    , offsetWidth : Dict TextNodeKey Int
+    }
+
+
+init : ( model, Cmd msg ) -> ( Model model, Cmd (Msg msg) )
+init ( userModel, userCmd ) =
+    ( Model
+        { userModel = userModel
+        , offsetWidth = Dict.empty
+        }
+    , Cmd.map UpdateUserMsg userCmd
+    )
+
+
+type alias TextNodeKey =
+    List String
+
+
+
+-- Internal Message
+
+
+{-| -}
+type Msg msg
+    = UpdateUserMsg msg
+    | UpdateWidth
+
+
+update : (msg -> model -> ( model, Cmd msg )) -> Msg msg -> Model model -> ( Model model, Cmd (Msg msg) )
+update userUpdate msg (Model model) =
+    update_ userUpdate msg model
+        |> (\( newModel, cmd ) ->
+                ( Model newModel
+                , cmd
+                )
+           )
+
+
+update_ : (msg -> model -> ( model, Cmd msg )) -> Msg msg -> Model_ model -> ( Model_ model, Cmd (Msg msg) )
+update_ userUpdate msg model =
+    case msg of
+        UpdateUserMsg userMsg ->
+            userUpdate userMsg model.userModel
+                |> (\( userModel, userCmd ) ->
+                        ( { model
+                            | userModel = userModel
+                          }
+                        , Cmd.map UpdateUserMsg userCmd
+                        )
+                   )
+
+        UpdateWidth ->
+            ( model
+            , Cmd.none
+            )
+
+
 
 -- `Browser.*` alternatives
 
 
+{-| Settings for rendering `View`.
+-}
+type Renderer
+    = Renderer Renderer_
+
+
+type alias Renderer_ =
+    { baseSize : BaseSize
+    , debug : Bool
+    , parent : Parent
+    , id : TextNodeKey
+    }
+
+
+type alias Parent =
+    { direction : Direction
+    , lineHeight : Float
+    }
+
+
+type Direction
+    = Horizontal
+    | Vertical
+
+
+type BaseSize
+    = BaseSize String Float
+
+
+mapBaseSize : (Float -> Float) -> BaseSize -> BaseSize
+mapBaseSize f (BaseSize unit a) =
+    BaseSize unit (f a)
+
+
+multipleBaseSize : Float -> BaseSize -> BaseSize
+multipleBaseSize a =
+    mapBaseSize (\s -> a * s)
+
+
+renderBaseSize : BaseSize -> String
+renderBaseSize (BaseSize unit a) =
+    String.concat
+        [ String.fromFloat a
+        , unit
+        ]
+
+
+{-|
+
+  - base size: 1rem
+  - debug: disabled
+  - lineHeight: 1.5
+
+-}
+defaultRenderer : Renderer
+defaultRenderer =
+    Renderer defaultRenderer_
+
+
+{-| Set the base size in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).
+
+> Represents the font-size of the root element (typically <html>).
+
+All gap sizes are determined relative to this value.
+
+-}
+setBaseSizeInRem : Float -> Renderer -> Renderer
+setBaseSizeInRem a (Renderer renderer) =
+    Renderer <|
+        { renderer
+            | baseSize = BaseSize "rem" a
+        }
+
+
+defaultRenderer_ : Renderer_
+defaultRenderer_ =
+    { baseSize = BaseSize "rem" 1
+    , debug = False
+    , parent =
+        { direction = Vertical
+        , lineHeight = 1.5
+        }
+    , id = []
+    }
+
+
 {-| Alternative to `Browser.sandbox`.
 
-This inserts following CSS.
+This applications is rendered as children of the column with following parameters:
 
-    <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-    [data-elm-neat-layout~=flex] {
-      display:-ms-flexbox;
-      display:flex
-    }
-    </style>
+  - max width, min width: 100%
+  - max height, min height: 100%
+  - vertical space: space behind
+  - horizontal space: space behind
 
 -}
 sandbox :
@@ -216,63 +640,57 @@ sandbox :
     , update : msg -> model -> model
     , renderer : Renderer
     }
-    -> Program () model msg
+    -> Program () (Model model) (Msg msg)
 sandbox o =
-    Browser.sandbox
-        { init = o.init
-        , update = o.update
+    Browser.element
+        { init = \() -> init ( o.init, Cmd.none )
         , view =
-            \model ->
-                Html.div
-                    [ Attributes.style "padding" "0"
-                    , Attributes.style "margin" "0"
+            \(Model model) ->
+                Mixin.div
+                    [ enforcedStyle
+                    , flex
+                    , flexDirection "column"
+                    , style "position" "fixed"
+                    , style "top" "0"
+                    , style "bottom" "0"
+                    , style "left" "0"
+                    , style "right" "0"
                     ]
-                    [ resetCss
-                    , toHtml o.renderer emptyGap Layout.none Mixin.none (o.view model)
+                    [ Mixin.lift (Html.node "style")
+                        []
+                        [ Html.text """
+@keyframes neat-layout-dummy-animation {
+  to {
+    transform: scaleX(1);
+  }
+}
+                        """
+                        ]
+                    , render o.renderer (o.view model.userModel)
+                        |> Html.map UpdateUserMsg
                     ]
+        , update =
+            update
+                (\userMsg userModel ->
+                    o.update userMsg userModel
+                        |> (\newUserModel ->
+                                ( newUserModel
+                                , Cmd.none
+                                )
+                           )
+                )
+        , subscriptions = \_ -> Sub.none
         }
-
-
-{-| Settings for rendering `View`.
-
-The `baseGapSize` is base gap size in [<length> CSS data type](https://developer.mozilla.org/en-US/docs/Web/CSS/length).
-All gap sizes are determined relative to this value.
-e.g., `"16px"`, `"1.2rem"`, ...
-The "em" unit is not recommended because it varies with parent node font-size of each gap.
-
--}
-type alias Renderer =
-    { baseGapSize : String
-    }
-
-
-{-|
-
-    defaultRenderer =
-        { baseGapSize = "1rem"
-        }
-
--}
-defaultRenderer : Renderer
-defaultRenderer =
-    { baseGapSize = "1rem"
-    }
 
 
 {-| Alternative to `Browser.element`.
-This also inserts following style tag.
 
-    <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-    [data-elm-neat-layout~=flex] {
-      display:-ms-flexbox;
-      display:flex
-    }
-    </style>
+This applications is rendered as children of the column with following parameters:
+
+  - max width, min width: 100%
+  - max height, min height: 100%
+  - vertical space: space behind
+  - horizontal space: space behind
 
 -}
 element :
@@ -282,38 +700,52 @@ element :
     , subscriptions : model -> Sub msg
     , renderer : model -> Renderer
     }
-    -> Program flags model msg
+    -> Program flags (Model model) (Msg msg)
 element o =
     Browser.element
-        { init = o.init
+        { init = o.init >> init
         , view =
-            \model ->
-                Html.div
-                    [ Attributes.style "padding" "0"
-                    , Attributes.style "margin" "0"
+            \(Model model) ->
+                Mixin.div
+                    [ enforcedStyle
+                    , flex
+                    , flexDirection "column"
+                    , style "position" "fixed"
+                    , style "top" "0"
+                    , style "bottom" "0"
+                    , style "left" "0"
+                    , style "right" "0"
                     ]
-                    [ resetCss
-                    , toHtml (o.renderer model) emptyGap Layout.none Mixin.none (o.view model)
+                    [ Mixin.lift (Html.node "style")
+                        []
+                        [ Html.text """
+@keyframes neat-layout-dummy-animation {
+  to {
+    transform: scaleX(1);
+  }
+}
+                        """
+                        ]
+                    , render (o.renderer model.userModel) (o.view model.userModel)
+                        |> Html.map UpdateUserMsg
                     ]
-        , update = o.update
-        , subscriptions = o.subscriptions
+        , update = update o.update
+        , subscriptions =
+            \(Model model) ->
+                o.subscriptions model.userModel
+                    |> Sub.map UpdateUserMsg
         }
 
 
 {-| Alternative to `Browser.document`.
-This also inserts following style tag.
 
-    <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-    [data-elm-neat-layout~=flex] {
-      display:-ms-flexbox;
-      display:flex
-    }
-    </style>
+This applications is rendered as children of the column with following parameters:
+
+  - max width, min width: 100vw
+  - max height: infinite
+  - min height: 100vh
+  - vertical space: space behind
+  - horizontal space: space behind
 
 -}
 document :
@@ -323,24 +755,49 @@ document :
     , subscriptions : model -> Sub msg
     , renderer : model -> Renderer
     }
-    -> Program flags model msg
+    -> Program flags (Model model) (Msg msg)
 document o =
     Browser.document
-        { init = o.init
+        { init = o.init >> init
         , view =
-            \model ->
+            \(Model model) ->
                 let
                     view =
-                        o.view model
+                        o.view model.userModel
                 in
                 { title = view.title
                 , body =
-                    [ resetCss
-                    , toHtml (o.renderer model) emptyGap Layout.none Mixin.none view.body
+                    [ Mixin.lift (Html.node "style")
+                        []
+                        [ Html.text """
+@keyframes neat-layout-dummy-animation {
+  to {
+    transform: scaleX(1);
+  }
+}
+                        """
+                        ]
+                    , Mixin.div
+                        [ enforcedStyle
+                        , flex
+                        , flexDirection "column"
+                        , style "position" "fixed"
+                        , style "top" "0"
+                        , style "bottom" "0"
+                        , style "left" "0"
+                        , style "right" "0"
+                        , style "overflow" "auto"
+                        ]
+                        [ render (o.renderer model.userModel) view.body
+                            |> Html.map UpdateUserMsg
+                        ]
                     ]
                 }
-        , update = o.update
-        , subscriptions = o.subscriptions
+        , update = update o.update
+        , subscriptions =
+            \(Model model) ->
+                o.subscriptions model.userModel
+                    |> Sub.map UpdateUserMsg
         }
 
 
@@ -353,19 +810,14 @@ type alias Document msg =
 
 
 {-| Alternative to `Browser.application`.
-This also inserts following style tag.
 
-    <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-    [data-elm-neat-layout~=flex]{
-        display:-ms-flexbox;
-        display:flex
-    }
-    </style>
+This applications is rendered as children of the column with following parameters:
+
+  - max width, min width: 100vw
+  - max height: infinite
+  - min height: 100vh
+  - vertical space: space behind
+  - horizontal space: space behind
 
 -}
 application :
@@ -377,173 +829,266 @@ application :
     , onUrlChange : Url -> msg
     , renderer : model -> Renderer
     }
-    -> Program flags model msg
+    -> Program flags (Model model) (Msg msg)
 application o =
     Browser.application
-        { init = o.init
+        { init = \flags url key -> o.init flags url key |> init
         , view =
-            \model ->
+            \(Model model) ->
                 let
                     view =
-                        o.view model
+                        o.view model.userModel
                 in
                 { title = view.title
                 , body =
-                    [ resetCss
-                    , toHtml (o.renderer model) emptyGap Layout.none Mixin.none view.body
+                    [ Mixin.lift (Html.node "style")
+                        []
+                        [ Html.text """
+@keyframes neat-layout-dummy-animation {
+  to {
+    transform: scaleX(1);
+  }
+}
+                        """
+                        ]
+                    , Mixin.div
+                        [ enforcedStyle
+                        , flex
+                        , flexDirection "column"
+                        , style "position" "fixed"
+                        , style "top" "0"
+                        , style "bottom" "0"
+                        , style "left" "0"
+                        , style "right" "0"
+                        ]
+                        [ render (o.renderer model.userModel) view.body
+                            |> Html.map UpdateUserMsg
+                        ]
                     ]
                 }
-        , update = o.update
-        , subscriptions = o.subscriptions
-        , onUrlRequest = o.onUrlRequest
-        , onUrlChange = o.onUrlChange
+        , update = update o.update
+        , subscriptions =
+            \(Model model) ->
+                o.subscriptions model.userModel
+                    |> Sub.map UpdateUserMsg
+        , onUrlRequest = o.onUrlRequest >> UpdateUserMsg
+        , onUrlChange = o.onUrlChange >> UpdateUserMsg
         }
 
 
-resetCss : Html msg
-resetCss =
-    Html.node "style"
-        []
-        [ Html.text <|
-            """
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-[data-elm-neat-layout~=flex] {
-  display:-ms-flexbox;
-  display:flex
-}
-            """
-        ]
+
+-- Primitive nodes
 
 
+{-| Generates a view that displays a text.
 
--- Constructors and Modifiers for View
+The default sizes are as follows:
 
+  - max-width: _fit_
+  - min-width: _contain_
+  - max-height: _fit_
+  - min-height: _contain_
+  - wrap: disabled
+  - vertical space: behind
+  - horizontal space: behind
 
-{-| Lift `Html` nodes into `View`.
-
-    import Html exposing (div)
-    import Mixin exposing (Mixin)
-    import Neat exposing (View)
-    import Neat.Gap as Gap exposing (NoGap)
-
-    view1 : View NoGap msg
-    view1 =
-        Neat.div
-            []
-            [ Neat.text "view1"
-            ]
-
-    view2 : View NoGap msg
-    view2 =
-        Neat.div
-            []
-            [ Neat.text "view2"
-            ]
-
-    composed : View NoGap msg
-    composed =
-        lift div
-            [ Mixin.class "parent"
-            ]
-            [ view1
-            , view2
-            ]
+If the argument string is empty, all the sizes are set to zero.
+Note that `textBlock ""` is not equivalent to `none` nor `empty`.
 
 -}
-lift : (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View g msg) -> View g msg
-lift =
-    lift_ False
+textBlock : String -> View NoGap msg
+textBlock str =
+    TextNode
+        { mixin = Mixin.none
+        , layout =
+            { defaultLayout
+                | maxWidth = MaxWidthFit
+                , maxHeight = MaxHeightFit
+            }
+        , overlays = []
+        , text = str
+        }
+        |> View
 
 
-lift_ : Bool -> (List (Attribute msg) -> List (Html msg) -> Html msg) -> List (Mixin msg) -> List (View g msg) -> View g msg
-lift_ allowGap node appearances children =
-    liftHelper allowGap (\_ -> Mixin.none) node appearances <|
-        \r ->
-            List.map (toHtml r emptyGap Layout.none Mixin.none) children
-
-
-{-| View version of `Html.text ""`.
+{-| Generates no HTML nodes.
+This is useful for handling elements that disappear under certain conditions.
 -}
 none : View g a
 none =
-    fromHtml <| \_ _ _ _ -> Html.text ""
+    View None
 
 
-{-| An alias for `div [] []`.
+{-| Generates an HTML node without text nodes.
+Takes HTML node name.
+
+The default sizes are as follows:
+
+  - max-width: _infinite_
+  - min-width: _contain_
+  - max-height: _infinite_
+  - min-height: _contain_
+  - wrap: disabled
+  - vertical space: behind
+  - horizontal space: behind
+
 -}
 empty : View NoGap a
 empty =
-    div [] []
+    TextNode
+        { mixin = Mixin.none
+        , layout = defaultLayout
+        , overlays = []
+        , text = ""
+        }
+        |> View
+        |> setMaxWidthInfinite
+        |> setMaxHeightInfinite
 
 
-{-| An alias for `\node -> lift node [] []`.
+{-| Same as `empty` but scales in a fixed aspect ratio.
+Take `(height) / (width)` value as an argument.
+
+It is useful for displaying images in a fixed aspect ratio by combinating with CSS "background-image" property.
+
+  - max-width: _infinite_
+  - min-width: _contain_
+  - max-height: _infinite_ (unchangeable)
+  - min-height: _contain_ (unchangeable)
+  - wrap: disabled
+  - vertical space: behind
+  - horizontal space: behind
+
+The [box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing) of this view is enforced to be `content-box`.
+Also, this view ignores the height specification.
+
 -}
-emptyNode : (List (Attribute msg) -> List (Html msg) -> Html msg) -> View NoGap msg
-emptyNode node =
-    lift node [] []
+scalableBlock : Float -> View NoGap msg
+scalableBlock ratio =
+    Scalable
+        { mixin = Mixin.none
+        , layout = defaultLayout
+        , overlays = []
+        , rate = ratio
+        }
+        |> View
+        |> setMaxWidthInfinite
+
+
+
+-- Handle conditions
+
+
+{-| Insert a view only when a condition is met.
+-}
+when : Bool -> View gap msg -> View gap msg
+when p v =
+    if p then
+        v
+
+    else
+        none
+
+
+{-| Insert a view unless a condition is met.
+-}
+unless : Bool -> View gap msg -> View gap msg
+unless p =
+    when <| not p
+
+
+
+-- Custom gaps
+
+
+{-| Information about your custom gaps.
+
+  - horizontal : horizontal gap relative to _base size_
+  - vertical : vertical gap relative to _base size_
+
+e.g., If the _base size_ is `2rem`, `IsGap { horizontal = 1.2, vertical = 2 }` becomes gap with `"2.4rem"` horizontally and `"4rem"` vertically.
+
+-}
+type IsGap p
+    = IsGap Gap
 
 
 {-| -}
+type alias Gap =
+    { horizontal : Float
+    , vertical : Float
+    }
+
+
+subtractGap : Gap -> Gap -> Gap
+subtractGap g2 g1 =
+    { horizontal = g1.horizontal - g2.horizontal
+    , vertical = g1.vertical - g2.vertical
+    }
+
+
+
+-- Setter
+
+
+{-| Set `Mixin` on views with no gaps.
+-}
 setMixin : Mixin msg -> View NoGap msg -> View NoGap msg
-setMixin =
-    setMixinHelper
+setMixin mixin =
+    liftInternal (setMixin_ mixin)
 
 
-setMixinHelper : Mixin msg -> View g msg -> View g msg
-setMixinHelper appearance view =
-    fromHtml <|
-        \renderer gap layout extra ->
-            unwrap view renderer gap layout (Mixin.batch [ appearance, extra ])
+setMixin_ : Mixin msg -> View_ msg -> View_ msg
+setMixin_ new view =
+    case view of
+        Row o ->
+            Row { o | mixin = Mixin.batch [ o.mixin, new ] }
+
+        Column o ->
+            Column { o | mixin = Mixin.batch [ o.mixin, new ] }
+
+        TextNode o ->
+            TextNode { o | mixin = Mixin.batch [ o.mixin, new ] }
+
+        Scalable o ->
+            Scalable { o | mixin = Mixin.batch [ o.mixin, new ] }
+
+        None ->
+            None
+
+        Boundary o ->
+            Boundary { o | mixin = Mixin.batch [ o.mixin, new ] }
+
+        Rendered o ->
+            Rendered o
 
 
-{-| -}
+{-| Same as `setMixin` but takes list of `Mixin`s.
+-}
 setMixins : List (Mixin msg) -> View NoGap msg -> View NoGap msg
-setMixins =
-    setMixin << Mixin.batch
+setMixins ls =
+    setMixin <| Mixin.batch ls
 
 
-{-| -}
+{-| Set `Attribute` on views without gaps.
+-}
 setAttribute : Attribute msg -> View NoGap msg -> View NoGap msg
-setAttribute =
-    setMixin << Mixin.fromAttribute
+setAttribute attr =
+    setMixin <| Mixin.fromAttribute attr
 
 
-{-| -}
+{-| Same as `setAttribute` but takes list of `Attribute`s.
+-}
 setAttributes : List (Attribute msg) -> View NoGap msg -> View NoGap msg
-setAttributes =
-    setMixin << Mixin.fromAttributes
-
-
-{-| -}
-setLayout : Layout msg -> View g msg -> View g msg
-setLayout layout view =
-    fromHtml <|
-        \renderer gap extra appearance ->
-            unwrap view
-                renderer
-                gap
-                (if Layout.isImportant layout then
-                    Layout.batch [ extra, layout ]
-
-                 else
-                    Layout.batch [ layout, extra ]
-                )
-                appearance
-
-
-
--- Accessibility
+setAttributes attrs =
+    setMixin <| Mixin.fromAttributes attrs
 
 
 {-| Set "role" value for WAI-ARIA.
 -}
 setRole : String -> View g msg -> View g msg
 setRole v =
-    setMixinHelper <| Mixin.attribute "role" v
+    liftInternal (setMixin_ <| Mixin.attribute "role" v)
 
 
 {-| Set "aria-\*" value for WAI-ARIA.
@@ -553,7 +1098,7 @@ e.g., `setAria "required" "true"` stands for "aria-required" is "true".
 -}
 setAria : String -> String -> View g msg -> View g msg
 setAria name v =
-    setMixinHelper <| Mixin.attribute ("aria-" ++ name) v
+    liftInternal (setMixin_ <| Mixin.attribute ("aria-" ++ name) v)
 
 
 {-| Set boolean "aria-\*" value for WAI-ARIA.
@@ -574,179 +1119,805 @@ setBoolAria name g =
             "false"
 
 
-modifyGap : (Gap -> Gap) -> View g1 msg -> View g2 msg
-modifyGap g view =
-    fromHtml <|
-        \r gap -> unwrap view r (g gap)
+
+-- Size
+-- -- line height
 
 
+{-| Set [line-height](https://developer.mozilla.org/en-US/docs/Web/CSS/line-height).
 
--- Special Html nodes
+> Use a minimum value of 1.5 for line-height for main paragraph content. This will help people experiencing low vision conditions, as well as people with cognitive concerns such as Dyslexia.
 
-
-{-| `View` version of `Html.select`.
-Differ from `lift Html.select`, it can accept "padding" style property.
--}
-select : List (Mixin msg) -> List (View g msg) -> View g msg
-select =
-    lift_ True Html.select
-
-
-{-| `View` version of `Html.input`.
-Differ from `lift Html.input [] []`, it can accept "padding" style property.
--}
-input : View g msg
-input =
-    lift_ True Html.input [] []
-
-
-{-| `View` version of `Html.textarea`.
-Differ from `lift Html.textarea [] []`, it can accept "padding" style property.
--}
-textarea : View g msg
-textarea =
-    lift_ True Html.textarea [] []
-
-
-{-| Create a View which only contains a text node.
-
-`textNode Html.option "Item1"` is equivalent to `Html.option [] [ Html.text "Item1" ]` in Html world.
+This line height is inherited to child nodes.
 
 -}
-textNode : (List (Attribute msg) -> List (Html msg) -> Html msg) -> String -> View NoGap msg
-textNode f str =
-    lift f
-        []
-        [ fromHtml <| \_ _ _ _ -> Html.text str
-        ]
+setLineHeight : Float -> View g msg -> View g msg
+setLineHeight lineHeight =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | lineHeight = Just lineHeight
+            }
 
 
-{-| Create a text block.
 
-`textBlock "foo"` is equivalent to `Html.div [] [ Html.text "foo" ]` in Html world.
-
-    textBlock =
-        textNode Html.div
-
--}
-textBlock : String -> View NoGap msg
-textBlock =
-    textNode Html.div
+-- -- minimum width
 
 
 {-| -}
-keyed :
-    String
-    -> List (Mixin msg)
-    -> List ( String, View g msg )
-    -> View g msg
-keyed tag mixins children =
-    liftHelper False (\_ -> Mixin.none) (Keyed.node tag) mixins <|
-        \r ->
-            List.map (Tuple.mapSecond (toHtml r emptyGap Layout.none Mixin.none)) children
+type MinWidth
+    = MinWidthContain
+    | MinWidthInBs Float
+    | MinWidthInUnit String Float
+
+
+{-| Set _minimum width_ to the minimum width at which the view does not overflow.
+-}
+setMinWidthContain : View g msg -> View g msg
+setMinWidthContain =
+    setMinWidth MinWidthContain
+
+
+{-| Set the minimum width as a percentage of the _base size_.
+e.g., `setMinWidthInBs 100` set the _minimum width_ the same length as the _base size_.
+
+The value is valid only if the container does not overflow.
+
+-}
+setMinWidthInBs : Float -> View g msg -> View g msg
+setMinWidthInBs =
+    setMinWidth << MinWidthInBs
+
+
+{-| Set the minimum width in [em](https://developer.mozilla.org/en-US/docs/Web/CSS/length#em).
+
+> Represents the calculated font-size of the element.
+
+The value is valid only if the container does not overflow.
+
+-}
+setMinWidthInEm : Float -> View g msg -> View g msg
+setMinWidthInEm =
+    setMinWidth << MinWidthInUnit "em"
+
+
+{-| Set the minimum width in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).
+
+> Represents the font-size of the root element (typically <html>).
+
+The value is valid only if the container does not overflow.
+
+-}
+setMinWidthInRem : Float -> View g msg -> View g msg
+setMinWidthInRem =
+    setMinWidth << MinWidthInUnit "rem"
+
+
+setMinWidth : MinWidth -> View g msg -> View g msg
+setMinWidth length =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | minWidth = length
+            }
+
+
+
+-- -- minimum height
+
+
+{-| -}
+type MinHeight
+    = MinHeightContain
+    | MinHeightInBs Float
+    | MinHeightInUnit String Float
+
+
+{-| Set _minimum height_ to the minimum height at which the view does not overflow.
+-}
+setMinHeightContain : View g msg -> View g msg
+setMinHeightContain =
+    setMinHeight MinHeightContain
+
+
+{-| Set the minimum height as a percentage of the _base size_.
+e.g., `setMinHeightInBs 100` set the _minimum height_ the same length as the _base size_.
+
+The value is valid only if the container does not overflow.
+
+-}
+setMinHeightInBs : Float -> View g msg -> View g msg
+setMinHeightInBs =
+    setMinHeight << MinHeightInBs
+
+
+{-| Set the minimum height in [em](https://developer.mozilla.org/en-US/docs/Web/CSS/length#em).
+
+> Represents the calculated font-size of the element.
+
+The value is valid only if the container does not overflow.
+
+-}
+setMinHeightInEm : Float -> View g msg -> View g msg
+setMinHeightInEm =
+    setMinHeight << MinHeightInUnit "em"
+
+
+{-| Set the minimum height in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).
+
+> Represents the font-size of the root element (typically <html>).
+
+The value is valid only if the container does not overflow.
+
+-}
+setMinHeightInRem : Float -> View g msg -> View g msg
+setMinHeightInRem =
+    setMinHeight << MinHeightInUnit "rem"
+
+
+setMinHeight : MinHeight -> View g msg -> View g msg
+setMinHeight length =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | minHeight = length
+            }
+
+
+
+-- -- maximum width
+
+
+{-| -}
+type MaxWidth
+    = MaxWidthInfinite
+    | MaxWidthFit
+    | MaxWidthInBs Float
+    | MaxWidthInUnit String Float
+
+
+{-| Set the maximum width to _infinite_.
+
+A view with this function applied will be stretched horizontally as much as possible.
+
+-}
+setMaxWidthInfinite : View g msg -> View g msg
+setMaxWidthInfinite =
+    setMaxWidth MaxWidthInfinite
+
+
+{-| Set the maximum width to _fit_.
+
+If this is applied, the maximum width of all child views are set to _fit_.
+
+-}
+setMaxWidthFit : View g msg -> View g msg
+setMaxWidthFit =
+    setMaxWidth MaxWidthFit
+
+
+{-| Set the maximum width as a percentage of the _base size_.
+e.g., `setMaxWidthInBs 100` set the _maximum width_ the same length as the _base size_.
+
+The value is valid only if the container does not overflow.
+
+-}
+setMaxWidthInBs : Float -> View g msg -> View g msg
+setMaxWidthInBs =
+    setMaxWidth << MaxWidthInBs
+
+
+{-| Set the maximum width in [em](https://developer.mozilla.org/en-US/docs/Web/CSS/length#em).
+
+> Represents the calculated font-size of the element.
+
+The value is valid only if the container does not overflow.
+
+-}
+setMaxWidthInEm : Float -> View g msg -> View g msg
+setMaxWidthInEm =
+    setMaxWidth << MaxWidthInUnit "em"
+
+
+{-| Set the maximum width in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).
+
+> Represents the font-size of the root element (typically <html>).
+
+The value is valid only if the container does not overflow.
+
+-}
+setMaxWidthInRem : Float -> View g msg -> View g msg
+setMaxWidthInRem =
+    setMaxWidth << MaxWidthInUnit "rem"
+
+
+setMaxWidth : MaxWidth -> View g msg -> View g msg
+setMaxWidth length =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | maxWidth = length
+            }
+
+
+
+-- -- maximum height
+
+
+{-| -}
+type MaxHeight
+    = MaxHeightInfinite
+    | MaxHeightFit
+    | MaxHeightInBs Float
+    | MaxHeightInUnit String Float
+
+
+{-| Set the maximum height to _infinite_.
+
+A view with this function applied will be stretched horizontally as much as possible.
+
+-}
+setMaxHeightInfinite : View g msg -> View g msg
+setMaxHeightInfinite =
+    setMaxHeight MaxHeightInfinite
+
+
+{-| Set the maximum height to _fit_.
+
+If this is applied, the maximum height of all child views are set to _fit_.
+
+-}
+setMaxHeightFit : View g msg -> View g msg
+setMaxHeightFit =
+    setMaxHeight MaxHeightFit
+
+
+{-| Set the maximum height as a percentage of the _base size_.
+e.g., `setMaxHeightInBs 100` set the _maximum height_ the same length as the _base size_.
+
+The value is valid only if the container does not overflow.
+
+-}
+setMaxHeightInBs : Float -> View g msg -> View g msg
+setMaxHeightInBs =
+    setMaxHeight << MaxHeightInBs
+
+
+{-| Set the maximum height in [em](https://developer.mozilla.org/en-US/docs/Web/CSS/length#em).
+
+> Represents the calculated font-size of the element.
+
+The value is valid only if the container does not overflow.
+
+-}
+setMaxHeightInEm : Float -> View g msg -> View g msg
+setMaxHeightInEm =
+    setMaxHeight << MaxHeightInUnit "em"
+
+
+{-| Set the maximum height in [rem](https://developer.mozilla.org/en-US/docs/Web/CSS/length#rem).
+
+> Represents the font-size of the root element (typically <html>).
+
+The value is valid only if the container does not overflow.
+
+-}
+setMaxHeightInRem : Float -> View g msg -> View g msg
+setMaxHeightInRem =
+    setMaxHeight << MaxHeightInUnit "rem"
+
+
+setMaxHeight : MaxHeight -> View g msg -> View g msg
+setMaxHeight length =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | maxHeight = length
+            }
+
+
+{-| Expand the gap.
+Both the vertical and horizontal length of new gap is supposed to be greater than or equal to original ones.
+-}
+setGap : IsGap new -> View old msg -> View new msg
+setGap (IsGap g) =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | expandTo = Just g
+            }
+
+
+modifyLayout : (Layout -> Layout) -> View g1 msg -> View g2 msg
+modifyLayout f =
+    liftInternal (modifyLayout_ f)
+
+
+modifyLayout_ : (Layout -> Layout) -> View_ msg -> View_ msg
+modifyLayout_ f view =
+    case view of
+        Row o ->
+            Row { o | layout = f o.layout }
+
+        Column o ->
+            Column { o | layout = f o.layout }
+
+        TextNode o ->
+            TextNode { o | layout = f o.layout }
+
+        Scalable o ->
+            Scalable { o | layout = f o.layout }
+
+        None ->
+            None
+
+        Boundary o ->
+            Boundary { o | layout = f o.layout }
+
+        Rendered o ->
+            Rendered o
+
+
+
+-- Wrap style
+
+
+{-| Set the contents of the view should not be wrapped.
+-}
+disableWrap : View g msg -> View g msg
+disableWrap =
+    setWrap False
+
+
+{-| Set the contents of the view should be wrapped.
+-}
+enableWrap : View g msg -> View g msg
+enableWrap =
+    setWrap True
+
+
+setWrap : Bool -> View g msg -> View g msg
+setWrap p =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | wrap = p
+            }
+
+
+
+-- Spaces
+
+
+{-| It has no effect on _fit_ views.
+-}
+type Space
+    = SpaceBehind
+    | SpaceForward
+    | SpaceBoth
+    | SpaceAround
+    | SpaceBetween
+
+
+{-| -}
+setHorizontalSpaceBehind : View gap msg -> View gap msg
+setHorizontalSpaceBehind =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | horizontalSpace = SpaceBehind
+            }
+
+
+{-| -}
+setHorizontalSpaceForward : View gap msg -> View gap msg
+setHorizontalSpaceForward =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | horizontalSpace = SpaceForward
+            }
+
+
+{-| -}
+setHorizontalSpaceBoth : View gap msg -> View gap msg
+setHorizontalSpaceBoth =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | horizontalSpace = SpaceBoth
+            }
+
+
+{-| -}
+setHorizontalSpaceAround : View gap msg -> View gap msg
+setHorizontalSpaceAround =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | horizontalSpace = SpaceAround
+            }
+
+
+{-| -}
+setHorizontalSpaceBetween : View gap msg -> View gap msg
+setHorizontalSpaceBetween =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | horizontalSpace = SpaceBetween
+            }
+
+
+{-| -}
+setVerticalSpaceBehind : View gap msg -> View gap msg
+setVerticalSpaceBehind =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | verticalSpace = SpaceBehind
+            }
+
+
+{-| -}
+setVerticalSpaceForward : View gap msg -> View gap msg
+setVerticalSpaceForward =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | verticalSpace = SpaceForward
+            }
+
+
+{-| -}
+setVerticalSpaceBoth : View gap msg -> View gap msg
+setVerticalSpaceBoth =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | verticalSpace = SpaceBoth
+            }
+
+
+{-| -}
+setVerticalSpaceAround : View gap msg -> View gap msg
+setVerticalSpaceAround =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | verticalSpace = SpaceAround
+            }
+
+
+{-| -}
+setVerticalSpaceBetween : View gap msg -> View gap msg
+setVerticalSpaceBetween =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | verticalSpace = SpaceBetween
+            }
+
+
+
+-- Rows and Columns
+
+
+{-| Align children horizontally.
+
+  - max-width: _infinite_
+  - min-width: _contain_
+  - max-height: _infinite_
+  - min-height: _contain_
+  - wrap: disabled
+  - vertical space: behind
+  - horizontal space: behind
+  - vertical overflow: disabled
+  - horizontal overflow: disabled
+
+-}
+row : List (View gap msg) -> View gap msg
+row children_ =
+    let
+        children =
+            children_
+                |> List.filterMap
+                    (\(View c) ->
+                        case c of
+                            None ->
+                                Nothing
+
+                            _ ->
+                                Just c
+                    )
+    in
+    View <|
+        case List.head children of
+            Nothing ->
+                None
+
+            Just v ->
+                row_ v (KeyableList.fromList children)
+
+
+{-| Works just like `row`, but you add a unique identifier to each child node. You want this when you have a list of nodes that is changing: adding nodes, removing nodes, etc. In these cases, the unique identifiers help make the DOM modifications more efficient.
+-}
+keyedRow : List ( String, View gap msg ) -> View gap msg
+keyedRow children_ =
+    let
+        children =
+            children_
+                |> List.filterMap
+                    (\( str, View c ) ->
+                        case c of
+                            None ->
+                                Nothing
+
+                            _ ->
+                                Just ( str, c )
+                    )
+    in
+    View <|
+        case Maybe.map Tuple.second (List.head children) of
+            Nothing ->
+                None
+
+            Just v ->
+                row_ v (KeyableList.fromKeyedList children)
+
+
+{-| Alias for `List.singleton >> row`.
+
+It is usefull for changing main axis of the view.
+
+-}
+setRow : View gap msg -> View gap msg
+setRow =
+    List.singleton >> row
+
+
+row_ : View_ msg -> KeyableList (View_ msg) -> View_ msg
+row_ head =
+    let
+        helper gap children =
+            Row
+                { childGap = gap
+                , mixin = Mixin.none
+                , layout = defaultLayout
+                , overlays = []
+                , children = children
+                }
+    in
+    case head of
+        Row { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        Column { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        TextNode { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
+        Scalable { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
+        -- Unreachable
+        None ->
+            \_ -> None
+
+        Boundary { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        -- Unreachable
+        Rendered { childGap } ->
+            helper <| childGap
+
+
+{-| Align children horizontally.
+
+  - max-width: _infinite_
+  - min-width: _contain_
+  - max-height: _infinite_
+  - min-height: _contain_
+  - wrap: disabled
+  - vertical space: behind
+  - horizontal space: behind
+  - vertical overflow: disabled
+  - horizontal overflow: disabled
+
+-}
+column : List (View p msg) -> View p msg
+column children_ =
+    let
+        children =
+            children_
+                |> List.filterMap
+                    (\(View c) ->
+                        case c of
+                            None ->
+                                Nothing
+
+                            _ ->
+                                Just c
+                    )
+    in
+    View <|
+        case List.head children of
+            Nothing ->
+                None
+
+            Just v ->
+                column_ v (KeyableList.fromList children)
+
+
+{-| Works just like `column`, but you add a unique identifier to each child node. You want this when you have a list of nodes that is changing: adding nodes, removing nodes, etc. In these cases, the unique identifiers help make the DOM modifications more efficient.
+-}
+keyedColumn : List ( String, View gap msg ) -> View gap msg
+keyedColumn children_ =
+    let
+        children =
+            children_
+                |> List.filterMap
+                    (\( str, View c ) ->
+                        case c of
+                            None ->
+                                Nothing
+
+                            _ ->
+                                Just ( str, c )
+                    )
+    in
+    View <|
+        case Maybe.map Tuple.second (List.head children) of
+            Nothing ->
+                None
+
+            Just v ->
+                column_ v (KeyableList.fromKeyedList children)
+
+
+{-| Alias for `List.singleton >> column`.
+
+It is usefull for changing main axis of the view.
+
+-}
+setColumn : View gap msg -> View gap msg
+setColumn =
+    List.singleton >> column
+
+
+column_ : View_ msg -> KeyableList (View_ msg) -> View_ msg
+column_ head =
+    let
+        helper gap children =
+            Column
+                { childGap = gap
+                , mixin = Mixin.none
+                , layout = defaultLayout
+                , overlays = []
+                , children = children
+                }
+    in
+    case head of
+        Row { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        Column { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        TextNode { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
+        Scalable { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
+        -- Unreachable
+        None ->
+            \_ -> None
+
+        Boundary { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        -- Unreachable
+        Rendered { childGap } ->
+            helper childGap
+
+
+
+-- Overlay
+
+
+{-| Put overlay layer to a view.
+This layer is never the target of pointer events; however
+pointer events may target its descendant views if those views are converted into `Virtual msg` with `toLayerView` function.
+-}
+putLayer : ( Layer, View NoGap (InLayer msg) ) -> View NoGap msg -> View NoGap msg
+putLayer ( area, overlay_ ) =
+    case map (\(InLayer a) -> a) overlay_ of
+        View None ->
+            identity
+
+        View overlay ->
+            modifyOverlays <|
+                \overlays -> ( area, overlay ) :: overlays
+
+
+modifyOverlays : (Overlays msg -> Overlays msg) -> View gap msg -> View gap msg
+modifyOverlays f =
+    liftInternal (modifyOverlays_ f)
+
+
+modifyOverlays_ : (Overlays msg -> Overlays msg) -> View_ msg -> View_ msg
+modifyOverlays_ f view =
+    case view of
+        Row o ->
+            Row { o | overlays = f o.overlays }
+
+        Column o ->
+            Column { o | overlays = f o.overlays }
+
+        TextNode o ->
+            TextNode { o | overlays = f o.overlays }
+
+        Scalable o ->
+            Scalable { o | overlays = f o.overlays }
+
+        None ->
+            None
+
+        Boundary o ->
+            Boundary { o | overlays = f o.overlays }
+
+        Rendered o ->
+            Rendered o
+
+
+{-| -}
+type InLayer msg
+    = InLayer msg
+
+
+{-| -}
+toLayerView : View gap msg -> View gap (InLayer msg)
+toLayerView view =
+    map InLayer view
+        |> modifyLayout
+            (\layout ->
+                { layout
+                    | enforcePointerEvent = True
+                }
+            )
+
+
+{-| Set the position of each edge of the overlay layer as a percentage of the base view.
+-}
+type alias Layer =
+    { top : Float
+    , bottom : Float
+    , left : Float
+    , right : Float
+    , priority : Maybe Int
+    }
 
 
 {-|
 
-    v1 : View g msg
-    v1 =
-        Debug.todo "v1"
-
-    v2 : View g msg
-    v2 =
-        Debug.todo "v2"
-
-    child : Int -> View g msg
-    child _ =
-        Debug.todo "child"
-
-    child_ : Int -> Html (Protected g msg)
-    child_ =
-        toProtected << child
-
-    v : List Int -> View g msg
-    v =
-        optimized
-            String.fromInt
-            (lazy child_)
-            "div"
-            []
+    defaultLayer
+    --> { top = 0
+    --> , bottom = 0
+    --> , left = 0
+    --> , right = 0
+    --> , priority = Nothing
+    --> }
 
 -}
-optimized :
-    (x -> String)
-    -> (x -> Renderer -> Html (Protected g msg))
-    -> String
-    -> List (Mixin msg)
-    -> List x
-    -> View g msg
-optimized identifier f tag mixins ls =
-    liftHelper False (\_ -> Mixin.none) (Keyed.node tag) mixins <|
-        \r ->
-            List.map (\x -> ( identifier x, Html.map unProtect <| f x r )) ls
-
-
-{-| This is supposed to be used in order to make `Html.Lazy.lazyN` work.
-See `optimized` for real usage.
--}
-toProtected : View g a -> Renderer -> Html (Protected g a)
-toProtected v renderer =
-    Html.map Protected <| toHtml renderer emptyGap Layout.none Mixin.none v
-
-
-{-| -}
-type Protected g a
-    = Protected a
-
-
-unProtect : Protected g a -> a
-unProtect (Protected a) =
-    a
-
-
-
--- Custom gaps
-
-
-{-| Information about your custom gaps.
-
-  - width : gap width relative to `baseGapSize` of `Renderer`
-  - height : gap height relative to `baseGapSize` of `Renderer`
-
-The `Renderer` value above is given to `sandbox`, `element`, `document`, `application`.
-
-e.g., When `baseGapSize = "2rem"` is passed to `sandbox`, `IsGap { width = 1.2, height = 2 }` becomes gap with `"2.4rem"` width and `"4rem"` height.
-
--}
-type IsGap p
-    = IsGap
-        { width : Float
-        , height : Float
-        }
-
-
-
--- Convert between gaps
-
-
-{-| -}
-fromNoGap : IsGap g -> View NoGap msg -> View g msg
-fromNoGap =
-    expand noGap
-
-
-{-| Expand gap from `g1` to `g2`.
-Both the width and the height of `g2` is supposed to be greater than `g1`.
--}
-expand : IsGap g1 -> IsGap g2 -> View g1 msg -> View g2 msg
-expand g1 g2 child =
-    modifyGap (newGap g1 g2) child
-
-
-newGap : IsGap g1 -> IsGap g2 -> Gap -> Gap
-newGap (IsGap c1) (IsGap c2) curr =
-    { width = ((c2.width - c1.width) / 2) + curr.width
-    , height = ((c2.height - c1.height) / 2) + curr.height
+defaultLayer : Layer
+defaultLayer =
+    { top = 0
+    , bottom = 0
+    , left = 0
+    , right = 0
+    , priority = Nothing
     }
 
 
@@ -755,243 +1926,1020 @@ newGap (IsGap c1) (IsGap c2) curr =
 
 
 {-| Wrap a view with boundary without gap.
-Alias for `setBoundary defaultBoundary`.
+This is the only way to reset view gaps.
+
+  - max-width: _infinite_
+  - min-width: _contain_
+  - max-height: _infinite_
+  - min-height: _contain_
+  - wrap: disabled
+  - vertical space: behind
+  - horizontal space: behind
+  - vertical overflow: disabled
+  - horizontal overflow: disabled
+
 -}
-setBoundary : IsGap g -> View g msg -> View NoGap msg
+setBoundary : View g msg -> View NoGap msg
 setBoundary =
-    setBoundaryWith Boundary.defaultBoundary
+    liftInternal setBoundary_
 
 
-{-| Set boundary to convert into `NoGap`.
-Alias for `setBoundaryWithMap identity`.
+setBoundary_ : View_ msg -> View_ msg
+setBoundary_ view =
+    let
+        helper gap =
+            Boundary
+                { childGap = gap
+                , mixin = Mixin.none
+                , layout = defaultLayout
+                , overlays = []
+                , child = view
+                }
+    in
+    case view of
+        Row { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        Column { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        TextNode { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
+        Scalable { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
+        None ->
+            None
+
+        Boundary { childGap, layout } ->
+            helper <| Maybe.withDefault childGap layout.expandTo
+
+        Rendered _ ->
+            helper emptyGap
+
+
+
+-- Low level function for HTML
+
+
+{-| -}
+setNodeName : String -> View gap msg -> View gap msg
+setNodeName str =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | nodeName = str
+            }
+
+
+
+-- Temporary HTML
+
+
+{-| Convert to Temporary HTML.
+It is for `Html.Lazy.lazyN` functions.
 -}
-setBoundaryWith : Boundary -> IsGap g -> View g msg -> View NoGap msg
-setBoundaryWith =
-    setBoundaryWithMap identity
+toTemporaryHtml : View NoGap msg -> (Renderer -> Html msg)
+toTemporaryHtml v renderer =
+    render renderer v
 
 
-{-| Set boundary to convert into `NoGap`.
-In addition, `setBoundaryWithMap` can convert msg type of a View.
-
-(The elm-neat-layout does not have `map` function. Use `setBoundaryWithMap`, `Layout.Row.rowWithMap`, and `Layout.Column.columnWithMap`, instead.)
-
+{-| Similar to `setBoundary`, but for temporary HTML.
 -}
-setBoundaryWithMap : (a -> b) -> Boundary -> IsGap g -> View g a -> View NoGap b
-setBoundaryWithMap f align config child =
-    lift (nodeNameToNode align.nodeName)
-        []
-        [ liftHelper False
-            (\r -> innerGap r config)
-            Html.div
-            -- DO NOT directly put `(nodeNameToNode align.nodeName)` here.
-            -- It causes unnatural dashed borders, which is displayed when tabindexed nodes such as "button" node is focused.
-            [ Mixin.batch <| Flex.rowMixins <| toFlex align
-            , style "width" "100%"
-            , style "height" "100%"
-            ]
-          <|
-            \r ->
-                [ Html.map f <|
-                    toHtml r emptyGap (Flex.childLayout <| toFlex align) Mixin.none child
-                ]
-        ]
-
-
-nodeNameToNode : String -> List (Attribute msg) -> List (Html msg) -> Html msg
-nodeNameToNode name =
-    if name == "div" then
-        Html.div
-
-    else
-        Html.node name
-
-
-toFlex : Boundary -> Flex
-toFlex align =
-    { vertical = toFlexVertical align.vertical
-    , horizontal = toFlexHorizontal align.horizontal
-    , wrap = Flex.NoWrap
-    }
-
-
-toFlexHorizontal : Boundary.Horizontal -> Flex.Horizontal
-toFlexHorizontal align =
-    case align of
-        Boundary.Left ->
-            Flex.Left
-
-        Boundary.Right ->
-            Flex.Right
-
-        Boundary.HCenter ->
-            Flex.HCenter
-
-        Boundary.HStretch ->
-            Flex.HStretch
-
-
-toFlexVertical : Boundary.Vertical -> Flex.Vertical
-toFlexVertical align =
-    case align of
-        Boundary.Top ->
-            Flex.Top
-
-        Boundary.Bottom ->
-            Flex.Bottom
-
-        Boundary.VCenter ->
-            Flex.VCenter
-
-        Boundary.VStretch ->
-            Flex.VStretch
-
-
-innerGap : Renderer -> IsGap g -> Mixin msg
-innerGap renderer (IsGap { width, height }) =
-    Mixin.fromAttributes
-        [ Attributes.style "padding-right" <|
-            "calc("
-                ++ String.fromFloat (width / 2)
-                ++ " * "
-                ++ renderer.baseGapSize
-                ++ ")"
-        , Attributes.style "padding-left" <|
-            "calc("
-                ++ String.fromFloat (width / 2)
-                ++ " * "
-                ++ renderer.baseGapSize
-                ++ ")"
-        , Attributes.style "padding-top" <|
-            "calc("
-                ++ String.fromFloat (height / 2)
-                ++ " * "
-                ++ renderer.baseGapSize
-                ++ ")"
-        , Attributes.style "padding-bottom" <|
-            "calc("
-                ++ String.fromFloat (height / 2)
-                ++ " * "
-                ++ renderer.baseGapSize
-                ++ ")"
-        ]
-
-
-
--- Handle cases
-
-
-{-| Insert a `View` only when a condition is met.
--}
-when : Bool -> View p msg -> View p msg
-when p v =
-    if p then
-        v
-
-    else
-        none
-
-
-{-| Insert a `View` unless a condition is met.
--}
-unless : Bool -> View p msg -> View p msg
-unless p =
-    when <| not p
-
-
-
--- Helper functions
-
-
-div : List (Mixin msg) -> List (View g msg) -> View g msg
-div =
-    lift Html.div
-
-
-noGap : IsGap NoGap
-noGap =
-    IsGap
-        { width = 0
-        , height = 0
+setBoundaryToTemporaryHtml : (Renderer -> Html msg) -> View NoGap msg
+setBoundaryToTemporaryHtml f =
+    Rendered
+        { childGap = emptyGap
+        , toHtml = f << Renderer
         }
+        |> View
+        |> setBoundary
 
 
-liftHelper : Bool -> (Renderer -> Mixin msg) -> (List (Attribute msg) -> List a -> Html msg) -> List (Mixin msg) -> (Renderer -> List a) -> View g msg
-liftHelper allowGap special node appearances children =
-    fromHtml <|
-        \renderer gap (Layout _ layout_) extra ->
-            node
-                (Mixin.toAttributes <|
-                    Mixin.batch
-                        [ Mixin.batch appearances
-                        , extra
-                        , prohibited allowGap
-                        , special renderer
-                        , if gap.width == 0 && gap.height == 0 then
-                            layout_.outer
 
-                          else
-                            layout_.inner
-                        ]
+-- Render
+
+
+render : Renderer -> View NoGap a -> Html a
+render (Renderer renderer) (View v) =
+    render_ v renderer
+
+
+render_ : View_ a -> Renderer_ -> Html a
+render_ view renderer =
+    case view of
+        Row o ->
+            rowNode renderer o
+
+        Column o ->
+            columnNode renderer o
+
+        TextNode o ->
+            textNode renderer o
+
+        Scalable o ->
+            scalableNode renderer o
+
+        None ->
+            Html.text ""
+
+        Boundary o ->
+            boundaryNode renderer o
+
+        Rendered o ->
+            o.toHtml renderer
+
+
+textNode : Renderer_ -> { mixin : Mixin msg, layout : Layout, overlays : Overlays msg, text : String } -> Html msg
+textNode renderer { mixin, layout, overlays, text } =
+    let
+        lineHeight =
+            Maybe.withDefault renderer.parent.lineHeight layout.lineHeight
+
+        outerGap =
+            Maybe.withDefault emptyGap layout.expandTo
+    in
+    Mixin.div
+        [ enforcedStyle
+        , flex
+        , flexDirection "column"
+        , style "padding" <|
+            gapValue outerGap renderer.baseSize
+        , case renderer.parent.direction of
+            Horizontal ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxWidth == MaxWidthFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    ]
+
+            Vertical ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxHeight == MaxHeightFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
+                    , Mixin.when (layout.maxWidth == MaxWidthFit) <|
+                        alignStart
+                    ]
+        ]
+        [ Mixin.lift (Html.node layout.nodeName)
+            [ mixin
+            , enforcedStyle
+            , flex
+            , flexDirection "row"
+            , justifySpace layout.horizontalSpace
+            , Mixin.when (layout.maxHeight /= MaxHeightInfinite)
+                (alignSpace layout.verticalSpace)
+            , sizeStyle renderer layout
+            , flexGrow
+                (if layout.maxHeight == MaxHeightFit then
+                    0
+
+                 else
+                    1
                 )
-                (children renderer)
-                |> wrapHtml renderer
-                    gap
-                    (Mixin.batch
-                        [ prohibited allowGap
-                        , layout_.outer
-                        ]
+                (if layout.minHeight == MinHeightContain then
+                    0
+
+                 else
+                    1
+                )
+
+            -- , flexWrap layout.wrap
+            , Mixin.unless layout.wrap <|
+                style "white-space" "nowrap"
+            , style "line-height" "0"
+            , positionStyle overlays
+            , Mixin.class "neat-textNode"
+            ]
+            (croppedTextCore lineHeight layout.wrap text
+                :: List.indexedMap
+                    (\k ->
+                        renderLayer
+                            { renderer
+                                | id = String.fromInt k :: "overlay" :: renderer.id
+                            }
                     )
+                    (List.reverse overlays)
+            )
+        ]
 
 
-prohibited : Bool -> Mixin mgs
-prohibited allowGap =
-    Mixin.fromAttributes <|
-        if allowGap then
-            [ Attributes.style "margin" "0"
-            ]
-
-        else
-            [ Attributes.style "padding" "0"
-            , Attributes.style "margin" "0"
-            ]
-
-
-wrapHtml : Renderer -> Gap -> Mixin msg -> Html msg -> Html msg
-wrapHtml renderer gap outer c =
-    if gap.width == 0 && gap.height == 0 then
-        c
+positionStyle : Overlays msg -> Mixin msg
+positionStyle overlays =
+    if overlays == [] then
+        Mixin.none
 
     else
-        Html.div
-            (Mixin.toAttributes outer
-                ++ [ Attributes.style "padding-right" <|
-                        "calc("
-                            ++ String.fromFloat gap.width
-                            ++ " * "
-                            ++ renderer.baseGapSize
-                            ++ ")"
-                   , Attributes.style "padding-left" <|
-                        "calc("
-                            ++ String.fromFloat gap.width
-                            ++ " * "
-                            ++ renderer.baseGapSize
-                            ++ ")"
-                   , Attributes.style "padding-top" <|
-                        "calc("
-                            ++ String.fromFloat gap.height
-                            ++ " * "
-                            ++ renderer.baseGapSize
-                            ++ ")"
-                   , Attributes.style "padding-bottom" <|
-                        "calc("
-                            ++ String.fromFloat gap.height
-                            ++ " * "
-                            ++ renderer.baseGapSize
-                            ++ ")"
-                   ]
-            )
-            [ c
+        style "position" "relative"
+
+
+renderLayer : Renderer_ -> ( Layer, View_ msg ) -> Html msg
+renderLayer renderer ( area, view ) =
+    Mixin.div
+        [ enforcedStyle
+        , flex
+        , flexDirection "column"
+        , style "position" "absolute"
+        , style "top" <| String.fromFloat area.top ++ "%"
+        , style "bottom" <| String.fromFloat area.bottom ++ "%"
+        , style "left" <| String.fromFloat area.left ++ "%"
+        , style "right" <| String.fromFloat area.right ++ "%"
+        , style "pointer-events" "none"
+        , area.priority
+            |> Maybe.map String.fromInt
+            |> Maybe.withDefault "auto"
+            |> style "z-index"
+        ]
+        [ render_ view renderer
+        ]
+
+
+croppedTextCore : Float -> Bool -> String -> Html msg
+croppedTextCore lineHeight wrap text =
+    case text of
+        "" ->
+            Html.text ""
+
+        _ ->
+            Mixin.span
+                [ enforcedStyle
+                , style "line-height" <| String.fromFloat lineHeight
+                , style "margin" <|
+                    String.concat
+                        [ String.fromFloat <| (1 - lineHeight) / 2
+                        , "em 0"
+                        ]
+                , Mixin.unless wrap <|
+                    style "white-space" "nowrap"
+                , style "font-style" "inherit"
+                , style "font-variant-ligatures" "inherit"
+                , style "font-variant-caps" "inherit"
+                , style "font-variant-numeric" "inherit"
+                , style "font-variant-east-asian" "inherit"
+                , style "font-weight" "inherit"
+                , style "font-stretch" "inherit"
+                , style "font-size" "inherit"
+                , style "font-family" "inherit"
+                , style "text-decoration-line" "inherit"
+                , style "text-decoration-color" "inherit"
+                , style "text-decoration-style" "inherit"
+                , style "text-decoration-thickness" "inherit"
+                , style "text-decoration-skip" "inherit"
+                , style "text-emphasis-position" "inherit"
+                , style "-webkit-text-emphasis-position" "inherit"
+                , style "text-emphasis-color" "inherit"
+                , style "-webkit-text-emphasis-color" "inherit"
+                , style "text-emphasis-style" "inherit"
+                , style "-webkit-text-emphasis-style" "inherit"
+                , style "text-shadow" "inherit"
+                , style "text-underline-offset" "inherit"
+                , style "text-underline-position" "inherit"
+                , style "text-indent" "inherit"
+                , style "-webkit-text-orientation" "inherit"
+                , style "text-orientation" "inherit"
+                , style "writing-mode" "inherit"
+                , style "text-rendering" "inherit"
+                , style "text-shadow" "inherit"
+                , style "text-transform" "inherit"
+                ]
+                [ Html.text text
+                ]
+
+
+rowNode : Renderer_ -> { childGap : Gap, mixin : Mixin msg, layout : Layout, overlays : Overlays msg, children : KeyableList (View_ msg) } -> Html msg
+rowNode renderer { childGap, mixin, layout, children, overlays } =
+    let
+        lineHeight =
+            Maybe.withDefault renderer.parent.lineHeight layout.lineHeight
+
+        outerGap =
+            layout.expandTo
+                |> Maybe.map (subtractGap childGap)
+                |> Maybe.withDefault emptyGap
+
+        attrs =
+            (Mixin.toAttributes << Mixin.batch)
+                [ mixin
+                , enforcedStyle
+                , flex
+                , flexDirection "row"
+                , justifySpace layout.horizontalSpace
+                , Mixin.when (layout.maxHeight /= MaxHeightInfinite)
+                    (alignSpace layout.verticalSpace)
+                , sizeStyle renderer layout
+                , flexGrow 1 1
+                , flexWrap layout.wrap
+                , case renderer.parent.direction of
+                    Horizontal ->
+                        Mixin.class "neat-row-core-in-row"
+
+                    Vertical ->
+                        Mixin.class "neat-row-core-in-column"
+                , positionStyle overlays
+                ]
+
+        overlayChildren =
+            List.indexedMap
+                (\k ->
+                    renderLayer
+                        { renderer
+                            | id = String.fromInt k :: "overlay" :: renderer.id
+                        }
+                )
+                (List.reverse overlays)
+    in
+    Mixin.div
+        [ enforcedStyle
+        , flex
+        , flexDirection "column"
+        , style "padding" <|
+            gapValue outerGap renderer.baseSize
+        , case renderer.parent.direction of
+            Horizontal ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxWidth == MaxWidthFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    ]
+
+            Vertical ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxHeight == MaxHeightFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
+                    , Mixin.when (layout.maxWidth == MaxWidthFit) <|
+                        alignStart
+                    ]
+        ]
+        [ children
+            |> KeyableList.identifiedMap
+                (\id c ->
+                    render_ c
+                        { renderer
+                            | parent =
+                                { direction = Horizontal
+                                , lineHeight = lineHeight
+                                }
+                            , id = id :: renderer.id
+                        }
+                )
+            |> KeyableList.unwrap
+                (\cs ->
+                    Html.node layout.nodeName
+                        attrs
+                        (overlayChildren ++ cs)
+                )
+                (\cs ->
+                    Keyed.node layout.nodeName
+                        attrs
+                        (List.indexedMap
+                            (\n c ->
+                                ( "I'm too fool to use this as a key. This is for neat-layout. " ++ String.fromInt n, c )
+                            )
+                            overlayChildren
+                            ++ cs
+                        )
+                )
+        ]
+
+
+columnNode : Renderer_ -> { childGap : Gap, mixin : Mixin msg, layout : Layout, overlays : Overlays msg, children : KeyableList (View_ msg) } -> Html msg
+columnNode renderer { childGap, mixin, layout, children, overlays } =
+    let
+        lineHeight =
+            Maybe.withDefault renderer.parent.lineHeight layout.lineHeight
+
+        outerGap =
+            layout.expandTo
+                |> Maybe.map (subtractGap childGap)
+                |> Maybe.withDefault emptyGap
+
+        attrs =
+            (Mixin.toAttributes << Mixin.batch)
+                [ mixin
+                , enforcedStyle
+                , flex
+                , flexDirection "column"
+                , justifySpace layout.verticalSpace
+                , Mixin.when (layout.maxWidth /= MaxWidthInfinite)
+                    (alignSpace layout.horizontalSpace)
+                , sizeStyle renderer layout
+                , flexGrow 1 1
+                , flexWrap layout.wrap
+                , case renderer.parent.direction of
+                    Horizontal ->
+                        Mixin.class "neat-column-core-in-row"
+
+                    Vertical ->
+                        Mixin.class "neat-column-core-in-column"
+                , positionStyle overlays
+                ]
+
+        overlayChildren =
+            List.map (renderLayer renderer) (List.reverse overlays)
+    in
+    Mixin.div
+        [ enforcedStyle
+        , flex
+        , flexDirection "row"
+        , style "padding" <|
+            gapValue outerGap renderer.baseSize
+        , case renderer.parent.direction of
+            Horizontal ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxWidth == MaxWidthFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    , Mixin.when (layout.maxHeight == MaxHeightFit) <|
+                        alignStart
+                    ]
+
+            Vertical ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxHeight == MaxHeightFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
+                    ]
+        ]
+        [ children
+            |> KeyableList.identifiedMap
+                (\id c ->
+                    render_ c
+                        { renderer
+                            | parent =
+                                { direction = Vertical
+                                , lineHeight = lineHeight
+                                }
+                            , id = id :: renderer.id
+                        }
+                )
+            |> KeyableList.unwrap
+                (\cs ->
+                    Html.node layout.nodeName
+                        attrs
+                        (overlayChildren ++ cs)
+                )
+                (\cs ->
+                    Keyed.node layout.nodeName
+                        attrs
+                        (List.indexedMap
+                            (\n c ->
+                                ( "I'm too fool to use this as a key. This is for neat-layout. " ++ String.fromInt n, c )
+                            )
+                            overlayChildren
+                            ++ cs
+                        )
+                )
+        ]
+
+
+boundaryNode : Renderer_ -> { childGap : Gap, mixin : Mixin msg, layout : Layout, overlays : Overlays msg, child : View_ msg } -> Html msg
+boundaryNode renderer { childGap, mixin, layout, child, overlays } =
+    let
+        lineHeight =
+            Maybe.withDefault renderer.parent.lineHeight layout.lineHeight
+
+        outerGap =
+            layout.expandTo
+                |> Maybe.withDefault emptyGap
+    in
+    Mixin.div
+        [ enforcedStyle
+        , flex
+        , flexDirection "column"
+        , style "padding" <|
+            gapValue outerGap renderer.baseSize
+        , case renderer.parent.direction of
+            Horizontal ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxWidth == MaxWidthFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    ]
+
+            Vertical ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxHeight == MaxHeightFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
+                    , Mixin.when (layout.maxWidth == MaxWidthFit) <|
+                        alignStart
+                    ]
+        ]
+        [ Mixin.lift (Html.node layout.nodeName)
+            [ mixin
+            , enforcedStyle
+            , flex
+            , flexDirection "row"
+            , justifySpace layout.horizontalSpace
+            , Mixin.when (layout.maxHeight /= MaxHeightInfinite)
+                (alignSpace layout.verticalSpace)
+            , sizeStyle renderer layout
+            , flexGrow
+                (if layout.maxHeight == MaxHeightFit then
+                    0
+
+                 else
+                    1
+                )
+                (if layout.minHeight == MinHeightContain then
+                    0
+
+                 else
+                    1
+                )
+            , flexWrap layout.wrap
+            , style "padding" <|
+                gapValue childGap renderer.baseSize
+            , Mixin.class "neat-boundary"
+            , positionStyle overlays
             ]
+            (render_ child
+                { renderer
+                    | parent =
+                        { direction = Horizontal
+                        , lineHeight = lineHeight
+                        }
+                }
+                :: List.indexedMap
+                    (\k ->
+                        renderLayer
+                            { renderer
+                                | id = String.fromInt k :: "overlay" :: renderer.id
+                            }
+                    )
+                    (List.reverse overlays)
+            )
+        ]
+
+
+scalableNode : Renderer_ -> { mixin : Mixin msg, layout : Layout, overlays : Overlays msg, rate : Float } -> Html msg
+scalableNode renderer { mixin, layout, overlays, rate } =
+    let
+        outerGap =
+            Maybe.withDefault emptyGap layout.expandTo
+    in
+    Mixin.div
+        [ enforcedStyle
+        , flex
+        , flexDirection "column"
+        , style "padding" <|
+            gapValue outerGap renderer.baseSize
+        , case renderer.parent.direction of
+            Horizontal ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxWidth == MaxWidthFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    ]
+
+            Vertical ->
+                Mixin.batch
+                    [ flexGrow 0 1
+                    , Mixin.when (layout.maxWidth == MaxWidthFit) <|
+                        alignStart
+                    ]
+        ]
+        [ Mixin.lift (Html.node layout.nodeName)
+            [ mixin
+            , enforcedStyle
+            , flex
+            , flexDirection "row"
+            , justifySpace layout.horizontalSpace
+            , Mixin.when (layout.maxHeight /= MaxHeightInfinite)
+                (alignSpace layout.verticalSpace)
+            , widthStyle renderer layout
+            , flexGrow 0 0
+            , style "line-height" "0"
+            , Mixin.class "neat-scalableNode"
+            , style "box-sizing" "content-box"
+            , positionStyle overlays
+            ]
+            (Mixin.div
+                [ style "padding-top" <|
+                    String.concat
+                        [ String.fromFloat <| rate * 100
+                        , "%"
+                        ]
+                , style "width" "100%"
+                ]
+                []
+                :: List.indexedMap
+                    (\k ->
+                        renderLayer
+                            { renderer
+                                | id = String.fromInt k :: "overlay" :: renderer.id
+                            }
+                    )
+                    (List.reverse overlays)
+            )
+        ]
+
+
+
+-- Helper functions for styling
+
+
+gapValue : Gap -> BaseSize -> String
+gapValue gap baseSize =
+    String.concat
+        [ multipleBaseSize (gap.vertical / 2) baseSize
+            |> renderBaseSize
+        , " "
+        , multipleBaseSize (gap.horizontal / 2) baseSize
+            |> renderBaseSize
+        ]
+
+
+widthStyle : Renderer_ -> Layout -> Mixin msg
+widthStyle renderer layout =
+    Mixin.batch
+        [ maxWidthStyle 0 renderer.baseSize layout.maxWidth
+        , minWidthStyle renderer.baseSize layout.minWidth
+        ]
+
+
+sizeStyle : Renderer_ -> Layout -> Mixin msg
+sizeStyle renderer layout =
+    Mixin.batch
+        [ maxWidthStyle 0 renderer.baseSize layout.maxWidth
+        , minWidthStyle renderer.baseSize layout.minWidth
+        , maxHeightStyle 0 renderer.baseSize layout.maxHeight
+        , minHeightStyle renderer.baseSize layout.minHeight
+        ]
+
+
+maxWidthStyle : Float -> BaseSize -> MaxWidth -> Mixin msg
+maxWidthStyle pad baseSize maxWidth =
+    case maxWidth of
+        MaxWidthInBs a ->
+            baseSize
+                |> multipleBaseSize (a + pad)
+                |> renderBaseSize
+                |> style "max-width"
+
+        MaxWidthInUnit unit a ->
+            String.concat
+                [ String.fromFloat a
+                , unit
+                ]
+                |> (\size ->
+                        if pad == 0 then
+                            size
+
+                        else
+                            String.concat
+                                [ "calc("
+                                , size
+                                , " + "
+                                , baseSize
+                                    |> multipleBaseSize pad
+                                    |> renderBaseSize
+                                , ")"
+                                ]
+                   )
+                |> style "max-width"
+
+        _ ->
+            Mixin.none
+
+
+minWidthStyle : BaseSize -> MinWidth -> Mixin msg
+minWidthStyle baseSize minWidth =
+    case minWidth of
+        MinWidthInBs a ->
+            baseSize
+                |> multipleBaseSize a
+                |> renderBaseSize
+                |> style "min-width"
+
+        MinWidthInUnit unit a ->
+            style "min-width" <|
+                String.concat
+                    [ String.fromFloat a
+                    , unit
+                    ]
+
+        _ ->
+            Mixin.none
+
+
+maxHeightStyle : Float -> BaseSize -> MaxHeight -> Mixin msg
+maxHeightStyle pad baseSize maxHeight =
+    case maxHeight of
+        MaxHeightInBs a ->
+            baseSize
+                |> multipleBaseSize (a + pad)
+                |> renderBaseSize
+                |> style "max-height"
+
+        MaxHeightInUnit unit a ->
+            String.concat
+                [ String.fromFloat a
+                , unit
+                ]
+                |> (\size ->
+                        if pad == 0 then
+                            size
+
+                        else
+                            String.concat
+                                [ "calc("
+                                , size
+                                , " + "
+                                , baseSize
+                                    |> multipleBaseSize pad
+                                    |> renderBaseSize
+                                , ")"
+                                ]
+                   )
+                |> style "max-height"
+
+        _ ->
+            Mixin.none
+
+
+minHeightStyle : BaseSize -> MinHeight -> Mixin msg
+minHeightStyle baseSize minHeight =
+    case minHeight of
+        MinHeightInBs a ->
+            baseSize
+                |> multipleBaseSize a
+                |> renderBaseSize
+                |> style "min-height"
+
+        MinHeightInUnit unit a ->
+            style "min-height" <|
+                String.concat
+                    [ String.fromFloat a
+                    , unit
+                    ]
+
+        _ ->
+            Mixin.none
+
+
+flexGrow : Float -> Float -> Mixin msg
+flexGrow grow shrink =
+    let
+        value =
+            String.join " "
+                [ String.fromFloat grow
+                , String.fromFloat shrink
+                , "auto"
+                ]
+    in
+    Mixin.batch
+        [ style "-ms-flex" value
+        , style "flex" value
+        ]
+
+
+
+{-
+   debugStyle : Mixin msg
+   debugStyle =
+       Mixin.batch
+           [ style "border-style" "dotted"
+           , style "border-width" "3px"
+           , style "border-color" "red"
+           ]
+-}
+
+
+enforcedStyle : Mixin msg
+enforcedStyle =
+    Mixin.batch
+        [ style "width" "auto"
+        , style "height" "auto"
+        , style "min-width" "initial"
+        , style "max-width" "none"
+        , style "min-height" "initial"
+        , style "max-height" "none"
+        , style "padding" "0"
+        , style "margin" "0"
+        , style "line-height" "inherit"
+        , style "display" "inline-block"
+        , style "white-space" "normal"
+        , style "box-sizing" "border-box"
+        , style "position" "static"
+        , style "z-index" "auto"
+        , flexWrap False
+        , flexDirection "row"
+        , flexGrow 0 1
+        ]
+
+
+flex : Mixin msg
+flex =
+    Mixin.batch
+        [ style "display" "flex"
+        , justifyStart
+        , alignStretch
+        ]
+
+
+flexDirection : String -> Mixin msg
+flexDirection dir =
+    Mixin.batch
+        [ style "-ms-flex-direction" dir
+        , style "flex-direction" dir
+        ]
+
+
+flexWrap : Bool -> Mixin msg
+flexWrap wrap =
+    let
+        wrapStr =
+            if wrap then
+                "wrap"
+
+            else
+                "nowrap"
+    in
+    Mixin.batch
+        [ style "-ms-flex-wrap" wrapStr
+        , style "flex-wrap" wrapStr
+        ]
+
+
+justifySpace : Space -> Mixin msg
+justifySpace space =
+    case space of
+        SpaceBehind ->
+            justifyStart
+
+        SpaceForward ->
+            justifyEnd
+
+        SpaceBoth ->
+            justifyCenter
+
+        SpaceAround ->
+            justifySpaceAround
+
+        SpaceBetween ->
+            justifySpaceBetween
+
+
+justifyStart : Mixin msg
+justifyStart =
+    Mixin.batch
+        [ style "-ms-flex-pack" "start"
+        , style "justify-content" "flex-start"
+        ]
+
+
+justifyEnd : Mixin msg
+justifyEnd =
+    Mixin.batch
+        [ style "-ms-flex-pack" "end"
+        , style "justify-content" "flex-end"
+        ]
+
+
+justifyCenter : Mixin msg
+justifyCenter =
+    Mixin.batch
+        [ style "-ms-flex-pack" "center"
+        , style "justify-content" "center"
+        ]
+
+
+justifySpaceBetween : Mixin msg
+justifySpaceBetween =
+    Mixin.batch
+        [ style "-ms-flex-pack" "justify"
+        , style "justify-content" "space-between"
+        ]
+
+
+justifySpaceAround : Mixin msg
+justifySpaceAround =
+    Mixin.batch
+        [ style "-ms-flex-pack" "distribute"
+        , style "justify-content" "space-around"
+        ]
+
+
+alignSpace : Space -> Mixin msg
+alignSpace space =
+    case space of
+        SpaceBehind ->
+            alignStart
+
+        SpaceForward ->
+            alignEnd
+
+        SpaceBoth ->
+            alignCenter
+
+        SpaceAround ->
+            alignSpaceAround
+
+        SpaceBetween ->
+            alignSpaceBetween
+
+
+alignStretch : Mixin msg
+alignStretch =
+    Mixin.batch
+        [ style "-ms-flex-align" "stretch"
+        , style "align-items" "stretch"
+        ]
+
+
+alignStart : Mixin msg
+alignStart =
+    Mixin.batch
+        [ style "-webkit-box-align" "start"
+        , style "-ms-flex-align" "start"
+        , style "align-items" "flex-start"
+        ]
+
+
+alignEnd : Mixin msg
+alignEnd =
+    Mixin.batch
+        [ style "-webkit-box-align" "end"
+        , style "-ms-flex-align" "end"
+        , style "align-items" "flex-end"
+        ]
+
+
+alignCenter : Mixin msg
+alignCenter =
+    Mixin.batch
+        [ style "-webkit-box-align" "center"
+        , style "-ms-flex-align" "center"
+        , style "align-items" "center"
+        ]
+
+
+alignSpaceBetween : Mixin msg
+alignSpaceBetween =
+    alignStart
+
+
+alignSpaceAround : Mixin msg
+alignSpaceAround =
+    alignCenter
 
 
 style : String -> String -> Mixin msg

@@ -1,10 +1,16 @@
 # elm-neat-layout
 
-Elm layout framework that helps to keep gaps neat.
+Gap sensitive layout framework.
 
-## What's elm-neat-layout?
+## Why neat layout?
 
-The elm-neat-layout is a layout framework.
+Enpower you to realize no-hack layouts with neat gaps.
+
+* No quirky collapsing of gaps
+* Natural liquid layout
+* No need for manual cropping of texts
+* No unintentional overflow of contents
+* Flexible layout building with fewer APIs
 
 ## Sample applications
 
@@ -12,5 +18,4 @@ Check `sample` directory of this repository.
 
 Resulting apps:
 
-* [bleater](https://arowm.github.io/elm-neat-layout/bleater/)
-* [slide](https://arowm.github.io/elm-neat-layout/slide/)
+* [catalog](https://arowm.github.io/elm-neat-layout/catalog/)

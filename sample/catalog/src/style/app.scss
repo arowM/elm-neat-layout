@@ -1,0 +1,46 @@
+@use 'variables' as *;
+
+.wrapper {
+  border: solid 2px $sub-color2;
+  border-radius: $default-radius;
+}
+
+.withBorder1 {
+  border: solid 4px #5ff;
+}
+
+.withBorder2 {
+  border: solid 4px #f5f;
+}
+
+.document {
+  &_title {
+    font-weight: 900;
+    font-size: 1.4em;
+
+    &_border {
+      border-bottom: solid 2px #333;
+    }
+  }
+}
+
+.chapter {
+  &_title {
+    font-weight: 600;
+    font-size: 1.2em;
+    background-color: #ccc;
+  }
+}
+
+.section {
+  &_title {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+}
+
+.sample {
+  resize: both;
+  overflow: auto;
+  border: solid 1px #333;
+}
