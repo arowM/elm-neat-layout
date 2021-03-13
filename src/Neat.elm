@@ -299,7 +299,13 @@ import Url exposing (Url)
 {-| A gap-sensible `Html msg` alternative.
 -}
 type View gap msg
-    = View (View_ msg)
+    = View
+        ( Renderer_ ->
+            { view : View_ msg
+            , maxWidth : (Int, String)
+            , maxHeight : (Int, String)
+            }
+        )
 
 
 {-| Internal view.
@@ -342,7 +348,7 @@ type View_ msg
         }
     | Rendered
         { childGap : Gap
-        , toHtml : Renderer_ -> Html msg
+        , html : Html msg
         }
 
 
@@ -357,8 +363,15 @@ map f =
 
 
 liftInternal : (View_ a -> View_ b) -> View g1 a -> View g2 b
-liftInternal f (View view) =
-    View <| f view
+liftInternal f (View v) =
+    View <| \renderer ->
+        let
+            content = v renderer
+        in
+        { view = f content.view
+        , maxWidth = content.maxWidth
+        , maxHeight = content.maxHeight
+        }
 
 
 map_ : (a -> b) -> View_ a -> View_ b
@@ -413,7 +426,7 @@ map_ f view =
         Rendered o ->
             Rendered
                 { childGap = o.childGap
-                , toHtml = Html.map f << o.toHtml
+                , html = Html.map f o.html
                 }
 
 
@@ -916,7 +929,11 @@ This is useful for handling elements that disappear under certain conditions.
 -}
 none : View g a
 none =
-    View None
+    View <| \_ ->
+        { view = None
+        , maxWidth = (0, "")
+        , maxHeight = (0, "")
+        }
 
 
 {-| Generates an HTML node without text nodes.
@@ -1832,14 +1849,23 @@ This layer is never the target of pointer events; however
 pointer events may target its descendant views if those views are converted into `Virtual msg` with `toLayerView` function.
 -}
 putLayer : ( Layer, View NoGap (InLayer msg) ) -> View NoGap msg -> View NoGap msg
-putLayer ( area, overlay_ ) =
-    case map (\(InLayer a) -> a) overlay_ of
-        View None ->
-            identity
+putLayer ( area, overlay_ ) (View view) =
+    let
+        (View g) = map (\(InLayer a) -> a) overlay_
+    in
+    View <| \renderer ->
+        let
+            content = view renderer
+        in
+        case (g renderer).view of
+            None -> content
 
-        View overlay ->
-            modifyOverlays <|
-                \overlays -> ( area, overlay ) :: overlays
+            overlay ->
+                { content
+                    | view = modifyOverlays_
+                        (\overlays -> ( area, overlay ) :: overlays)
+                        content.view
+                }
 
 
 modifyOverlays : (Overlays msg -> Overlays msg) -> View gap msg -> View gap msg
