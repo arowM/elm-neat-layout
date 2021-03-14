@@ -42,6 +42,10 @@ module Neat exposing
     , setMaxHeightInBs
     , setMaxHeightInEm
     , setMaxHeightInRem
+    , enableHorizontalScroll
+    , disableHorizontalScroll
+    , enableVerticalScroll
+    , disableVerticalScroll
     , enableWrap
     , disableWrap
     , setHorizontalSpaceBehind
@@ -142,6 +146,8 @@ The following styles are not reflected by the `style` attribute or CSS files.
       - Determined by each type of view.
           - `scalableBlock` is "content-box"
           - otherwise, "border-box"
+  - overflow
+    - Use enableHorizontalScroll / enableVerticalScroll
 
 @docs setMixin
 @docs setMixins
@@ -199,6 +205,14 @@ This may seem inconvenient, but it prevents you to build unmaintainable broken v
 @docs setMaxHeightInBs
 @docs setMaxHeightInEm
 @docs setMaxHeightInRem
+
+
+# Scroll
+
+@docs enableHorizontalScroll
+@docs disableHorizontalScroll
+@docs enableVerticalScroll
+@docs disableVerticalScroll
 
 
 # Wrap style
@@ -430,6 +444,8 @@ type alias Layout =
     , nodeName : String
     , contentBox : Bool
     , enforcePointerEvent : Bool
+    , verticalScroll : Bool
+    , horizontalScroll : Bool
     }
 
 
@@ -447,6 +463,8 @@ defaultLayout =
     , nodeName = "div"
     , contentBox = False
     , enforcePointerEvent = False
+    , verticalScroll = False
+    , horizontalScroll = False
     }
 
 
@@ -555,6 +573,7 @@ type alias Renderer_ =
 type alias Parent =
     { direction : Direction
     , lineHeight : Float
+    , space : Space
     }
 
 
@@ -619,6 +638,7 @@ defaultRenderer_ =
     , parent =
         { direction = Vertical
         , lineHeight = 1.5
+        , space = SpaceBehind
         }
     , id = []
     }
@@ -786,7 +806,6 @@ document o =
                         , style "bottom" "0"
                         , style "left" "0"
                         , style "right" "0"
-                        , style "overflow" "auto"
                         ]
                         [ render (o.renderer model.userModel) view.body
                             |> Html.map UpdateUserMsg
@@ -1459,6 +1478,49 @@ modifyLayout_ f view =
 
 
 
+-- Scroll
+
+
+{-| -}
+enableVerticalScroll : View NoGap msg -> View NoGap msg
+enableVerticalScroll =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | verticalScroll = True
+            }
+
+
+{-| -}
+enableHorizontalScroll : View NoGap msg -> View NoGap msg
+enableHorizontalScroll =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | horizontalScroll = True
+            }
+
+
+{-| -}
+disableVerticalScroll : View NoGap msg -> View NoGap msg
+disableVerticalScroll =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | verticalScroll = False
+            }
+
+
+{-| -}
+disableHorizontalScroll : View NoGap msg -> View NoGap msg
+disableHorizontalScroll =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | horizontalScroll = False
+            }
+
+
 -- Wrap style
 
 
@@ -2063,9 +2125,10 @@ textNode renderer { mixin, layout, overlays, text } =
     Mixin.div
         [ enforcedStyle
         , flex
-        , flexDirection "column"
+        , justifySpace renderer.parent.space
         , style "padding" <|
             gapValue outerGap renderer.baseSize
+        , scrollStyle layout
         , case renderer.parent.direction of
             Horizontal ->
                 Mixin.batch
@@ -2077,7 +2140,8 @@ textNode renderer { mixin, layout, overlays, text } =
                             1
                         )
                         1
-                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    , flexDirection "column"
+                    , maxWidthStyle 0 renderer.baseSize layout.maxWidth
                     ]
 
             Vertical ->
@@ -2090,34 +2154,52 @@ textNode renderer { mixin, layout, overlays, text } =
                             1
                         )
                         1
-                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
-                    , Mixin.when (layout.maxWidth == MaxWidthFit) <|
-                        alignStart
+                    , flexDirection "row"
                     ]
         ]
         [ Mixin.lift (Html.node layout.nodeName)
             [ mixin
             , enforcedStyle
+            , Mixin.when layout.enforcePointerEvent
+                (style "pointer-events" "auto")
             , flex
             , flexDirection "row"
             , justifySpace layout.horizontalSpace
-            , Mixin.when (layout.maxHeight /= MaxHeightInfinite)
-                (alignSpace layout.verticalSpace)
             , sizeStyle renderer layout
-            , flexGrow
-                (if layout.maxHeight == MaxHeightFit then
-                    0
+            , case renderer.parent.direction of
+                Horizontal ->
+                    Mixin.batch
+                        [ flexGrow
+                            (if layout.maxHeight == MaxHeightFit then
+                                0
 
-                 else
-                    1
-                )
-                (if layout.minHeight == MinHeightContain then
-                    0
+                             else
+                                1
+                            )
+                            (if layout.minHeight == MinHeightContain then
+                                0
 
-                 else
-                    1
-                )
+                             else
+                                1
+                            )
+                        ]
 
+                Vertical ->
+                    Mixin.batch
+                        [ flexGrow
+                            (if layout.maxWidth == MaxWidthFit then
+                                0
+
+                             else
+                                1
+                            )
+                            (if layout.minWidth == MinWidthContain then
+                                0
+
+                             else
+                                1
+                            )
+                        ]
             -- , flexWrap layout.wrap
             , Mixin.unless layout.wrap <|
                 style "white-space" "nowrap"
@@ -2235,13 +2317,46 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
             (Mixin.toAttributes << Mixin.batch)
                 [ mixin
                 , enforcedStyle
+                , Mixin.when layout.enforcePointerEvent
+                    (style "pointer-events" "auto")
                 , flex
                 , flexDirection "row"
                 , justifySpace layout.horizontalSpace
-                , Mixin.when (layout.maxHeight /= MaxHeightInfinite)
-                    (alignSpace layout.verticalSpace)
                 , sizeStyle renderer layout
-                , flexGrow 1 1
+                , case renderer.parent.direction of
+                    Horizontal ->
+                        Mixin.batch
+                            [ flexGrow
+                                (if layout.maxHeight == MaxHeightFit then
+                                    0
+
+                                 else
+                                    1
+                                )
+                                (if layout.minHeight == MinHeightContain then
+                                    0
+
+                                 else
+                                    1
+                                )
+                            ]
+
+                    Vertical ->
+                        Mixin.batch
+                            [ flexGrow
+                                (if layout.maxWidth == MaxWidthFit then
+                                    0
+
+                                 else
+                                    1
+                                )
+                                (if layout.minWidth == MinWidthContain then
+                                    0
+
+                                 else
+                                    1
+                                )
+                            ]
                 , flexWrap layout.wrap
                 , case renderer.parent.direction of
                     Horizontal ->
@@ -2265,9 +2380,10 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
     Mixin.div
         [ enforcedStyle
         , flex
-        , flexDirection "column"
+        , justifySpace renderer.parent.space
         , style "padding" <|
             gapValue outerGap renderer.baseSize
+        , scrollStyle layout
         , case renderer.parent.direction of
             Horizontal ->
                 Mixin.batch
@@ -2279,7 +2395,8 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                             1
                         )
                         1
-                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    , flexDirection "column"
+                    , maxWidthStyle 0 renderer.baseSize layout.maxWidth
                     ]
 
             Vertical ->
@@ -2292,9 +2409,7 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                             1
                         )
                         1
-                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
-                    , Mixin.when (layout.maxWidth == MaxWidthFit) <|
-                        alignStart
+                    , flexDirection "row"
                     ]
         ]
         [ children
@@ -2305,6 +2420,7 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                             | parent =
                                 { direction = Horizontal
                                 , lineHeight = lineHeight
+                                , space = layout.verticalSpace
                                 }
                             , id = id :: renderer.id
                         }
@@ -2344,13 +2460,46 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
             (Mixin.toAttributes << Mixin.batch)
                 [ mixin
                 , enforcedStyle
+                , Mixin.when layout.enforcePointerEvent
+                    (style "pointer-events" "auto")
                 , flex
                 , flexDirection "column"
                 , justifySpace layout.verticalSpace
-                , Mixin.when (layout.maxWidth /= MaxWidthInfinite)
-                    (alignSpace layout.horizontalSpace)
                 , sizeStyle renderer layout
-                , flexGrow 1 1
+                , case renderer.parent.direction of
+                    Horizontal ->
+                        Mixin.batch
+                            [ flexGrow
+                                (if layout.maxHeight == MaxHeightFit then
+                                    0
+
+                                 else
+                                    1
+                                )
+                                (if layout.minHeight == MinHeightContain then
+                                    0
+
+                                 else
+                                    1
+                                )
+                            ]
+
+                    Vertical ->
+                        Mixin.batch
+                            [ flexGrow
+                                (if layout.maxWidth == MaxWidthFit then
+                                    0
+
+                                 else
+                                    1
+                                )
+                                (if layout.minWidth == MinWidthContain then
+                                    0
+
+                                 else
+                                    1
+                                )
+                            ]
                 , flexWrap layout.wrap
                 , case renderer.parent.direction of
                     Horizontal ->
@@ -2367,9 +2516,10 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
     Mixin.div
         [ enforcedStyle
         , flex
-        , flexDirection "row"
+        , justifySpace renderer.parent.space
         , style "padding" <|
             gapValue outerGap renderer.baseSize
+        , scrollStyle layout
         , case renderer.parent.direction of
             Horizontal ->
                 Mixin.batch
@@ -2381,9 +2531,7 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
                             1
                         )
                         1
-                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
-                    , Mixin.when (layout.maxHeight == MaxHeightFit) <|
-                        alignStart
+                    , flexDirection "column"
                     ]
 
             Vertical ->
@@ -2396,7 +2544,8 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
                             1
                         )
                         1
-                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
+                    , flexDirection "row"
+                    , maxHeightStyle 0 renderer.baseSize layout.maxHeight
                     ]
         ]
         [ children
@@ -2407,6 +2556,7 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
                             | parent =
                                 { direction = Vertical
                                 , lineHeight = lineHeight
+                                , space = layout.horizontalSpace
                                 }
                             , id = id :: renderer.id
                         }
@@ -2444,9 +2594,10 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
     Mixin.div
         [ enforcedStyle
         , flex
-        , flexDirection "column"
+        , justifySpace renderer.parent.space
         , style "padding" <|
             gapValue outerGap renderer.baseSize
+        , scrollStyle layout
         , case renderer.parent.direction of
             Horizontal ->
                 Mixin.batch
@@ -2458,7 +2609,8 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
                             1
                         )
                         1
-                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    , flexDirection "column"
+                    , maxWidthStyle 0 renderer.baseSize layout.maxWidth
                     ]
 
             Vertical ->
@@ -2471,36 +2623,56 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
                             1
                         )
                         1
-                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
-                    , Mixin.when (layout.maxWidth == MaxWidthFit) <|
-                        alignStart
+                    , flexDirection "row"
                     ]
         ]
         [ Mixin.lift (Html.node layout.nodeName)
             [ mixin
             , enforcedStyle
+            , Mixin.when layout.enforcePointerEvent
+                (style "pointer-events" "auto")
             , flex
             , flexDirection "row"
             , justifySpace layout.horizontalSpace
-            , Mixin.when (layout.maxHeight /= MaxHeightInfinite)
-                (alignSpace layout.verticalSpace)
             , sizeStyle renderer layout
-            , flexGrow
-                (if layout.maxHeight == MaxHeightFit then
-                    0
+            , case renderer.parent.direction of
+                Horizontal ->
+                    Mixin.batch
+                        [ flexGrow
+                            (if layout.maxHeight == MaxHeightFit then
+                                0
 
-                 else
-                    1
-                )
-                (if layout.minHeight == MinHeightContain then
-                    0
+                             else
+                                1
+                            )
+                            (if layout.minHeight == MinHeightContain then
+                                0
 
-                 else
-                    1
-                )
+                             else
+                                1
+                            )
+                        ]
+
+                Vertical ->
+                    Mixin.batch
+                        [ flexGrow
+                            (if layout.maxWidth == MaxWidthFit then
+                                0
+
+                             else
+                                1
+                            )
+                            (if layout.minWidth == MinWidthContain then
+                                0
+
+                             else
+                                1
+                            )
+                        ]
             , flexWrap layout.wrap
             , style "padding" <|
                 gapValue childGap renderer.baseSize
+            , scrollStyle layout
             , Mixin.class "neat-boundary"
             , positionStyle overlays
             ]
@@ -2509,6 +2681,7 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
                     | parent =
                         { direction = Horizontal
                         , lineHeight = lineHeight
+                        , space = layout.verticalSpace
                         }
                 }
                 :: List.indexedMap
@@ -2524,17 +2697,26 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
 
 
 scalableNode : Renderer_ -> { mixin : Mixin msg, layout : Layout, overlays : Overlays msg, rate : Float } -> Html msg
-scalableNode renderer { mixin, layout, overlays, rate } =
+scalableNode renderer ({ mixin, overlays, rate } as o) =
     let
         outerGap =
             Maybe.withDefault emptyGap layout.expandTo
+
+        layout_ = o.layout
+
+        layout =
+            { layout_
+                | minHeight = MinHeightContain
+                , maxHeight = MaxHeightFit
+            }
     in
     Mixin.div
         [ enforcedStyle
         , flex
-        , flexDirection "column"
         , style "padding" <|
             gapValue outerGap renderer.baseSize
+        , scrollStyle layout
+        , justifySpace renderer.parent.space
         , case renderer.parent.direction of
             Horizontal ->
                 Mixin.batch
@@ -2546,26 +2728,59 @@ scalableNode renderer { mixin, layout, overlays, rate } =
                             1
                         )
                         1
-                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    , flexDirection "column"
+                    , maxWidthStyle 0 renderer.baseSize layout.maxWidth
                     ]
 
             Vertical ->
                 Mixin.batch
                     [ flexGrow 0 1
-                    , Mixin.when (layout.maxWidth == MaxWidthFit) <|
-                        alignStart
+                    , flexDirection "row"
                     ]
         ]
         [ Mixin.lift (Html.node layout.nodeName)
             [ mixin
             , enforcedStyle
+            , Mixin.when layout.enforcePointerEvent
+                (style "pointer-events" "auto")
             , flex
             , flexDirection "row"
             , justifySpace layout.horizontalSpace
-            , Mixin.when (layout.maxHeight /= MaxHeightInfinite)
-                (alignSpace layout.verticalSpace)
             , widthStyle renderer layout
-            , flexGrow 0 0
+            , case renderer.parent.direction of
+                Horizontal ->
+                    Mixin.batch
+                        [ flexGrow
+                            (if layout.maxHeight == MaxHeightFit then
+                                0
+
+                             else
+                                1
+                            )
+                            (if layout.minHeight == MinHeightContain then
+                                0
+
+                             else
+                                1
+                            )
+                        ]
+
+                Vertical ->
+                    Mixin.batch
+                        [ flexGrow
+                            (if layout.maxWidth == MaxWidthFit then
+                                0
+
+                             else
+                                1
+                            )
+                            (if layout.minWidth == MinWidthContain then
+                                0
+
+                             else
+                                1
+                            )
+                        ]
             , style "line-height" "0"
             , Mixin.class "neat-scalableNode"
             , style "box-sizing" "content-box"
@@ -2656,6 +2871,9 @@ maxWidthStyle pad baseSize maxWidth =
                    )
                 |> style "max-width"
 
+        MaxWidthInfinite ->
+            style "max-width" "100%"
+
         _ ->
             Mixin.none
 
@@ -2711,6 +2929,9 @@ maxHeightStyle pad baseSize maxHeight =
                    )
                 |> style "max-height"
 
+        MaxHeightInfinite ->
+            style "max-height" "100%"
+
         _ ->
             Mixin.none
 
@@ -2734,6 +2955,15 @@ minHeightStyle baseSize minHeight =
         _ ->
             Mixin.none
 
+
+scrollStyle : Layout -> Mixin msg
+scrollStyle layout =
+    Mixin.batch
+        [ Mixin.when layout.verticalScroll
+            <| style "overflow-y" "auto"
+        , Mixin.when layout.horizontalScroll
+            <| style "overflow-x" "auto"
+        ]
 
 flexGrow : Float -> Float -> Mixin msg
 flexGrow grow shrink =
@@ -2780,6 +3010,7 @@ enforcedStyle =
         , style "box-sizing" "border-box"
         , style "position" "static"
         , style "z-index" "auto"
+        , style "overflow" "visible"
         , flexWrap False
         , flexDirection "row"
         , flexGrow 0 1
@@ -2878,25 +3109,6 @@ justifySpaceAround =
         ]
 
 
-alignSpace : Space -> Mixin msg
-alignSpace space =
-    case space of
-        SpaceBehind ->
-            alignStart
-
-        SpaceForward ->
-            alignEnd
-
-        SpaceBoth ->
-            alignCenter
-
-        SpaceAround ->
-            alignSpaceAround
-
-        SpaceBetween ->
-            alignSpaceBetween
-
-
 alignStretch : Mixin msg
 alignStretch =
     Mixin.batch
@@ -2912,34 +3124,6 @@ alignStart =
         , style "-ms-flex-align" "start"
         , style "align-items" "flex-start"
         ]
-
-
-alignEnd : Mixin msg
-alignEnd =
-    Mixin.batch
-        [ style "-webkit-box-align" "end"
-        , style "-ms-flex-align" "end"
-        , style "align-items" "flex-end"
-        ]
-
-
-alignCenter : Mixin msg
-alignCenter =
-    Mixin.batch
-        [ style "-webkit-box-align" "center"
-        , style "-ms-flex-align" "center"
-        , style "align-items" "center"
-        ]
-
-
-alignSpaceBetween : Mixin msg
-alignSpaceBetween =
-    alignStart
-
-
-alignSpaceAround : Mixin msg
-alignSpaceAround =
-    alignCenter
 
 
 style : String -> String -> Mixin msg
