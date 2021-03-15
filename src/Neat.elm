@@ -69,8 +69,9 @@ module Neat exposing
     , putLayer
     , Layer
     , defaultLayer
-    , InLayer
-    , toLayerView
+    , Layered
+    , mapLayered
+    , toLayered
     , when
     , unless
     , IsGap(..)
@@ -256,8 +257,9 @@ This may seem inconvenient, but it prevents you to build unmaintainable broken v
 @docs putLayer
 @docs Layer
 @docs defaultLayer
-@docs InLayer
-@docs toLayerView
+@docs Layered
+@docs mapLayered
+@docs toLayered
 
 
 # Handle conditions
@@ -972,7 +974,7 @@ It is useful for displaying images in a fixed aspect ratio by combinating with C
 
   - max-width: _infinite_
   - min-width: _contain_
-  - max-height: _infinite_ (unchangeable)
+  - max-height: _fit_ (unchangeable)
   - min-height: _contain_ (unchangeable)
   - wrap: disabled
   - vertical space: behind
@@ -1892,11 +1894,11 @@ column_ head =
 
 {-| Put overlay layer to a view.
 This layer is never the target of pointer events; however
-pointer events may target its descendant views if those views are converted into `Virtual msg` with `toLayerView` function.
+pointer events may target its descendant views if those views are converted into `Virtual msg` with `toLayered` function.
 -}
-putLayer : ( Layer, View NoGap (InLayer msg) ) -> View NoGap msg -> View NoGap msg
+putLayer : ( Layer, View NoGap (Layered msg) ) -> View NoGap msg -> View NoGap msg
 putLayer ( area, overlay_ ) =
-    case map (\(InLayer a) -> a) overlay_ of
+    case map (\(Layered a) -> a) overlay_ of
         View None ->
             identity
 
@@ -1936,14 +1938,20 @@ modifyOverlays_ f view =
 
 
 {-| -}
-type InLayer msg
-    = InLayer msg
+type Layered msg
+    = Layered msg
 
 
 {-| -}
-toLayerView : View gap msg -> View gap (InLayer msg)
-toLayerView view =
-    map InLayer view
+mapLayered : (a -> b) -> View gap (Layered a) -> View gap (Layered b)
+mapLayered f =
+    map (\(Layered a) -> Layered <| f a)
+
+
+{-| -}
+toLayered : View gap msg -> View gap (Layered msg)
+toLayered view =
+    map Layered view
         |> modifyLayout
             (\layout ->
                 { layout
