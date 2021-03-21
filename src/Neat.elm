@@ -2150,7 +2150,7 @@ textNode renderer { mixin, layout, overlays, text } =
                         )
                         1
                     , flexDirection "column"
-                    , maxWidthStyle 0 renderer.baseSize layout.maxWidth
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
                     ]
 
             Vertical ->
@@ -2406,7 +2406,7 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                         )
                         1
                     , flexDirection "column"
-                    , maxWidthStyle 0 renderer.baseSize layout.maxWidth
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
                     ]
 
             Vertical ->
@@ -2555,7 +2555,7 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
                         )
                         1
                     , flexDirection "row"
-                    , maxHeightStyle 0 renderer.baseSize layout.maxHeight
+                    , maxHeightStyle outerGap.vertical renderer.baseSize layout.maxHeight
                     ]
         ]
         [ children
@@ -2620,7 +2620,7 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
                         )
                         1
                     , flexDirection "column"
-                    , maxWidthStyle 0 renderer.baseSize layout.maxWidth
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
                     ]
 
             Vertical ->
@@ -2740,7 +2740,7 @@ scalableNode renderer ({ mixin, overlays, rate } as o) =
                         )
                         1
                     , flexDirection "column"
-                    , maxWidthStyle 0 renderer.baseSize layout.maxWidth
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
                     ]
 
             Vertical ->
