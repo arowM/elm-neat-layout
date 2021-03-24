@@ -1770,8 +1770,8 @@ row_ head =
         None ->
             \_ -> None
 
-        Boundary { childGap, layout } ->
-            helper <| Maybe.withDefault childGap layout.expandTo
+        Boundary { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
 
         -- Unreachable
         Rendered { childGap } ->
@@ -1880,8 +1880,8 @@ column_ head =
         None ->
             \_ -> None
 
-        Boundary { childGap, layout } ->
-            helper <| Maybe.withDefault childGap layout.expandTo
+        Boundary { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
 
         -- Unreachable
         Rendered { childGap } ->
@@ -2043,8 +2043,8 @@ setBoundary_ view =
         None ->
             None
 
-        Boundary { childGap, layout } ->
-            helper <| Maybe.withDefault childGap layout.expandTo
+        Boundary { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
 
         Rendered _ ->
             helper emptyGap
