@@ -73,6 +73,7 @@ module Neat exposing
     , Layered
     , mapLayered
     , toLayered
+    , setPriority
     , when
     , unless
     , IsGap(..)
@@ -266,6 +267,7 @@ This may seem inconvenient, but it prevents you to build unmaintainable broken v
 @docs Layered
 @docs mapLayered
 @docs toLayered
+@docs setPriority
 
 
 # Handle conditions
@@ -456,6 +458,7 @@ type alias Layout =
     , enforcePointerEvent : Bool
     , verticalScroll : Bool
     , horizontalScroll : Bool
+    , priority : Maybe Int
     }
 
 
@@ -475,6 +478,7 @@ defaultLayout =
     , enforcePointerEvent = False
     , verticalScroll = False
     , horizontalScroll = False
+    , priority = Nothing
     }
 
 
@@ -2002,6 +2006,16 @@ toLayered view =
             )
 
 
+{-| -}
+setPriority : Int -> View gap msg -> View gap msg
+setPriority n =
+    modifyLayout <|
+        \layout ->
+            { layout
+                | priority = Just n
+            }
+
+
 {-| Set the position of each edge of the overlay layer as a percentage of the base view.
 -}
 type alias Layer =
@@ -2009,7 +2023,6 @@ type alias Layer =
     , bottom : Float
     , left : Float
     , right : Float
-    , priority : Maybe Int
     }
 
 
@@ -2020,7 +2033,6 @@ type alias Layer =
     --> , bottom = 0
     --> , left = 0
     --> , right = 0
-    --> , priority = Nothing
     --> }
 
 -}
@@ -2030,7 +2042,6 @@ defaultLayer =
     , bottom = 0
     , left = 0
     , right = 0
-    , priority = Nothing
     }
 
 
@@ -2211,6 +2222,7 @@ textNode renderer { mixin, layout, innerGap, overlays, text } =
         [ Mixin.lift (Html.node layout.nodeName)
             [ mixin
             , enforcedStyle
+            , priorityStyle layout.priority
             , Mixin.when layout.enforcePointerEvent
                 (style "pointer-events" "auto")
             , flex
@@ -2300,10 +2312,6 @@ renderLayer ({ parent } as renderer) ( area, view ) =
         , style "left" <| String.fromFloat area.left ++ "%"
         , style "right" <| String.fromFloat area.right ++ "%"
         , style "pointer-events" "none"
-        , area.priority
-            |> Maybe.map String.fromInt
-            |> Maybe.withDefault "auto"
-            |> style "z-index"
         ]
         [ Mixin.div
             [ enforcedStyle
@@ -2392,6 +2400,7 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
             (Mixin.toAttributes << Mixin.batch)
                 [ mixin
                 , enforcedStyle
+                , priorityStyle layout.priority
                 , Mixin.when layout.enforcePointerEvent
                     (style "pointer-events" "auto")
                 , flex
@@ -2536,6 +2545,7 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
             (Mixin.toAttributes << Mixin.batch)
                 [ mixin
                 , enforcedStyle
+                , priorityStyle layout.priority
                 , Mixin.when layout.enforcePointerEvent
                     (style "pointer-events" "auto")
                 , flex
@@ -2706,6 +2716,7 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
         [ Mixin.lift (Html.node layout.nodeName)
             [ mixin
             , enforcedStyle
+            , priorityStyle layout.priority
             , Mixin.when layout.enforcePointerEvent
                 (style "pointer-events" "auto")
             , flex
@@ -2820,6 +2831,7 @@ scalableNode renderer ({ mixin, overlays, rate } as o) =
         [ Mixin.lift (Html.node layout.nodeName)
             [ mixin
             , enforcedStyle
+            , priorityStyle layout.priority
             , Mixin.when layout.enforcePointerEvent
                 (style "pointer-events" "auto")
             , flex
@@ -3048,6 +3060,16 @@ scrollStyle layout =
                 [ style "overflow-x" "auto"
                 , style "max-width" "100%"
                 ]
+        ]
+
+
+priorityStyle : Maybe Int -> Mixin msg
+priorityStyle mn =
+    Mixin.batch
+        [ mn
+            |> Maybe.map String.fromInt
+            |> Maybe.withDefault "auto"
+            |> style "z-index"
         ]
 
 
