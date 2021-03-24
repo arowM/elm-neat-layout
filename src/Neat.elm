@@ -16,6 +16,7 @@ module Neat exposing
     , empty
     , none
     , scalableBlock
+    , textarea
     , setMixin
     , setMixins
     , setAttribute
@@ -124,6 +125,11 @@ module Neat exposing
 @docs empty
 @docs none
 @docs scalableBlock
+
+
+# Special constructors
+
+@docs textarea
 
 
 # Attributes
@@ -339,6 +345,7 @@ type View_ msg
     | TextNode
         { mixin : Mixin msg
         , layout : Layout
+        , innerGap : Gap
         , overlays : Overlays msg
         , text : String
         }
@@ -402,6 +409,7 @@ map_ f view =
             TextNode
                 { mixin = Mixin.map f o.mixin
                 , layout = o.layout
+                , innerGap = o.innerGap
                 , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
                 , text = o.text
                 }
@@ -926,6 +934,7 @@ textBlock str =
                 | maxWidth = MaxWidthFit
                 , maxHeight = MaxHeightFit
             }
+        , innerGap = emptyGap
         , overlays = []
         , text = str
         }
@@ -941,7 +950,6 @@ none =
 
 
 {-| Generates an HTML node without text nodes.
-Takes HTML node name.
 
 The default sizes are as follows:
 
@@ -959,12 +967,46 @@ empty =
     TextNode
         { mixin = Mixin.none
         , layout = defaultLayout
+        , innerGap = emptyGap
         , overlays = []
         , text = ""
         }
         |> View
         |> setMaxWidthInfinite
         |> setMaxHeightInfinite
+
+
+{-| Generates an textarea.
+
+The default sizes are as follows:
+
+  - max-width: _infinite_
+  - min-width: _contain_
+  - max-height: _infinite_
+  - min-height: _contain_
+  - wrap: enabled
+  - vertical space: behind
+  - horizontal space: behind
+  - vertical scroll: enabled
+
+-}
+textarea : { innerGap : IsGap g } -> View NoGap a
+textarea { innerGap } =
+    TextNode
+        { mixin = Mixin.none
+        , layout = defaultLayout
+        , innerGap =
+            innerGap
+                |> (\(IsGap g) -> g)
+        , overlays = []
+        , text = ""
+        }
+        |> View
+        |> setMaxWidthInfinite
+        |> setMaxHeightInfinite
+        |> enableVerticalScroll
+        |> enableWrap
+        |> setNodeName "textarea"
 
 
 {-| Same as `empty` but scales in a fixed aspect ratio.
@@ -2122,8 +2164,8 @@ render_ view renderer =
             o.toHtml renderer
 
 
-textNode : Renderer_ -> { mixin : Mixin msg, layout : Layout, overlays : Overlays msg, text : String } -> Html msg
-textNode renderer { mixin, layout, overlays, text } =
+textNode : Renderer_ -> { mixin : Mixin msg, layout : Layout, innerGap : Gap, overlays : Overlays msg, text : String } -> Html msg
+textNode renderer { mixin, layout, innerGap, overlays, text } =
     let
         lineHeight =
             Maybe.withDefault renderer.parent.lineHeight layout.lineHeight
@@ -2175,6 +2217,14 @@ textNode renderer { mixin, layout, overlays, text } =
             , flexDirection "row"
             , justifySpace layout.horizontalSpace
             , sizeStyle renderer layout
+            , style "padding" <|
+                String.concat
+                    [ multipleBaseSize innerGap.vertical renderer.baseSize
+                        |> renderBaseSize
+                    , " "
+                    , multipleBaseSize innerGap.horizontal renderer.baseSize
+                        |> renderBaseSize
+                    ]
             , case renderer.parent.direction of
                 Horizontal ->
                     Mixin.batch
@@ -2213,7 +2263,6 @@ textNode renderer { mixin, layout, overlays, text } =
             -- , flexWrap layout.wrap
             , Mixin.unless layout.wrap <|
                 style "white-space" "nowrap"
-            , style "line-height" "0"
             , positionStyle overlays
             , Mixin.class "neat-textNode"
             ]
