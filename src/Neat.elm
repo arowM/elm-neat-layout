@@ -2202,7 +2202,7 @@ textNode renderer { mixin, layout, overlays, text } =
                              else
                                 1
                             )
-                            (if layout.minWidth == MinWidthContain then
+                            (if layout.minWidth == MinWidthContain && not layout.wrap then
                                 0
 
                              else
@@ -2366,6 +2366,7 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                                  else
                                     1
                                 )
+                            , style "width" "0"
                             ]
                 , flexWrap layout.wrap
                 , case renderer.parent.direction of
@@ -2509,6 +2510,7 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
                                  else
                                     1
                                 )
+                            , style "width" "0"
                             ]
                 , flexWrap layout.wrap
                 , case renderer.parent.direction of
@@ -2678,6 +2680,7 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
                              else
                                 1
                             )
+                        , style "width" "0"
                         ]
             , flexWrap layout.wrap
             , style "padding" <|
