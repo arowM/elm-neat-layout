@@ -2240,7 +2240,7 @@ positionStyle overlays =
 
 
 renderLayer : Renderer_ -> ( Layer, View_ msg ) -> Html msg
-renderLayer renderer ( area, view ) =
+renderLayer ({ parent } as renderer) ( area, view ) =
     Mixin.div
         [ enforcedStyle
         , flex
@@ -2256,7 +2256,23 @@ renderLayer renderer ( area, view ) =
             |> Maybe.withDefault "auto"
             |> style "z-index"
         ]
-        [ render_ view renderer
+        [ Mixin.div
+            [ enforcedStyle
+            , flex
+            , flexDirection "row"
+            , flexGrow 1 1
+            , style "height" "100%"
+            , style "width" "100%"
+            ]
+            [ render_ view
+                { renderer
+                    | parent =
+                        { parent
+                            | direction = Horizontal
+                            , space = SpaceBehind
+                        }
+                }
+            ]
         ]
 
 
@@ -2974,9 +2990,15 @@ scrollStyle : Layout -> Mixin msg
 scrollStyle layout =
     Mixin.batch
         [ Mixin.when layout.verticalScroll <|
-            style "overflow-y" "auto"
+            Mixin.batch
+                [ style "overflow-y" "auto"
+                , style "max-height" "100%"
+                ]
         , Mixin.when layout.horizontalScroll <|
-            style "overflow-x" "auto"
+            Mixin.batch
+                [ style "overflow-x" "auto"
+                , style "max-width" "100%"
+                ]
         ]
 
 
