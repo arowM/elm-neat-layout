@@ -1030,6 +1030,8 @@ It is useful for displaying images in a fixed aspect ratio by combinating with C
   - wrap: disabled
   - vertical space: behind
   - horizontal space: behind
+  - vertical scroll: disabled (unchangeable)
+  - horizontal scroll: disabled (unchangeable)
 
 The [box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing) of this view is enforced to be `content-box`.
 Also, this view ignores the height specification.
@@ -1746,8 +1748,8 @@ setVerticalSpaceBetween =
   - wrap: disabled
   - vertical space: behind
   - horizontal space: behind
-  - vertical overflow: disabled
-  - horizontal overflow: disabled
+  - vertical scroll: disabled
+  - horizontal scroll: disabled
 
 -}
 row : List (View gap msg) -> View gap msg
@@ -1856,8 +1858,8 @@ row_ head =
   - wrap: disabled
   - vertical space: behind
   - horizontal space: behind
-  - vertical overflow: disabled
-  - horizontal overflow: disabled
+  - vertical scroll: disabled
+  - horizontal scroll: disabled
 
 -}
 column : List (View p msg) -> View p msg
@@ -2082,8 +2084,8 @@ This is the only way to reset view gaps.
   - wrap: disabled
   - vertical space: behind
   - horizontal space: behind
-  - vertical overflow: disabled
-  - horizontal overflow: disabled
+  - vertical scroll: disabled
+  - horizontal scroll: disabled
 
 -}
 setBoundary : View g msg -> View NoGap msg
@@ -2270,29 +2272,19 @@ textNode renderer { mixin, layout, innerGap, overlays, text } =
                              else
                                 1
                             )
-                            (if layout.minHeight == MinHeightContain then
-                                0
-
-                             else
-                                1
-                            )
+                            1
                         ]
 
                 Vertical ->
                     Mixin.batch
                         [ flexGrow
                             (if layout.maxWidth == MaxWidthFit then
-                                0
+                                1
 
                              else
                                 1
                             )
-                            (if layout.minWidth == MinWidthContain && not layout.wrap then
-                                0
-
-                             else
-                                1
-                            )
+                            1
                         ]
 
             -- , flexWrap layout.wrap
@@ -2440,7 +2432,7 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                                  else
                                     1
                                 )
-                                (if layout.minHeight == MinHeightContain then
+                                (if layout.minHeight == MinHeightContain && not layout.verticalScroll then
                                     0
 
                                  else
@@ -2457,13 +2449,7 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                                  else
                                     1
                                 )
-                                (if layout.minWidth == MinWidthContain then
-                                    0
-
-                                 else
-                                    1
-                                )
-                            , style "width" "0"
+                                1
                             ]
                 , flexWrap layout.wrap
                 , case renderer.parent.direction of
@@ -2585,12 +2571,7 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
                                  else
                                     1
                                 )
-                                (if layout.minHeight == MinHeightContain then
-                                    0
-
-                                 else
-                                    1
-                                )
+                                1
                             ]
 
                     Vertical ->
@@ -2602,13 +2583,12 @@ columnNode renderer { childGap, mixin, layout, children, overlays } =
                                  else
                                     1
                                 )
-                                (if layout.minWidth == MinWidthContain then
+                                (if layout.minWidth == MinWidthContain && not layout.horizontalScroll then
                                     0
 
                                  else
                                     1
                                 )
-                            , style "width" "0"
                             ]
                 , flexWrap layout.wrap
                 , case renderer.parent.direction of
@@ -2756,7 +2736,7 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
                              else
                                 1
                             )
-                            (if layout.minHeight == MinHeightContain then
+                            (if layout.minHeight == MinHeightContain && not layout.verticalScroll then
                                 0
 
                              else
@@ -2773,13 +2753,7 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
                              else
                                 1
                             )
-                            (if layout.minWidth == MinWidthContain then
-                                0
-
-                             else
-                                1
-                            )
-                        , style "width" "0"
+                            1
                         ]
             , flexWrap layout.wrap
             , style "padding" <|
@@ -2828,7 +2802,6 @@ scalableNode renderer ({ mixin, overlays, rate } as o) =
         , flex
         , style "padding" <|
             gapValue outerGap renderer.baseSize
-        , scrollStyle layout
         , justifySpace renderer.parent.space
         , case renderer.parent.direction of
             Horizontal ->
@@ -3076,12 +3049,10 @@ scrollStyle layout =
         [ Mixin.when layout.verticalScroll <|
             Mixin.batch
                 [ style "overflow-y" "auto"
-                , style "max-height" "100%"
                 ]
         , Mixin.when layout.horizontalScroll <|
             Mixin.batch
                 [ style "overflow-x" "auto"
-                , style "max-width" "100%"
                 ]
         ]
 
