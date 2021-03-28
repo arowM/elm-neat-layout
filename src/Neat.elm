@@ -921,7 +921,7 @@ The default sizes are as follows:
   - min-width: _contain_
   - max-height: _fit_
   - min-height: _contain_
-  - wrap: disabled
+  - wrap: enabled
   - vertical space: behind
   - horizontal space: behind
 
@@ -943,6 +943,7 @@ textBlock str =
         , text = str
         }
         |> View
+        |> enableWrap
 
 
 {-| Generates no HTML nodes.
