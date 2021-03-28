@@ -76,6 +76,8 @@ module Neat exposing
     , setPriority
     , when
     , unless
+    , applyWhen
+    , applyUnless
     , IsGap(..)
     , Gap
     , setNodeName
@@ -274,6 +276,8 @@ This may seem inconvenient, but it prevents you to build unmaintainable broken v
 
 @docs when
 @docs unless
+@docs applyWhen
+@docs applyUnless
 
 
 # Custom gaps
@@ -1063,6 +1067,24 @@ when p v =
 unless : Bool -> View gap msg -> View gap msg
 unless p =
     when <| not p
+
+
+{-| Apply a modifier only when a condition is met.
+-}
+applyWhen : Bool -> (View gap msg -> View gap msg) -> View gap msg -> View gap msg
+applyWhen p f =
+    if p then
+        f
+
+    else
+        identity
+
+
+{-| Apply a modifier only unless a condition is met.
+-}
+applyUnless : Bool -> (View gap msg -> View gap msg) -> View gap msg -> View gap msg
+applyUnless p =
+    applyWhen (not p)
 
 
 
