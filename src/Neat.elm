@@ -17,6 +17,7 @@ module Neat exposing
     , none
     , scalableBlock
     , textarea
+    , input
     , setMixin
     , setMixins
     , setAttribute
@@ -76,8 +77,10 @@ module Neat exposing
     , setPriority
     , when
     , unless
+    , withMaybe
     , applyWhen
     , applyUnless
+    , applyWithMaybe
     , IsGap(..)
     , Gap
     , setNodeName
@@ -133,6 +136,7 @@ module Neat exposing
 # Special constructors
 
 @docs textarea
+@docs input
 
 
 # Attributes
@@ -276,8 +280,10 @@ This may seem inconvenient, but it prevents you to build unmaintainable broken v
 
 @docs when
 @docs unless
+@docs withMaybe
 @docs applyWhen
 @docs applyUnless
+@docs applyWithMaybe
 
 
 # Custom gaps
@@ -1018,6 +1024,36 @@ textarea { innerGap } =
         |> setNodeName "textarea"
 
 
+{-| Generates an input.
+
+The default sizes are as follows:
+
+  - max-width: _infinite_
+  - min-width: _contain_
+  - max-height: _infinite_
+  - min-height: _contain_
+  - wrap: disabled
+  - vertical space: behind
+  - horizontal space: behind
+
+-}
+input : { innerGap : IsGap g } -> View NoGap a
+input { innerGap } =
+    TextNode
+        { mixin = Mixin.none
+        , layout = defaultLayout
+        , innerGap =
+            innerGap
+                |> (\(IsGap g) -> g)
+        , overlays = []
+        , text = ""
+        }
+        |> View
+        |> setMaxWidthInfinite
+        |> setMaxHeightInfinite
+        |> setNodeName "input"
+
+
 {-| Same as `empty` but scales in a fixed aspect ratio.
 Take `(height) / (width)` value as an argument.
 
@@ -1071,6 +1107,18 @@ unless p =
     when <| not p
 
 
+{-| Insert a view only if the given value is `Just`.
+-}
+withMaybe : Maybe a -> (a -> View gap msg) -> View gap msg
+withMaybe ma f =
+    case ma of
+        Just a ->
+            f a
+
+        Nothing ->
+            none
+
+
 {-| Apply a modifier only when a condition is met.
 -}
 applyWhen : Bool -> (View gap msg -> View gap msg) -> View gap msg -> View gap msg
@@ -1082,11 +1130,23 @@ applyWhen p f =
         identity
 
 
-{-| Apply a modifier only unless a condition is met.
+{-| Apply a modifier unless a condition is met.
 -}
 applyUnless : Bool -> (View gap msg -> View gap msg) -> View gap msg -> View gap msg
 applyUnless p =
     applyWhen (not p)
+
+
+{-| Apply a modifier only if the given value is `Just`.
+-}
+applyWithMaybe : Maybe a -> (a -> View gap msg -> View gap msg) -> View gap msg -> View gap msg
+applyWithMaybe ma f =
+    case ma of
+        Just a ->
+            f a
+
+        Nothing ->
+            identity
 
 
 
