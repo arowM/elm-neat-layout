@@ -18,6 +18,8 @@ module Neat exposing
     , scalableBlock
     , textarea
     , input
+    , select
+    , Options
     , setMixin
     , setMixins
     , setAttribute
@@ -137,6 +139,8 @@ module Neat exposing
 
 @docs textarea
 @docs input
+@docs select
+@docs Options
 
 
 # Attributes
@@ -361,6 +365,12 @@ type View_ msg
         , overlays : Overlays msg
         , text : String
         }
+    | OptionsNode
+        { mixin : Mixin msg
+        , layout : Layout
+        , innerGap : Gap
+        , options : Options_ msg
+        }
     | Scalable
         { mixin : Mixin msg
         , layout : Layout
@@ -424,6 +434,14 @@ map_ f view =
                 , innerGap = o.innerGap
                 , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
                 , text = o.text
+                }
+
+        OptionsNode o ->
+            OptionsNode
+                { mixin = Mixin.map f o.mixin
+                , layout = o.layout
+                , innerGap = o.innerGap
+                , options = List.map (Html.map f) o.options
                 }
 
         Scalable o ->
@@ -1054,6 +1072,115 @@ input { innerGap } =
         |> setNodeName "input"
 
 
+{-| Generates an select.
+
+The default sizes are as follows:
+
+  - max-width: _infinite_
+  - min-width: _contain_
+  - max-height: _infinite_
+  - min-height: _contain_
+  - wrap: disabled (unchangeable)
+  - vertical space: behind
+  - horizontal space: behind
+
+All the layers put to this view are ignored.
+
+-}
+select : { innerGap : IsGap g } -> Options v -> View NoGap a
+select { innerGap } options =
+    OptionsNode
+        { mixin = Mixin.none
+        , layout = defaultLayout
+        , innerGap =
+            innerGap
+                |> (\(IsGap g) -> g)
+        , options =
+            List.map
+                (\v ->
+                    Html.option
+                        [ Attributes.disabled (options.isDisabled v)
+                        , Attributes.selected (options.isSelected v)
+                        , Attributes.value (options.toValue v)
+                        ]
+                        [ Html.text <| options.toLabel v
+                        ]
+                )
+                options.options
+        }
+        |> View
+        |> setNodeName "select"
+
+
+{-| Setting about options for select tag.
+
+  - options: List of values to select.
+  - toValue: Return the `value` attribute for each option tag with the given value.
+  - toLabel: Return the text node for the option tag with the given value.
+  - isSelected: Return if the option tag with the given value has `selected` attribute.
+      - It means the option is **appearantly** selected.
+      - cf., <https://developer.mozilla.org/docs/Web/HTML/Element/option#attr-selected>
+  - isDisabled: Return if the option tag with the given value has `selected` attribute.
+
+e.g.,
+
+    Neat.select
+        { innerGap = Gap.form
+        }
+        { options = Nothing :: List.map Just colors
+        , toValue = Maybe.map colorToValue >> Maybe.withDefault ""
+        , toLabel = Maybe.map colorToLabel >> Maybe.withDefault "-- Select one --"
+        , isDisabled = \mc ->
+            mc == Nothing && model.disableSelectEmptyColor
+        , isSelected = \mc ->
+            Maybe.map colorToValue mc == Just model.selectColor
+        }
+        |> Neat.setAttribute (Events.onInput InputSelectColor)
+
+    type Color
+        = Red
+        | Blue
+        | Yellow
+        | Green
+
+    colors : List Color
+    colors =
+        [ Red
+        , Blue
+        , Yellow
+        , Green
+        ]
+
+    colorToValue : Color -> String
+    colorToValue c =
+        case c of
+            Red -> "Red"
+            Blue -> "Blue"
+            Yellow -> "Yellow"
+            Green -> "Green"
+
+    colorToLabel : Color -> String
+    colorToLabel c =
+        case c of
+            Red -> "red"
+            Blue -> "blue"
+            Yellow -> "yellow"
+            Green -> "green"
+
+-}
+type alias Options a =
+    { options : List a
+    , toValue : a -> String
+    , toLabel : a -> String
+    , isSelected : a -> Bool
+    , isDisabled : a -> Bool
+    }
+
+
+type alias Options_ msg =
+    List (Html msg)
+
+
 {-| Same as `empty` but scales in a fixed aspect ratio.
 Take `(height) / (width)` value as an argument.
 
@@ -1201,6 +1328,9 @@ setMixin_ new view =
 
         TextNode o ->
             TextNode { o | mixin = Mixin.batch [ o.mixin, new ] }
+
+        OptionsNode o ->
+            OptionsNode { o | mixin = Mixin.batch [ o.mixin, new ] }
 
         Scalable o ->
             Scalable { o | mixin = Mixin.batch [ o.mixin, new ] }
@@ -1597,6 +1727,9 @@ modifyLayout_ f view =
         TextNode o ->
             TextNode { o | layout = f o.layout }
 
+        OptionsNode o ->
+            OptionsNode { o | layout = f o.layout }
+
         Scalable o ->
             Scalable { o | layout = f o.layout }
 
@@ -1894,6 +2027,9 @@ row_ head =
         TextNode { layout } ->
             helper <| Maybe.withDefault emptyGap layout.expandTo
 
+        OptionsNode { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
         Scalable { layout } ->
             helper <| Maybe.withDefault emptyGap layout.expandTo
 
@@ -2004,6 +2140,9 @@ column_ head =
         TextNode { layout } ->
             helper <| Maybe.withDefault emptyGap layout.expandTo
 
+        OptionsNode { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
         Scalable { layout } ->
             helper <| Maybe.withDefault emptyGap layout.expandTo
 
@@ -2054,6 +2193,9 @@ modifyOverlays_ f view =
 
         TextNode o ->
             TextNode { o | overlays = f o.overlays }
+
+        OptionsNode o ->
+            OptionsNode o
 
         Scalable o ->
             Scalable { o | overlays = f o.overlays }
@@ -2175,6 +2317,9 @@ setBoundary_ view =
         TextNode { layout } ->
             helper <| Maybe.withDefault emptyGap layout.expandTo
 
+        OptionsNode { layout } ->
+            helper <| Maybe.withDefault emptyGap layout.expandTo
+
         Scalable { layout } ->
             helper <| Maybe.withDefault emptyGap layout.expandTo
 
@@ -2246,6 +2391,9 @@ render_ view renderer =
 
         TextNode o ->
             textNode renderer o
+
+        OptionsNode o ->
+            optionsNode renderer o
 
         Scalable o ->
             scalableNode renderer o
@@ -2839,6 +2987,106 @@ boundaryNode renderer { childGap, mixin, layout, child, overlays } =
                     )
                     (List.reverse overlays)
             )
+        ]
+
+
+optionsNode : Renderer_ -> { mixin : Mixin msg, layout : Layout, options : Options_ msg, innerGap : Gap } -> Html msg
+optionsNode renderer ({ mixin, options, innerGap } as o) =
+    let
+        outerGap =
+            Maybe.withDefault emptyGap layout.expandTo
+
+        layout_ =
+            o.layout
+
+        layout =
+            { layout_
+                | minHeight = MinHeightContain
+                , maxHeight = MaxHeightFit
+            }
+    in
+    Mixin.div
+        [ enforcedStyle
+        , flex
+        , style "padding" <|
+            gapValue outerGap renderer.baseSize
+        , justifySpace renderer.parent.space
+        , case renderer.parent.direction of
+            Horizontal ->
+                Mixin.batch
+                    [ flexGrow
+                        (if layout.maxWidth == MaxWidthFit then
+                            0
+
+                         else
+                            1
+                        )
+                        1
+                    , flexDirection "column"
+                    , maxWidthStyle outerGap.horizontal renderer.baseSize layout.maxWidth
+                    ]
+
+            Vertical ->
+                Mixin.batch
+                    [ flexGrow 0 1
+                    , flexDirection "row"
+                    ]
+        ]
+        [ Mixin.lift (Html.node layout.nodeName)
+            [ mixin
+            , enforcedStyle
+            , priorityStyle layout.priority
+            , Mixin.when layout.enforcePointerEvent
+                (style "pointer-events" "auto")
+            , flex
+            , flexDirection "row"
+            , justifySpace layout.horizontalSpace
+            , sizeStyle renderer layout
+            , style "padding" <|
+                String.concat
+                    [ multipleBaseSize innerGap.vertical renderer.baseSize
+                        |> renderBaseSize
+                    , " "
+                    , multipleBaseSize innerGap.horizontal renderer.baseSize
+                        |> renderBaseSize
+                    ]
+            , case renderer.parent.direction of
+                Horizontal ->
+                    Mixin.batch
+                        [ flexGrow
+                            (if layout.maxHeight == MaxHeightFit then
+                                0
+
+                             else
+                                1
+                            )
+                            (if layout.minHeight == MinHeightContain then
+                                0
+
+                             else
+                                1
+                            )
+                        ]
+
+                Vertical ->
+                    Mixin.batch
+                        [ flexGrow
+                            (if layout.maxWidth == MaxWidthFit then
+                                0
+
+                             else
+                                1
+                            )
+                            (if layout.minWidth == MinWidthContain then
+                                0
+
+                             else
+                                1
+                            )
+                        ]
+            , Mixin.class "neat-options"
+            ]
+            options
         ]
 
 
