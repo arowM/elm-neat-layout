@@ -396,7 +396,25 @@ type View_ msg
 
 
 type alias Overlays msg =
-    List ( Layer, View_ msg )
+    List (Overlay msg)
+
+
+type alias Overlay msg =
+    { name : String
+    , area : Layer
+    , view : View_ msg
+    }
+
+
+mapOverlays : (a -> b) -> Overlays a -> Overlays b
+mapOverlays f =
+    List.map
+        (\o ->
+            { name = o.name
+            , area = o.area
+            , view = map_ f o.view
+            }
+        )
 
 
 {-| -}
@@ -418,7 +436,7 @@ map_ f view =
                 { childGap = o.childGap
                 , mixin = Mixin.map f o.mixin
                 , layout = o.layout
-                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , overlays = mapOverlays f o.overlays
                 , children = KeyableList.map (map_ f) o.children
                 }
 
@@ -427,7 +445,7 @@ map_ f view =
                 { childGap = o.childGap
                 , mixin = Mixin.map f o.mixin
                 , layout = o.layout
-                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , overlays = mapOverlays f o.overlays
                 , children = KeyableList.map (map_ f) o.children
                 }
 
@@ -436,7 +454,7 @@ map_ f view =
                 { mixin = Mixin.map f o.mixin
                 , layout = o.layout
                 , innerGap = o.innerGap
-                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , overlays = mapOverlays f o.overlays
                 , text = List.map (Text.map f) o.text
                 }
 
@@ -452,7 +470,7 @@ map_ f view =
             Scalable
                 { mixin = Mixin.map f o.mixin
                 , layout = o.layout
-                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , overlays = mapOverlays f o.overlays
                 , rate = o.rate
                 }
 
@@ -464,7 +482,7 @@ map_ f view =
                 { childGap = o.childGap
                 , mixin = Mixin.map f o.mixin
                 , layout = o.layout
-                , overlays = List.map (Tuple.mapSecond (map_ f)) o.overlays
+                , overlays = mapOverlays f o.overlays
                 , child = map_ f o.child
                 }
 
@@ -2205,15 +2223,20 @@ column_ head =
 This layer is never the target of pointer events; however
 pointer events may target its descendant views if those views are converted into `Virtual msg` with `toLayered` function.
 -}
-putLayer : ( Layer, View NoGap (Layered msg) ) -> View NoGap msg -> View NoGap msg
-putLayer ( area, overlay_ ) =
+putLayer : String -> ( Layer, View NoGap (Layered msg) ) -> View NoGap msg -> View NoGap msg
+putLayer name ( area, overlay_ ) =
     case map (\(Layered a) -> a) overlay_ of
         View None ->
             identity
 
         View overlay ->
             modifyOverlays <|
-                \overlays -> ( area, overlay ) :: overlays
+                \overlays ->
+                    { name = name
+                    , area = area
+                    , view = overlay
+                    }
+                        :: overlays
 
 
 modifyOverlays : (Overlays msg -> Overlays msg) -> View gap msg -> View gap msg
@@ -2562,8 +2585,8 @@ positionStyle overlays =
         style "position" "relative"
 
 
-renderLayer : Renderer_ -> ( Layer, View_ msg ) -> Html msg
-renderLayer ({ parent } as renderer) ( area, view ) =
+renderLayer : Renderer_ -> Overlay msg -> Html msg
+renderLayer ({ parent } as renderer) { area, view } =
     Mixin.div
         [ enforcedStyle
         , flex
@@ -2722,15 +2745,33 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                 , positionStyle overlays
                 ]
 
+        overlayChildren : List ( String, Html msg )
         overlayChildren =
             List.indexedMap
-                (\k ->
-                    renderLayer
+                (\k o ->
+                    ( o.name
+                    , renderLayer
                         { renderer
                             | id = String.fromInt k :: "overlay" :: renderer.id
                         }
+                        o
+                    )
                 )
                 (List.reverse overlays)
+
+        prefix =
+            overlayChildren
+                |> List.map
+                    (\( c, _ ) ->
+                        ( String.length c, c )
+                    )
+                |> List.maximum
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault "prefix"
+
+        setName : Int -> a -> ( String, a )
+        setName n a =
+            ( prefix ++ String.fromInt n, a )
     in
     Mixin.div
         [ enforcedStyle
@@ -2782,20 +2823,14 @@ rowNode renderer { childGap, mixin, layout, children, overlays } =
                 )
             |> KeyableList.unwrap
                 (\cs ->
-                    Html.node layout.nodeName
+                    Keyed.node layout.nodeName
                         attrs
-                        (overlayChildren ++ cs)
+                        (overlayChildren ++ List.indexedMap setName cs)
                 )
                 (\cs ->
                     Keyed.node layout.nodeName
                         attrs
-                        (List.indexedMap
-                            (\n c ->
-                                ( "I'm too fool to use this as a key. This is for neat-layout. " ++ String.fromInt n, c )
-                            )
-                            overlayChildren
-                            ++ cs
-                        )
+                        (overlayChildren ++ cs)
                 )
         ]
 
