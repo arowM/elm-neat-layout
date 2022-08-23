@@ -1,5 +1,7 @@
 # elm-neat-layout
 
+[![test](https://github.com/arowM/elm-neat-layout/actions/workflows/test.yaml/badge.svg)](https://github.com/arowM/elm-neat-layout/actions/workflows/test.yaml)
+
 Gap sensitive layout framework.
 
 ## Why neat layout?
@@ -14,8 +16,4 @@ Enpower you to realize no-hack layouts with neat gaps.
 
 ## Sample applications
 
-Check `sample` directory of this repository.
-
-Resulting apps:
-
-* [catalog](https://arowm.github.io/elm-neat-layout/catalog/)
+See `sample` directory.

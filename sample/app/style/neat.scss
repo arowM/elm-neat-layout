@@ -1,0 +1,383 @@
+.elmNeatLayout {
+  $prefix: &;
+  $top: #{$prefix}--top;
+  $boundary: #{$prefix}--boundary;
+  $boundaryContent: #{$prefix}--boundaryContent;
+  $row: #{$prefix}--row;
+  $rowChild: #{$prefix}--rowChild;
+  $column: #{$prefix}--column;
+  $columnChild: #{$prefix}--columnChild;
+  $heightFlex: #{$prefix}--heightFlex;
+  $heightMinSize: #{$prefix}--heightMinSize;
+  $widthFlex: #{$prefix}--widthFlex;
+  $widthMinSize: #{$prefix}--widthMinSize;
+
+  &,
+  &::before,
+  &::after {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  &--top {
+    display: block;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+  }
+
+  &--overlay {
+    display: block;
+    position: absolute;
+    pointer-events: none;
+    top: var(--overlay-top);
+    bottom: var(--overlay-bottom);
+    left: var(--overlay-left);
+    right: var(--overlay-right);
+    z-index: var(--overlay-priority);
+    overflow: hidden;
+  }
+
+  &--boundary {
+    overflow: hidden;
+
+    &-hasOverlays:not(#{$top}) {
+      position: relative;
+    }
+
+    &-enforcePointerEvent {
+      pointer-events: auto;
+    }
+
+    & > #{$boundary}_scroller {
+      height: 100%;
+      width: 100%;
+
+      &-verticalScroll > #{$boundaryContent} {
+        height: auto;
+        min-height: 100%;
+      }
+
+      &-horizontalScroll > #{$boundaryContent} {
+        width: auto;
+        min-width: 100%;
+      }
+    }
+
+    &-view-hasContent,
+    & > &_scroller {
+      padding: var(--inner-gap-y) var(--inner-gap-x);
+    }
+
+    &-text {
+      overflow: visible;
+    }
+
+    &-text > &_textMargin {
+      height: 100%;
+      width: 100%;
+      margin: calc(var(--outer-gap-y) / -2) 0;
+
+      & > #{$boundary}_text {
+        display: inline;
+        line-height: calc(1em + var(--outer-gap-y));
+      }
+    }
+
+    &-horizontalOverflow {
+      overflow-x: auto;
+
+      & > #{$boundary}_scroller {
+        overflow-x: auto;
+      }
+    }
+
+    &-verticalOverflow {
+      overflow-y: auto;
+
+      & > #{$boundary}_scroller {
+        overflow-y: auto;
+      }
+    }
+
+    &-hasMinHeight {
+      min-height: var(--min-height);
+    }
+
+    &-hasMaxHeight:not(#{$boundary}-verticalOverflow) {
+      max-height: var(--max-height);
+    }
+
+    &-hasMinWidth {
+      min-width: var(--min-width);
+    }
+
+    &-hasMaxWidth:not(#{$boundary}-horizontalOverflow) {
+      max-width: var(--max-width);
+    }
+
+    &#{$rowChild} {
+      flex-shrink: 1;
+
+      &:not(#{$boundary}-horizontalOverflow) {
+        width: auto;
+      }
+
+      &#{$heightFlex}:not(#{$boundary}-verticalOverflow) {
+        height: 100%;
+
+        &#{$rowChild}-alignStretch {
+          height: auto;
+        }
+      }
+
+      &#{$heightMinSize} {
+        height: auto;
+      }
+
+      &#{$boundary}-verticalOverflow {
+        &#{$heightFlex} {
+          height: 100%;
+
+          &#{$rowChild}-alignStretch {
+            height: auto;
+          }
+
+          &#{$boundary}-hasMaxHeight {
+            max-height: var(--max-height);
+          }
+        }
+
+        &#{$heightMinSize} {
+          height: auto;
+          max-height: 100%;
+
+          &#{$boundary}-hasMaxHeight {
+            max-height: min(var(--max-height), 100%);
+          }
+        }
+      }
+
+      &#{$boundary}-horizontalOverflow {
+        width: 0;
+        flex-shrink: 1;
+
+        &#{$boundary}-hasMaxWidth {
+          max-width: var(--max-width);
+        }
+      }
+    }
+
+    &#{$columnChild} {
+      flex-shrink: 0;
+
+      &:not(#{$boundary}-verticalOverflow) {
+        height: auto;
+      }
+
+      &#{$widthFlex}:not(#{$boundary}-horizontalOverflow) {
+        width: 100%;
+
+        &#{$columnChild}-alignStretch {
+          width: auto;
+        }
+      }
+      &#{$widthMinSize} {
+        width: auto;
+      }
+
+      &#{$boundary}-horizontalOverflow {
+        &#{$widthFlex} {
+          width: 100%;
+
+          &#{$columnChild}-alignStretch {
+            width: auto;
+          }
+          &#{$boundary}-hasMaxWidth {
+            max-width: var(--max-width);
+          }
+        }
+
+        &#{$widthMinSize} {
+          width: auto;
+          max-width: 100%;
+
+          &#{$boundary}-hasMaxWidth {
+            max-width: min(var(--max-width), 100%);
+          }
+        }
+      }
+
+      &#{$boundary}-verticalOverflow {
+        flex-shrink: 1;
+        height: 0;
+
+        &#{$boundary}-hasMaxHeight {
+          max-height: var(--max-height);
+        }
+      }
+    }
+
+    &#{$boundaryContent} {
+      &#{$heightFlex} {
+        height: 100%;
+      }
+      &#{$heightMinSize} {
+        height: auto;
+      }
+      &#{$widthFlex} {
+        width: 100%;
+      }
+      &#{$widthMinSize} {
+        width: auto;
+      }
+
+      &#{$boundary}-verticalOverflow {
+        height: auto;
+        max-height: 100%;
+
+        &#{$boundary}-hasMaxHeight {
+          max-height: min(var(--max-height), 100%);
+        }
+      }
+
+      &#{$boundary}-horizontalOverflow {
+        width: auto;
+        max-width: 100%;
+
+        &#{$boundary}-hasMaxWidth {
+          max-width: min(var(--max-width), 100%);
+        }
+      }
+    }
+  }
+
+  &--row {
+    flex-flow: row nowrap;
+    display: flex;
+    gap: var(--inner-gap-y) var(--inner-gap-x);
+
+    &#{$row}-wrap {
+      flex-wrap: wrap;
+    }
+
+    &#{$row}-justifyStart {
+      justify-content: flex-start;
+    }
+
+    &#{$row}-justifyCenter {
+      justify-content: center;
+    }
+
+    &#{$row}-justifyEnd {
+      justify-content: flex-end;
+    }
+
+    & > #{$rowChild} {
+      flex-grow: 0;
+
+      &#{$rowChild}-grow {
+        flex-grow: 1;
+      }
+
+      &#{$rowChild}-alignStart {
+        align-self: flex-start;
+      }
+
+      &#{$rowChild}-alignCenter {
+        align-self: center;
+      }
+
+      &#{$rowChild}-alignEnd {
+        align-self: flex-end;
+      }
+
+      &#{$rowChild}-alignStretch {
+        align-self: stretch;
+      }
+    }
+
+    &#{$rowChild} {
+      width: auto;
+      height: auto;
+      flex-shrink: 1;
+    }
+
+    &#{$columnChild} {
+      height: auto;
+      width: 100%;
+      flex-shrink: 0;
+
+      &#{$columnChild}-alignStretch {
+        width: auto;
+      }
+    }
+
+    &#{$boundaryContent} {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  &--column {
+    flex-flow: column nowrap;
+    display: flex;
+    gap: var(--inner-gap-y) var(--inner-gap-x);
+
+    &#{$column}-justifyStart {
+      justify-content: flex-start;
+    }
+    &#{$column}-justifyCenter {
+      justify-content: center;
+    }
+    &#{$column}-justifyEnd {
+      justify-content: flex-end;
+    }
+
+    & > #{$columnChild} {
+      flex-grow: 0;
+
+      &#{$columnChild}-grow {
+        flex-grow: 1;
+      }
+
+      &#{$columnChild}-alignStart {
+        align-self: flex-start;
+      }
+      &#{$columnChild}-alignCenter {
+        align-self: center;
+      }
+      &#{$columnChild}-alignEnd {
+        align-self: flex-end;
+      }
+      &#{$columnChild}-alignStretch {
+        align-self: stretch;
+      }
+    }
+
+    &#{$rowChild} {
+      width: auto;
+      flex-shrink: 1;
+      height: 100%;
+
+      &#{$rowChild}-alignStretch {
+        height: auto;
+      }
+    }
+
+    &#{$columnChild} {
+      height: auto;
+      width: auto;
+      flex-shrink: 0;
+    }
+
+    &#{$boundaryContent} {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}

@@ -1,0 +1,30 @@
+name: Frontend test
+on:
+  - push
+  - pull_request
+jobs:
+  Frontend-Test:
+    name: Frontend test
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.title, '[skip ci]') }}
+    env:
+        FRONTEND_ROOT_DIRECTORY: ./frontend
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+      - name: Hack on actions/setup-node
+        run: cp ${{ env.FRONTEND_ROOT_DIRECTORY }}/package-lock.json .
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'npm'
+      - name: Install npm
+        run: npm install
+        working-directory: ${{ env.FRONTEND_ROOT_DIRECTORY }}
+      - name: Run test on worker app
+        run: npm test
+        working-directory: ${{ env.FRONTEND_ROOT_DIRECTORY }}/worker
+      - name: Run test on supporter app
+        run: npm test
+        working-directory: ${{ env.FRONTEND_ROOT_DIRECTORY }}/supporter

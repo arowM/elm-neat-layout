@@ -1,0 +1,24 @@
+@use "variables" as *;
+
+.red {
+  border: solid 1px red;
+  background-color: #fee;
+}
+
+.blue {
+  border: solid 1px blue;
+  background-color: #eef;
+}
+
+.header {
+  background: #333;
+
+  &_hamburger {
+    background: #999;
+    color: #333;
+  }
+}
+
+.footer {
+  background: #033;
+}
