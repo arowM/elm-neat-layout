@@ -21,8 +21,8 @@
   },
   "scripts": {
     "doc": "elm-doc-preview -p 8091",
-    "start": "cd sample && parcel serve ./app/index.html --public-url /elm-app-template -p 8092",
-    "build": "rimraf docs/ && cd sample && parcel build ./app/index.html --no-source-maps --dist-dir ../docs/ --public-url /elm-app-template",
+    "start": "cd sample && parcel serve ./app/index.html --public-url /elm-neat-layout -p 8092",
+    "build": "rimraf docs/ && cd sample && parcel build ./app/index.html --no-source-maps --dist-dir ../docs/ --public-url /elm-neat-layout",
     "format": "stylelint --fix ./sample/app/style/ && elm-format ./sample/app src",
     "review": "elm-review --fix src ./sample/app",
     "test": "stylelint ./sample/app/style/ && elm-review src ./sample/app && elm-format --validate src/ ./sample/app/ && cd sample && elm make --output=/dev/null ./app/Main.elm && cd ../ && elm-doc-preview --output /dev/null # && elm-test && elm-verify-examples -r"
