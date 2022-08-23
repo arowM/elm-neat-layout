@@ -16,6 +16,12 @@ Enpower you to realize no-hack layouts with neat gaps.
 * No unintentional overflow of contents
 * Flexible layout building with fewer APIs
 
+# Why not support styles?
+
+The elm-neat-layout is a framework for building *layouts*, so it does not provide a way to specify *styles* such as background colors, etc. Just use CSS for that purpose!
+
+Wouldn't it be better to use a language especially designed for styles? It would be the similar reason you chose Elm, a language especially designed for TEA. CSS is a good language for styles, though not adequate for layouts.
+
 ## Sample applications
 
 See `sample` directory.
