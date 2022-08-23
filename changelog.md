@@ -1,5 +1,9 @@
+# 3.0.2
+
+* Enhance README
+
 # 3.0.1
 
-* Document enhancement
+* Add logo image
 
 # 3.0.0
