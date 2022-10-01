@@ -141,6 +141,30 @@ body _ =
                     )
                 |> Boundary.setGap Gap.body
                 |> View.grownCenterItem "sampleNestedBox"
+            , View.row
+                View.defaultRow
+                [ Boundary.textBlock "foo000000\nbar\nbar\nbar\nfoo\nbar\nbar\nbar\n"
+                    |> Boundary.setMaxHeightInEm 8
+                    |> Boundary.enableVerticalScroll
+                    |> Boundary.setGap Gap.body
+                    |> View.grownRowItem "content"
+                ]
+                |> View.setBoundary
+                |> Boundary.setMixin (Mixin.class "scrollableText_content")
+                |> Boundary.setGap Gap.body
+                |> View.leftItem "content1"
+            , View.row
+                View.defaultRow
+                [ Boundary.textBlock "foo000000\nbar\nbar\nbar"
+                    |> Boundary.setMaxHeightInEm 8
+                    |> Boundary.enableVerticalScroll
+                    |> Boundary.setGap Gap.body
+                    |> View.grownRowItem "content"
+                ]
+                |> View.setBoundary
+                |> Boundary.setMixin (Mixin.class "scrollableText_content")
+                |> Boundary.setGap Gap.body
+                |> View.columnItem "content2"
             ]
             |> View.setBoundary
             |> Boundary.setMinHeightInEm 10

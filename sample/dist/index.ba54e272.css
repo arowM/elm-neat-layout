@@ -1,22 +1,20 @@
-@use "variables" as *;
-
 .red {
-  border: solid 1px red;
   background-color: #fee;
+  border: 1px solid red;
 }
 
 .blue {
-  border: solid 1px blue;
   background-color: #eef;
+  border: 1px solid #00f;
 }
 
 .header {
   background: #333;
+}
 
-  &_hamburger {
-    background: #999;
-    color: #333;
-  }
+.header_hamburger {
+  color: #333;
+  background: #999;
 }
 
 .footer {
@@ -26,5 +24,7 @@
 .scrollableText_content {
   white-space: pre;
   background-color: #333;
-  border-radius: 0.35em;
+  border-radius: .35em;
 }
+
+/*# sourceMappingURL=index.ba54e272.css.map */

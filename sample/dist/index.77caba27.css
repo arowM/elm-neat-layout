@@ -1,0 +1,368 @@
+.elmNeatLayout, .elmNeatLayout:before, .elmNeatLayout:after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.elmNeatLayout--top {
+  display: block;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.elmNeatLayout--overlay {
+  pointer-events: none;
+  top: var(--overlay-top);
+  bottom: var(--overlay-bottom);
+  left: var(--overlay-left);
+  right: var(--overlay-right);
+  z-index: var(--overlay-priority);
+  display: block;
+  position: absolute;
+  overflow: hidden;
+}
+
+.elmNeatLayout--boundary {
+  overflow: hidden;
+}
+
+.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top) {
+  position: relative;
+}
+
+.elmNeatLayout--boundary-enforcePointerEvent {
+  pointer-events: auto;
+}
+
+.elmNeatLayout--boundary > .elmNeatLayout--boundary_scroller {
+  height: 100%;
+  width: 100%;
+}
+
+.elmNeatLayout--boundary > .elmNeatLayout--boundary_scroller-verticalScroll > .elmNeatLayout--boundaryContent {
+  height: auto;
+  min-height: 100%;
+}
+
+.elmNeatLayout--boundary > .elmNeatLayout--boundary_scroller-horizontalScroll > .elmNeatLayout--boundaryContent {
+  width: auto;
+  min-width: 100%;
+}
+
+.elmNeatLayout--boundary-view-hasContent, .elmNeatLayout--boundary > .elmNeatLayout--boundary_scroller {
+  padding: var(--inner-gap-y) var(--inner-gap-x);
+}
+
+.elmNeatLayout--boundary-text {
+  overflow: visible;
+}
+
+.elmNeatLayout--boundary-text > .elmNeatLayout--boundary_textMargin {
+  height: auto;
+  width: 100%;
+  overflow-y: hidden;
+}
+
+.elmNeatLayout--boundary-text > .elmNeatLayout--boundary_textMargin:before {
+  width: 0;
+  height: 0;
+  margin-top: calc(var(--outer-gap-y) / -2);
+  content: "";
+  display: block;
+}
+
+.elmNeatLayout--boundary-text > .elmNeatLayout--boundary_textMargin:after {
+  width: 0;
+  height: 0;
+  margin-bottom: calc(var(--outer-gap-y) / -2);
+  content: "";
+  display: block;
+}
+
+.elmNeatLayout--boundary-text > .elmNeatLayout--boundary_textMargin > .elmNeatLayout--boundary_text {
+  line-height: calc(1em + var(--outer-gap-y));
+  display: inline;
+}
+
+.elmNeatLayout--boundary-horizontalOverflow, .elmNeatLayout--boundary-horizontalOverflow > .elmNeatLayout--boundary_scroller {
+  overflow-x: auto;
+}
+
+.elmNeatLayout--boundary-verticalOverflow, .elmNeatLayout--boundary-verticalOverflow > .elmNeatLayout--boundary_scroller {
+  overflow-y: auto;
+}
+
+.elmNeatLayout--boundary-hasMinHeight {
+  min-height: var(--min-height);
+}
+
+.elmNeatLayout--boundary-hasMaxHeight:not(.elmNeatLayout--boundary-verticalOverflow) {
+  max-height: var(--max-height);
+}
+
+.elmNeatLayout--boundary-hasMinWidth {
+  min-width: var(--min-width);
+}
+
+.elmNeatLayout--boundary-hasMaxWidth:not(.elmNeatLayout--boundary-horizontalOverflow) {
+  max-width: var(--max-width);
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild {
+  flex-shrink: 1;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild:not(.elmNeatLayout--boundary-horizontalOverflow) {
+  width: auto;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow) {
+  height: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow).elmNeatLayout--rowChild-alignStretch, .elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize {
+  height: auto;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex {
+  height: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch {
+  height: auto;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--boundary-hasMaxHeight {
+  max-height: var(--max-height);
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize {
+  height: auto;
+  max-height: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize.elmNeatLayout--boundary-hasMaxHeight {
+  max-height: min(var(--max-height), 100%);
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow {
+  width: 0;
+  flex-shrink: 1;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth {
+  max-width: var(--max-width);
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild {
+  flex-shrink: 0;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild:not(.elmNeatLayout--boundary-verticalOverflow) {
+  height: auto;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow) {
+  width: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow).elmNeatLayout--columnChild-alignStretch, .elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize {
+  width: auto;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex {
+  width: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch {
+  width: auto;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--boundary-hasMaxWidth {
+  max-width: var(--max-width);
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize {
+  width: auto;
+  max-width: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize.elmNeatLayout--boundary-hasMaxWidth {
+  max-width: min(var(--max-width), 100%);
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow {
+  height: 0;
+  flex-shrink: 1;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight {
+  max-height: var(--max-height);
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightFlex {
+  height: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightMinSize {
+  height: auto;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthFlex {
+  width: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthMinSize {
+  width: auto;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow {
+  height: auto;
+  max-height: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight {
+  max-height: min(var(--max-height), 100%);
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow {
+  width: auto;
+  max-width: 100%;
+}
+
+.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth {
+  max-width: min(var(--max-width), 100%);
+}
+
+.elmNeatLayout--row {
+  gap: var(--inner-gap-y) var(--inner-gap-x);
+  flex-flow: row;
+  display: flex;
+}
+
+.elmNeatLayout--row.elmNeatLayout--row-wrap {
+  flex-wrap: wrap;
+}
+
+.elmNeatLayout--row.elmNeatLayout--row-justifyStart {
+  justify-content: flex-start;
+}
+
+.elmNeatLayout--row.elmNeatLayout--row-justifyCenter {
+  justify-content: center;
+}
+
+.elmNeatLayout--row.elmNeatLayout--row-justifyEnd {
+  justify-content: flex-end;
+}
+
+.elmNeatLayout--row > .elmNeatLayout--rowChild {
+  flex-grow: 0;
+}
+
+.elmNeatLayout--row > .elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow {
+  flex-grow: 1;
+}
+
+.elmNeatLayout--row > .elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart {
+  align-self: flex-start;
+}
+
+.elmNeatLayout--row > .elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter {
+  align-self: center;
+}
+
+.elmNeatLayout--row > .elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd {
+  align-self: flex-end;
+}
+
+.elmNeatLayout--row > .elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch {
+  align-self: stretch;
+}
+
+.elmNeatLayout--row.elmNeatLayout--rowChild {
+  width: auto;
+  height: auto;
+  flex-shrink: 1;
+}
+
+.elmNeatLayout--row.elmNeatLayout--columnChild {
+  height: auto;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch {
+  width: auto;
+}
+
+.elmNeatLayout--row.elmNeatLayout--boundaryContent {
+  width: 100%;
+  height: 100%;
+}
+
+.elmNeatLayout--column {
+  gap: var(--inner-gap-y) var(--inner-gap-x);
+  flex-flow: column;
+  display: flex;
+}
+
+.elmNeatLayout--column.elmNeatLayout--column-justifyStart {
+  justify-content: flex-start;
+}
+
+.elmNeatLayout--column.elmNeatLayout--column-justifyCenter {
+  justify-content: center;
+}
+
+.elmNeatLayout--column.elmNeatLayout--column-justifyEnd {
+  justify-content: flex-end;
+}
+
+.elmNeatLayout--column > .elmNeatLayout--columnChild {
+  flex-grow: 0;
+}
+
+.elmNeatLayout--column > .elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow {
+  flex-grow: 1;
+}
+
+.elmNeatLayout--column > .elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart {
+  align-self: flex-start;
+}
+
+.elmNeatLayout--column > .elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter {
+  align-self: center;
+}
+
+.elmNeatLayout--column > .elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd {
+  align-self: flex-end;
+}
+
+.elmNeatLayout--column > .elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch {
+  align-self: stretch;
+}
+
+.elmNeatLayout--column.elmNeatLayout--rowChild {
+  width: auto;
+  height: 100%;
+  flex-shrink: 1;
+}
+
+.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch {
+  height: auto;
+}
+
+.elmNeatLayout--column.elmNeatLayout--columnChild {
+  height: auto;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.elmNeatLayout--column.elmNeatLayout--boundaryContent {
+  width: 100%;
+  height: 100%;
+}
+
+/*# sourceMappingURL=index.77caba27.css.map */

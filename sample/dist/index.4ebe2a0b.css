@@ -1,0 +1,42 @@
+*, :before, :after {
+  box-sizing: border-box;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  vertical-align: top;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: normal;
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+  list-style: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  text-rendering: optimizespeed;
+  font-feature-settings: "pkna";
+  font-family: Hiragino Kaku Gothic Pro, ヒラギノ角ゴ Pro W3, Meiryo, メイリオ, Osaka, MS PGothic, arial, helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+code {
+  font-family: Consolas, Courier New, Courier, Monaco, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/*# sourceMappingURL=index.4ebe2a0b.css.map */
