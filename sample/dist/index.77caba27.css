@@ -61,7 +61,6 @@
 .elmNeatLayout--boundary-text > .elmNeatLayout--boundary_textMargin {
   height: auto;
   width: 100%;
-  overflow-y: hidden;
 }
 
 .elmNeatLayout--boundary-text > .elmNeatLayout--boundary_textMargin:before {
@@ -91,6 +90,10 @@
 
 .elmNeatLayout--boundary-verticalOverflow, .elmNeatLayout--boundary-verticalOverflow > .elmNeatLayout--boundary_scroller {
   overflow-y: auto;
+}
+
+.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-text > .elmNeatLayout--boundary_textMargin {
+  overflow-y: hidden;
 }
 
 .elmNeatLayout--boundary-hasMinHeight {

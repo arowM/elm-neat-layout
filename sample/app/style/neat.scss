@@ -80,7 +80,6 @@
     &-text > &_textMargin {
       height: auto;
       width: 100%;
-      overflow-y: hidden;
 
       &::before {
         display: block;
@@ -89,6 +88,7 @@
         margin-top: calc(var(--outer-gap-y) / -2);
         content: "";
       }
+
       &::after {
         display: block;
         width: 0;
@@ -116,6 +116,10 @@
 
       & > #{$boundary}_scroller {
         overflow-y: auto;
+      }
+
+      &#{$boundary}-text > #{$boundary}_textMargin {
+        overflow-y: hidden;
       }
     }
 
