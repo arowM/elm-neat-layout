@@ -13,11 +13,11 @@
     "postcss-flexbugs-fixes": "^5.0.2",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
-    "stylelint": "^14.5.3",
+    "stylelint": "^15.6.0",
     "stylelint-config-prettier": "^9.0.3",
-    "stylelint-config-standard": "^25.0.0",
+    "stylelint-config-standard": "^33.0.0",
     "stylelint-prettier": "^2.0.0",
-    "stylelint-scss": "^4.1.0"
+    "stylelint-scss": "^4.6.0"
   },
   "scripts": {
     "doc": "elm-doc-preview -p 8091",
@@ -33,6 +33,6 @@
     "@elm-tooling/elm-language-server": "^2.6.0",
     "@parcel/transformer-elm": "^2.3.2",
     "@parcel/transformer-sass": "^2.3.2",
-    "stylelint-config-standard-scss": "^3.0.0"
+    "stylelint-config-standard-scss": "^9.0.0"
   }
 }
