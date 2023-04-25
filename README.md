@@ -1,6 +1,6 @@
 # elm-neat-layout
 
-[![test](https://github.com/arowM/elm-neat-layout/actions/workflows/test.yaml/badge.svg)](https://github.com/arowM/elm-neat-layout/actions/workflows/test.yaml)
+[![test](https://github.com/arowM/elm-neat-layout/actions/workflows/test.yaml/badge.svg)](https://github.com/arowM/elm-neat-layout/actions/workflows/test.yaml) [![Elm package](https://img.shields.io/elm-package/v/arowM/elm-neat-layout)](https://package.elm-lang.org/packages/arowM/elm-neat-layout/latest/)
 
 Gap sensitive layout framework.
 
