@@ -30,6 +30,7 @@
   "author": "Kadzuya Okamoto",
   "license": "MIT",
   "devDependencies": {
+    "@elm-tooling/elm-language-server": "^2.6.0",
     "@parcel/transformer-elm": "^2.3.2",
     "@parcel/transformer-sass": "^2.3.2",
     "stylelint-config-standard-scss": "^3.0.0"
