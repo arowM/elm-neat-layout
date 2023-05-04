@@ -96,6 +96,10 @@
   overflow-y: hidden;
 }
 
+.elmNeatLayout--boundary-verticalOverflow > .elmNeatLayout--boundaryContent.elmNeatLayout--column {
+  height: auto;
+}
+
 .elmNeatLayout--boundary-hasMinHeight {
   min-height: var(--min-height);
 }

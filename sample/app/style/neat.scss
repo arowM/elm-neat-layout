@@ -121,6 +121,10 @@
       &#{$boundary}-text > #{$boundary}_textMargin {
         overflow-y: hidden;
       }
+
+      & > #{$boundaryContent}#{$column} {
+        height: auto;
+      }
     }
 
     &-hasMinHeight {
