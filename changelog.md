@@ -1,3 +1,7 @@
+# 3.0.6
+
+* Bugfix about scrollable content
+
 # 3.0.4, 3.0.5
 
 * Bugfix about scrollable cropped texts
