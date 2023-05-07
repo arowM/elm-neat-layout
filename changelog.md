@@ -1,3 +1,7 @@
+# 3.1.0
+
+* Add `Neat.View.expandGap` function
+
 # 3.0.6
 
 * Bugfix about scrollable content
