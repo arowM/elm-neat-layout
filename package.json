@@ -1,23 +1,20 @@
 {
   "private": true,
   "dependencies": {
-    "autoprefixer": "^10.4.2",
+    "autoprefixer": "^10.4.14",
     "elm": "^0.19.1-5",
     "elm-doc-preview": "^5.0.5",
-    "elm-format": "^0.8.5",
-    "elm-review": "^2.7.0",
-    "elm-test": "^0.19.1-revision7",
-    "elm-verify-examples": "^5.0.0",
-    "parcel": "^2.3.2",
-    "postcss": "^8.4.7",
+    "elm-format": "^0.8.7",
+    "elm-review": "^2.10.2",
+    "elm-test": "^0.19.1-revision9",
+    "elm-verify-examples": "^5.2.0",
+    "parcel": "^2.8.3",
+    "postcss": "^8.4.23",
     "postcss-flexbugs-fixes": "^5.0.2",
-    "prettier": "^2.5.1",
-    "rimraf": "^3.0.2",
-    "stylelint": "^14.5.3",
-    "stylelint-config-prettier": "^9.0.3",
-    "stylelint-config-standard": "^25.0.0",
-    "stylelint-prettier": "^2.0.0",
-    "stylelint-scss": "^4.1.0"
+    "prettier": "^2.8.8",
+    "rimraf": "^5.0.0",
+    "stylelint": "^14.16.1",
+    "stylelint-scss": "^5.0.0"
   },
   "scripts": {
     "doc": "elm-doc-preview -p 8091",
@@ -31,8 +28,9 @@
   "license": "MIT",
   "devDependencies": {
     "@elm-tooling/elm-language-server": "^2.6.0",
-    "@parcel/transformer-elm": "^2.3.2",
-    "@parcel/transformer-sass": "^2.3.2",
+    "@parcel/transformer-elm": "^2.8.3",
+    "@parcel/transformer-sass": "^2.8.3",
+    "stylelint-config-prettier": "^9.0.5",
     "stylelint-config-standard-scss": "^3.0.0"
   }
 }
