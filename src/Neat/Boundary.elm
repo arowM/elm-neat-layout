@@ -185,9 +185,7 @@ import Html exposing (Attribute)
 import Mixin exposing (Mixin)
 import Neat.Internal as Internal
     exposing
-        ( Alignment(..)
-        , BaseSize(..)
-        , Boundary(..)
+        ( Boundary(..)
         , Boundary_
         , Children(..)
         , Content(..)

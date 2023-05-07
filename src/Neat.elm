@@ -72,14 +72,11 @@ import Neat.Internal as Internal
         , Boundary(..)
         , Boundary_
         , Children(..)
-        , Column(..)
-        , ColumnItem(..)
         , Column_
         , Content(..)
         , Gap
         , IsGap(..)
         , Item_
-        , Layered(..)
         , MaxHeight(..)
         , MaxWidth(..)
         , MinHeight(..)
@@ -87,11 +84,8 @@ import Neat.Internal as Internal
         , Overlay
         , Renderer(..)
         , Renderer_
-        , Row(..)
-        , RowItem(..)
         , Row_
         , Size(..)
-        , View(..)
         , View_(..)
         )
 import Neat.Text as Text

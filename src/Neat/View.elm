@@ -143,7 +143,6 @@ import Mixin exposing (Mixin)
 import Neat.Internal as Internal
     exposing
         ( Alignment(..)
-        , BaseSize(..)
         , Boundary(..)
         , Boundary_
         , Children(..)
