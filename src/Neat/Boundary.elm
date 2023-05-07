@@ -108,36 +108,36 @@ You can only use a limited kind of units.
 This may seem inconvenient, but it prevents you to build unmaintainable broken views.
 
 
-## minimum width
+## Minimum width
 
-The initial _minimum width_ is zero without enabling child overflow.
+The default _minimum width_ is zero without enabling child overflow.
 
 @docs setMinWidthInBs
 @docs setMinWidthInEm
 @docs setMinWidthInRem
 
 
-## minimum height
+## Minimum height
 
-The initial _minimum height_ is zero without enabling child overflow.
+The default _minimum height_ is zero without enabling child overflow.
 
 @docs setMinHeightInBs
 @docs setMinHeightInEm
 @docs setMinHeightInRem
 
 
-## maximum width
+## Maximum width
 
-The initial value for maximum width is _fit_, which shrinks as much as its children do not overhang it.
+The default value for maximum width is _fit_, which shrinks as much as its children do not overhang it.
 
 @docs setMaxWidthInBs
 @docs setMaxWidthInEm
 @docs setMaxWidthInRem
 
 
-## maximum height
+## Maximum height
 
-The initial value for maximum height is _fit_, which shrinks as much as its children do not overhang it.
+The default value for maximum height is _fit_, which shrinks as much as its children do not overhang it.
 
 @docs setMaxHeightInBs
 @docs setMaxHeightInEm
@@ -381,11 +381,11 @@ empty =
         }
 
 
-{-| Build view with text from `Text`s.
+{-| Build a text block from `Text`s.
 
-Unlike a `Neat.row` of `Neat.textBlock`s, the `fromTexts` generates a single coherent sentence.
+Unlike a `Neat.row` consist of `Neat.textBlock`s, the `fromTexts` generates a single coherent sentence.
 
-For example, the `View` built by the following code will be broken as follows.
+For example, the `View` built by the following code will be broken as follows:
 
     Neat.row
         [ Neat.textBlock "foo bar baz"
@@ -395,7 +395,7 @@ For example, the `View` built by the following code will be broken as follows.
     | foo bar | a b c d |
     | baz     | e f     |
 
-In contrast, the `View` built by the following code will be broken as follows.
+In contrast, the `View` built by the following code will be broken as follows:
 
     import Neat.Text as Text
 
@@ -404,10 +404,10 @@ In contrast, the `View` built by the following code will be broken as follows.
         , Text.text "a b c d e f"
         ]
 
-| foo bar baz a b c |
-| d e f |
+    | foo bar baz a b c |
+    | d e f             |
 
-The line spacing width when the text is broken is the same as the Gap height applied by the `setGap` function.
+The gap height between lines will be the same as the gap height set with the `setGap` function.
 
 -}
 fromTexts : List (Text msg) -> Boundary msg
@@ -799,7 +799,7 @@ withMaybe ma f =
 -- Convert to `View`
 
 
-{-| Gap around a view.
+{-| Set Gap around a view.
 -}
 setGap : IsGap gap -> Boundary msg -> View gap msg
 setGap (IsGap gap) (Boundary boundary) =
