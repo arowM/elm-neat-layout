@@ -37,6 +37,7 @@ module Neat.View exposing
     , when
     , unless
     , withMaybe
+    , expandGap
     , setBoundary
     , setNodeName
     )
@@ -122,6 +123,11 @@ Each function has the `String` argument, which helps make the DOM modifications 
 @docs withMaybe
 
 
+# Expand Gaps
+
+@docs expandGap
+
+
 # Convert to `Boundary`
 
 @docs setBoundary
@@ -187,13 +193,14 @@ liftInternal f (View view) =
 map_ : (a -> b) -> View_ a -> View_ b
 map_ f view =
     case view of
-        FromBoundary boundary ->
-            FromBoundary <| mapBoundary_ f boundary
+        FromBoundary gap boundary ->
+            FromBoundary gap <| mapBoundary_ f boundary
 
         FromRow o ->
             FromRow
                 { mixin = Mixin.map f o.mixin
-                , gap = o.gap
+                , nominalGap = o.nominalGap
+                , contentGap = o.contentGap
                 , nodeName = o.nodeName
                 , justifyContent = o.justifyContent
                 , children = modifyChild (map_ f) o.children
@@ -203,7 +210,8 @@ map_ f view =
         FromColumn o ->
             FromColumn
                 { mixin = Mixin.map f o.mixin
-                , gap = o.gap
+                , nominalGap = o.nominalGap
+                , contentGap = o.contentGap
                 , nodeName = o.nodeName
                 , justifyContent = o.justifyContent
                 , children = modifyChild (map_ f) o.children
@@ -223,9 +231,8 @@ mapBoundary f (Boundary boundary) =
 mapBoundary_ : (a -> b) -> Boundary_ a -> Boundary_ b
 mapBoundary_ f o =
     { mixin = Mixin.map f o.mixin
-    , gap = o.gap
     , nodeName = o.nodeName
-    , innerGap = o.innerGap
+    , padding = o.padding
     , overlays = mapOverlays f o.overlays
     , width = o.width
     , minWidth = o.minWidth
@@ -263,9 +270,8 @@ mapBoundary_ f o =
 defaultBoundary : Boundary_ msg
 defaultBoundary =
     { mixin = Mixin.none
-    , gap = emptyGap
     , nodeName = "div"
-    , innerGap = emptyGap
+    , padding = emptyGap
     , overlays = []
     , width = MinSize
     , minWidth = MinWidthInUnit "" 0
@@ -298,26 +304,27 @@ emptyGap =
     }
 
 
-extractGap : View_ msg -> Gap
-extractGap view =
+extractNominalGap : View_ msg -> Gap
+extractNominalGap view =
     case view of
-        FromBoundary o ->
-            o.gap
+        FromBoundary g _ ->
+            g
 
         FromRow o ->
-            o.gap
+            o.nominalGap
 
         FromColumn o ->
-            o.gap
+            o.nominalGap
 
         None ->
             emptyGap
 
 
-defaultRow_ : Children msg -> Row_ msg
-defaultRow_ children =
+defaultRow_ : Gap -> Children msg -> Row_ msg
+defaultRow_ gap children =
     { mixin = Mixin.none
-    , gap = emptyGap
+    , nominalGap = gap
+    , contentGap = gap
     , nodeName = "div"
     , justifyContent = AlignStart
     , children = children
@@ -325,10 +332,11 @@ defaultRow_ children =
     }
 
 
-defaultColumn_ : Children msg -> Column_ msg
-defaultColumn_ children =
+defaultColumn_ : Gap -> Children msg -> Column_ msg
+defaultColumn_ gap children =
     { mixin = Mixin.none
-    , gap = emptyGap
+    , nominalGap = gap
+    , contentGap = gap
     , nodeName = "div"
     , justifyContent = AlignStart
     , children = children
@@ -350,8 +358,8 @@ setViewMixin : Mixin msg -> View g msg -> View g msg
 setViewMixin new (View view) =
     View <|
         case view of
-            FromBoundary boundary ->
-                FromBoundary { boundary | mixin = Mixin.batch [ boundary.mixin, new ] }
+            FromBoundary gap boundary ->
+                FromBoundary gap { boundary | mixin = Mixin.batch [ boundary.mixin, new ] }
 
             FromRow row_ ->
                 FromRow { row_ | mixin = Mixin.batch [ row_.mixin, new ] }
@@ -414,12 +422,14 @@ row (Row { justify, wrap }) children_ =
             item :: items ->
                 let
                     row_ =
-                        defaultRow_ (Children item items)
+                        defaultRow_ itemGap (Children item items)
+
+                    itemGap =
+                        extractNominalGap item.content
                 in
                 FromRow
                     { row_
-                        | gap = extractGap item.content
-                        , justifyContent = justify
+                        | justifyContent = justify
                         , wrap = wrap
                     }
 
@@ -593,12 +603,16 @@ column (Column { justify }) children_ =
             item :: items ->
                 let
                     column_ =
-                        defaultColumn_ <| Children item items
+                        defaultColumn_
+                            itemGap
+                            (Children item items)
+
+                    itemGap =
+                        extractNominalGap item.content
                 in
                 FromColumn
                     { column_
-                        | gap = extractGap item.content
-                        , justifyContent = justify
+                        | justifyContent = justify
                     }
 
 
@@ -800,17 +814,43 @@ withMaybe ma f =
 
 
 
+-- Expand Gaps
+
+
+{-| Expand View Gap to a wider one.
+
+You can use `expandGap` to "shrink" Gaps, but we do not recommend doing so. Such layouts must not be "neat"!
+
+-}
+expandGap : IsGap g2 -> View g1 msg -> View g2 msg
+expandGap (IsGap g2) (View view) =
+    View <|
+        case view of
+            FromBoundary _ boundary ->
+                FromBoundary g2 boundary
+
+            FromRow row_ ->
+                FromRow { row_ | nominalGap = g2 }
+
+            FromColumn column_ ->
+                FromColumn { column_ | nominalGap = g2 }
+
+            None ->
+                None
+
+
+
 -- Convert to `Boundary`
 
 
-{-| Wrap a view with boundary without gap.
+{-| Wrap a view with boundary.
 This is the only way to reset view gaps.
 -}
 setBoundary : View gap msg -> Boundary msg
 setBoundary (View view) =
     Boundary
         { defaultBoundary
-            | innerGap = extractGap view
+            | padding = extractNominalGap view
             , content =
                 if view == None then
                     NoContent
@@ -829,8 +869,8 @@ setNodeName : String -> View gap msg -> View gap msg
 setNodeName str (View view) =
     View <|
         case view of
-            FromBoundary boundary ->
-                FromBoundary { boundary | nodeName = str }
+            FromBoundary g boundary ->
+                FromBoundary g { boundary | nodeName = str }
 
             FromRow row_ ->
                 FromRow { row_ | nodeName = str }

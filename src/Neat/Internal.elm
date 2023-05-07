@@ -44,7 +44,10 @@ type View gap msg
 Some variants have gaps for caching purpose.
 -}
 type View_ msg
-    = FromBoundary (Boundary_ msg)
+    = FromBoundary
+        -- Gap that will be set around Boundary
+        Gap
+        (Boundary_ msg)
     | FromRow (Row_ msg)
     | FromColumn (Column_ msg)
     | None
@@ -61,9 +64,8 @@ type Boundary msg
 
 type alias Boundary_ msg =
     { mixin : Mixin msg
-    , gap : Gap
     , nodeName : String
-    , innerGap : Gap
+    , padding : Gap
     , overlays : List (Overlay msg)
     , width : Size
     , minWidth : MinWidth
@@ -93,7 +95,8 @@ type Size
 
 type alias Row_ msg =
     { mixin : Mixin msg
-    , gap : Gap
+    , nominalGap : Gap
+    , contentGap : Gap
     , nodeName : String
     , justifyContent : Alignment
     , children : Children msg
@@ -110,7 +113,8 @@ type Alignment
 
 type alias Column_ msg =
     { mixin : Mixin msg
-    , gap : Gap
+    , nominalGap : Gap
+    , contentGap : Gap
     , nodeName : String
     , justifyContent : Alignment
     , children : Children msg

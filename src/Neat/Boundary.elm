@@ -223,9 +223,8 @@ type alias Boundary msg =
 defaultBoundary : Boundary_ msg
 defaultBoundary =
     { mixin = Mixin.none
-    , gap = emptyGap
     , nodeName = "div"
-    , innerGap = emptyGap
+    , padding = emptyGap
     , overlays = []
     , width = MinSize
     , minWidth = MinWidthInUnit "" 0
@@ -250,13 +249,14 @@ emptyGap =
 mapView_ : (a -> b) -> View_ a -> View_ b
 mapView_ f view =
     case view of
-        FromBoundary boundary ->
-            FromBoundary <| mapBoundary_ f boundary
+        FromBoundary g boundary ->
+            FromBoundary g <| mapBoundary_ f boundary
 
         FromRow o ->
             FromRow
                 { mixin = Mixin.map f o.mixin
-                , gap = o.gap
+                , nominalGap = o.nominalGap
+                , contentGap = o.contentGap
                 , nodeName = o.nodeName
                 , justifyContent = o.justifyContent
                 , children = modifyChild (mapView_ f) o.children
@@ -266,7 +266,8 @@ mapView_ f view =
         FromColumn o ->
             FromColumn
                 { mixin = Mixin.map f o.mixin
-                , gap = o.gap
+                , nominalGap = o.nominalGap
+                , contentGap = o.contentGap
                 , nodeName = o.nodeName
                 , justifyContent = o.justifyContent
                 , children = modifyChild (mapView_ f) o.children
@@ -306,9 +307,8 @@ mapBoundary f (Boundary boundary) =
 mapBoundary_ : (a -> b) -> Boundary_ a -> Boundary_ b
 mapBoundary_ f o =
     { mixin = Mixin.map f o.mixin
-    , gap = o.gap
     , nodeName = o.nodeName
-    , innerGap = o.innerGap
+    , padding = o.padding
     , overlays = mapOverlays f o.overlays
     , width = o.width
     , minWidth = o.minWidth
@@ -809,10 +809,7 @@ setGap (IsGap gap) (Boundary boundary) =
                 None
 
             _ ->
-                FromBoundary
-                    { boundary
-                        | gap = gap
-                    }
+                FromBoundary gap boundary
 
 
 

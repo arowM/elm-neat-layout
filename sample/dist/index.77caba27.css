@@ -243,7 +243,7 @@
 }
 
 .elmNeatLayout--row {
-  gap: var(--inner-gap-y) var(--inner-gap-x);
+  gap: var(--content-gap-y) var(--content-gap-x);
   flex-flow: row;
   display: flex;
 }
@@ -310,7 +310,7 @@
 }
 
 .elmNeatLayout--column {
-  gap: var(--inner-gap-y) var(--inner-gap-x);
+  gap: var(--content-gap-y) var(--content-gap-x);
   flex-flow: column;
   display: flex;
 }

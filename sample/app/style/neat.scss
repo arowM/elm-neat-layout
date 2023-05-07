@@ -282,7 +282,7 @@
   &--row {
     flex-flow: row nowrap;
     display: flex;
-    gap: var(--inner-gap-y) var(--inner-gap-x);
+    gap: var(--content-gap-y) var(--content-gap-x);
 
     &#{$row}-wrap {
       flex-wrap: wrap;
@@ -349,7 +349,7 @@
   &--column {
     flex-flow: column nowrap;
     display: flex;
-    gap: var(--inner-gap-y) var(--inner-gap-x);
+    gap: var(--content-gap-y) var(--content-gap-x);
 
     &#{$column}-justifyStart {
       justify-content: flex-start;

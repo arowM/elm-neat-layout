@@ -101,15 +101,27 @@ body _ =
                 |> Boundary.setMaxHeightInEm 25
                 -- |> Boundary.setMaxWidthInEm 35
                 |> Boundary.setMinWidthInEm 16
-                |> Boundary.setGap Gap.body
-                |> View.columnItem "sampleText"
-            , Boundary.empty
-                |> Boundary.setMinHeightInEm 5
-                |> Boundary.setMinWidthInEm 10
-                |> Boundary.setMaxWidthInEm 20
                 |> Boundary.setMixin (Mixin.class "red")
                 |> Boundary.setGap Gap.body
-                |> View.columnItem "sampleBox"
+                |> View.columnItem "sampleText"
+            , View.column
+                View.defaultColumn
+                [ Boundary.empty
+                    |> Boundary.setMinHeightInEm 2
+                    |> Boundary.setMinWidthInEm 10
+                    |> Boundary.setMaxWidthInEm 20
+                    |> Boundary.setMixin (Mixin.class "red")
+                    |> Boundary.setGap Gap.sub
+                    |> View.columnItem "sampleBox1"
+                , Boundary.empty
+                    |> Boundary.setMinHeightInEm 2
+                    |> Boundary.setMinWidthInEm 7
+                    |> Boundary.setMixin (Mixin.class "blue")
+                    |> Boundary.setGap Gap.sub
+                    |> View.columnItem "sampleBox2"
+                ]
+                |> View.expandGap Gap.body
+                |> View.columnItem "subBoxes"
             , View.row
                 (View.defaultRow
                     |> View.alignRight
