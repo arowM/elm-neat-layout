@@ -27,6 +27,7 @@ module Neat.Internal exposing
     , Row_
     , Size(..)
     , Text
+    , Texts_
     , View(..)
     , View_(..)
     )
@@ -50,6 +51,7 @@ type View_ msg
         (Boundary_ msg)
     | FromRow (Row_ msg)
     | FromColumn (Column_ msg)
+    | FromTexts (Texts_ msg)
     | None
 
 
@@ -118,6 +120,15 @@ type alias Column_ msg =
     , nodeName : String
     , justifyContent : Alignment
     , children : Children msg
+    }
+
+
+type alias Texts_ msg =
+    { mixin : Mixin msg
+    , nominalGap : Gap
+    , contentGap : Gap
+    , nodeName : String
+    , texts : ( Text msg, List (Text msg) )
     }
 
 

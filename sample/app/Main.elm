@@ -63,8 +63,7 @@ body _ =
         )
         [ View.row
             View.defaultRow
-            [ Boundary.textBlock "Header"
-                |> Boundary.setGap Gap.body
+            [ View.textBlock Gap.body "Header"
                 |> View.grownMiddleItem "text"
             , Boundary.empty
                 |> Boundary.setMinWidthInEm 4
@@ -77,8 +76,7 @@ body _ =
                 (View.defaultRow
                     |> View.alignCenter
                 )
-                [ Boundary.textBlock "三"
-                    |> Boundary.setGap Neat.noGap
+                [ View.textBlock Neat.noGap "三"
                     |> View.middleItem "icon"
                 ]
                 |> View.setBoundary
@@ -96,19 +94,14 @@ body _ =
             |> View.columnItem "header"
         , View.column
             View.defaultColumn
-            [ Boundary.fromTexts
+            [ View.fromTexts Gap.sub
                 [ Text.fromString "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
                 , Text.fromString "<eiusmod>"
                     |> Text.setClass "inlineCode"
                     |> Text.setNodeName "code"
                 , Text.fromString " tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
                 ]
-                -- |> Boundary.setMinHeightInEm 10
-                |> Boundary.setMaxHeightInEm 25
-                -- |> Boundary.setMaxWidthInEm 35
-                |> Boundary.setMinWidthInEm 16
-                |> Boundary.setMixin (Mixin.class "red")
-                |> Boundary.setGap Gap.body
+                |> View.expandGap Gap.body
                 |> View.columnItem "sampleText"
             , View.column
                 View.defaultColumn
@@ -161,28 +154,29 @@ body _ =
                 |> View.grownCenterItem "sampleNestedBox"
             , View.row
                 View.defaultRow
-                [ Boundary.textBlock "foo000000\nbar\nbar\nbar\nfoo\nbar\nbar\nbar\n"
-                    |> Boundary.setMaxHeightInEm 8
-                    |> Boundary.enableVerticalScroll
-                    |> Boundary.setGap Gap.body
+                [ View.textBlock Gap.sub "foo000000\nbar\nbar\nbar\nfoo\nbar\nbar\nbar\n"
                     |> View.grownRowItem "content"
                 ]
                 |> View.setBoundary
+                |> Boundary.enableVerticalScroll
+                |> Boundary.setMinHeightInEm 1
+                |> Boundary.setMaxHeightInEm 8
                 |> Boundary.setMixin (Mixin.class "scrollableText_content")
                 |> Boundary.setGap Gap.body
-                |> View.leftItem "content1"
+                |> View.grownLeftItem "content1"
             , View.row
                 View.defaultRow
-                [ Boundary.textBlock "foo000000\nbar\nbar\nbar"
-                    |> Boundary.setMaxHeightInEm 8
-                    |> Boundary.enableVerticalScroll
-                    |> Boundary.setGap Gap.body
+                [ View.textBlock Gap.sub "foo000000\nbar\nbar\nbar"
                     |> View.grownRowItem "content"
                 ]
+                |> View.expandGap Gap.body
                 |> View.setBoundary
+                |> Boundary.enableVerticalScroll
+                |> Boundary.setMinHeightInEm 1
+                |> Boundary.setMaxHeightInEm 8
                 |> Boundary.setMixin (Mixin.class "scrollableText_content")
                 |> Boundary.setGap Gap.body
-                |> View.columnItem "content2"
+                |> View.grownColumnItem "content2"
             ]
             |> View.setBoundary
             |> Boundary.setMinHeightInEm 10
@@ -190,8 +184,7 @@ body _ =
             |> Boundary.setMixin (Mixin.class "blue")
             |> Boundary.setGap Neat.noGap
             |> View.grownColumnItem "body"
-        , Boundary.textBlock "Footer"
-            |> Boundary.setGap Gap.body
+        , View.textBlock Gap.body "Footer"
             |> View.setBoundary
             |> Boundary.setMixin (Mixin.class "footer")
             |> Boundary.setGap Neat.noGap

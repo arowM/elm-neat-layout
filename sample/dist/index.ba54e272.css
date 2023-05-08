@@ -28,6 +28,7 @@
 }
 
 .inlineCode {
+  vertical-align: baseline;
   background: #ccc;
   padding-left: .5em;
   padding-right: .5em;

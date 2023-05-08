@@ -1,8 +1,6 @@
 module Neat.Boundary exposing
     ( Boundary
     , map
-    , textBlock
-    , fromTexts
     , empty
     , setMixin
     , setMixins
@@ -41,6 +39,8 @@ module Neat.Boundary exposing
     , setNodeName
     , html
     , htmlNode
+    , textBlock
+    , fromTexts
     )
 
 {-| Module for building `Boundary`.
@@ -50,12 +50,6 @@ module Neat.Boundary exposing
 
 @docs Boundary
 @docs map
-
-
-# Primitive Constructors
-
-@docs textBlock
-@docs fromTexts
 @docs empty
 
 
@@ -179,6 +173,12 @@ The default value for maximum height is _fit_, which shrinks as much as its chil
 @docs html
 @docs htmlNode
 
+
+# DEPRECATED
+
+@docs textBlock
+@docs fromTexts
+
 -}
 
 import Html exposing (Attribute)
@@ -271,6 +271,22 @@ mapView_ f view =
                 , children = modifyChild (mapView_ f) o.children
                 }
 
+        FromTexts o ->
+            FromTexts
+                { mixin = Mixin.map f o.mixin
+                , nominalGap = o.nominalGap
+                , contentGap = o.contentGap
+                , nodeName = o.nodeName
+                , texts =
+                    let
+                        ( head, tail ) =
+                            o.texts
+                    in
+                    ( Text.map f head
+                    , List.map (Text.map f) tail
+                    )
+                }
+
         None ->
             None
 
@@ -356,9 +372,12 @@ mapOverlays f =
 -- Primitive Constructors
 
 
-{-| Generates a view that displays a text.
+{-| ⚠ DEPRECATED ⚠
 
-It is an alias for `\str -> fromTexts option [ Neat.Text.fromString str ]`
+Generates a boundary view that displays a text.
+
+It is an alias for `\str -> fromTexts [ Neat.Text.fromString str ]`.
+
 Note that `textBlock ""` is equivalent to `empty`.
 
 -}
@@ -379,15 +398,21 @@ empty =
         }
 
 
-{-| Build a text block from `Text`s.
+{-| ⚠ DEPRECATED ⚠
 
-Unlike a `Neat.row` consist of `Neat.textBlock`s, the `fromTexts` generates a single coherent sentence.
+Build a text block from `Text`s.
+
+Unlike a `Neat.View.row` consist of `textBlock`s, the `fromTexts` generates a single coherent sentence.
 
 For example, the `View` built by the following code will be broken as follows:
 
-    Neat.row
-        [ Neat.textBlock "foo bar baz"
-        , Neat.textBlock "a b c d e f"
+    Neat.View.row
+        [ textBlock "foo bar baz"
+            |> setGap myGap
+            |> Neat.View.rowItem "elem1"
+        , textBlock "a b c d e f"
+            |> setGap myGap
+            |> Neat.View.rowItem "elem2"
         ]
 
     | foo bar | a b c d |
@@ -397,9 +422,9 @@ In contrast, the `View` built by the following code will be broken as follows:
 
     import Neat.Text as Text
 
-    Neat.fromTexts <| Text.batch
-        [ Text.text "foo bar baz"
-        , Text.text "a b c d e f"
+    fromTexts
+        [ Text.fromString "foo bar baz"
+        , Text.fromString "a b c d e f"
         ]
 
     | foo bar baz a b c |

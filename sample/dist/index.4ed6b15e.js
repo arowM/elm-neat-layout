@@ -7670,6 +7670,9 @@ type alias Process =
             case "FromColumn":
                 var o = view.a;
                 return o.nominalGap;
+            case "FromTexts":
+                var o = view.a;
+                return o.nominalGap;
             default:
                 return $author$project$Neat$View$emptyGap;
         }
@@ -7798,6 +7801,12 @@ type alias Process =
             a: a
         };
     };
+    var $author$project$Neat$Internal$FromTexts = function(a) {
+        return {
+            $: "FromTexts",
+            a: a
+        };
+    };
     var $author$project$Neat$View$expandGap = F2(function(_v0, _v1) {
         var g2 = _v0.a;
         var view = _v1.a;
@@ -7814,6 +7823,11 @@ type alias Process =
                 case "FromColumn":
                     var column_ = view.a;
                     return $author$project$Neat$Internal$FromColumn(_Utils_update(column_, {
+                        nominalGap: g2
+                    }));
+                case "FromTexts":
+                    var texts_ = view.a;
+                    return $author$project$Neat$Internal$FromTexts(_Utils_update(texts_, {
                         nominalGap: g2
                     }));
                 default:
@@ -7834,25 +7848,31 @@ type alias Process =
             text: str
         };
     };
-    var $author$project$Neat$Internal$TextsContent = function(a) {
-        return {
-            $: "TextsContent",
-            a: a
-        };
-    };
     var $elm$core$List$filter = F2(function(isGood, list) {
         return A3($elm$core$List$foldr, F2(function(x, xs) {
             return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
         }), _List_Nil, list);
     });
-    var $author$project$Neat$Boundary$fromTexts = function(ls) {
+    var $author$project$Neat$View$fromTexts = F2(function(_v0, ls) {
+        var gap = _v0.a;
         var texts = A2($elm$core$List$filter, function(a) {
             return a.text !== "";
         }, ls);
-        return $author$project$Neat$Internal$Boundary(_Utils_update($author$project$Neat$Boundary$defaultBoundary, {
-            content: $elm$core$List$isEmpty(texts) ? $author$project$Neat$Internal$ViewContent($author$project$Neat$Internal$None) : $author$project$Neat$Internal$TextsContent(texts)
-        }));
-    };
+        return $author$project$Neat$Internal$View(function() {
+            if (!texts.b) return $author$project$Neat$Internal$None;
+            else {
+                var item = texts.a;
+                var items = texts.b;
+                return $author$project$Neat$Internal$FromTexts({
+                    contentGap: gap,
+                    mixin: $arowM$elm_mixin$Mixin$none,
+                    nodeName: "div",
+                    nominalGap: gap,
+                    texts: _Utils_Tuple2(item, items)
+                });
+            }
+        }());
+    });
     var $author$project$Neat$View$grownCenterItem = F2(function(key, _v0) {
         var content = _v0.a;
         return $author$project$Neat$Internal$ColumnItem({
@@ -7866,6 +7886,15 @@ type alias Process =
         var content = _v0.a;
         return $author$project$Neat$Internal$ColumnItem({
             alignSelf: $author$project$Neat$Internal$AlignStretch,
+            content: content,
+            grow: true,
+            key: key
+        });
+    });
+    var $author$project$Neat$View$grownLeftItem = F2(function(key, _v0) {
+        var content = _v0.a;
+        return $author$project$Neat$Internal$ColumnItem({
+            alignSelf: $author$project$Neat$Internal$AlignStart,
             content: content,
             grow: true,
             key: key
@@ -7895,15 +7924,6 @@ type alias Process =
             key: key
         });
     });
-    var $author$project$Neat$View$leftItem = F2(function(key, _v0) {
-        var content = _v0.a;
-        return $author$project$Neat$Internal$ColumnItem({
-            alignSelf: $author$project$Neat$Internal$AlignStart,
-            content: content,
-            grow: false,
-            key: key
-        });
-    });
     var $author$project$Neat$View$middleItem = F2(function(key, _v0) {
         var content = _v0.a;
         return $author$project$Neat$Internal$RowItem({
@@ -7927,6 +7947,12 @@ type alias Process =
     var $author$project$Neat$Internal$StringContent = function(a) {
         return {
             $: "StringContent",
+            a: a
+        };
+    };
+    var $author$project$Neat$Internal$TextsContent = function(a) {
+        return {
+            $: "TextsContent",
             a: a
         };
     };
@@ -7959,30 +7985,30 @@ type alias Process =
         };
         return A2($author$project$Neat$Internal$Children, modifyContent(item0), A2($elm$core$List$map, modifyContent, items));
     });
-    var $author$project$Neat$Boundary$mapBoundary = F2(function(f, _v3) {
-        var boundary = _v3.a;
+    var $author$project$Neat$Boundary$mapBoundary = F2(function(f, _v4) {
+        var boundary = _v4.a;
         return $author$project$Neat$Internal$Boundary(A2($author$project$Neat$Boundary$mapBoundary_, f, boundary));
     });
     var $author$project$Neat$Boundary$mapBoundary_ = F2(function(f, o) {
         return {
             content: function() {
-                var _v1 = o.content;
-                switch(_v1.$){
+                var _v2 = o.content;
+                switch(_v2.$){
                     case "TextsContent":
-                        var texts = _v1.a;
+                        var texts = _v2.a;
                         return $author$project$Neat$Internal$TextsContent(A2($elm$core$List$map, $author$project$Neat$Text$map(f), texts));
                     case "ViewContent":
-                        var view = _v1.a;
+                        var view = _v2.a;
                         return $author$project$Neat$Internal$ViewContent(A2($author$project$Neat$Boundary$mapView_, f, view));
                     case "HtmlContent":
-                        var children = _v1.a;
-                        return $author$project$Neat$Internal$HtmlContent(A2($elm$core$List$map, function(_v2) {
-                            var k = _v2.a;
-                            var b = _v2.b;
+                        var children = _v2.a;
+                        return $author$project$Neat$Internal$HtmlContent(A2($elm$core$List$map, function(_v3) {
+                            var k = _v3.a;
+                            var b = _v3.b;
                             return _Utils_Tuple2(k, A2($author$project$Neat$Boundary$mapBoundary_, f, b));
                         }, children));
                     case "StringContent":
-                        var str = _v1.a;
+                        var str = _v2.a;
                         return $author$project$Neat$Internal$StringContent(str);
                     default:
                         return $author$project$Neat$Internal$NoContent;
@@ -8038,6 +8064,20 @@ type alias Process =
                     mixin: A2($arowM$elm_mixin$Mixin$map, f, o.mixin),
                     nodeName: o.nodeName,
                     nominalGap: o.nominalGap
+                });
+            case "FromTexts":
+                var o = view.a;
+                return $author$project$Neat$Internal$FromTexts({
+                    contentGap: o.contentGap,
+                    mixin: A2($arowM$elm_mixin$Mixin$map, f, o.mixin),
+                    nodeName: o.nodeName,
+                    nominalGap: o.nominalGap,
+                    texts: function() {
+                        var _v1 = o.texts;
+                        var head = _v1.a;
+                        var tail = _v1.b;
+                        return _Utils_Tuple2(A2($author$project$Neat$Text$map, f, head), A2($elm$core$List$map, $author$project$Neat$Text$map(f), tail));
+                    }()
                 });
             default:
                 return $author$project$Neat$Internal$None;
@@ -8224,6 +8264,11 @@ type alias Process =
                     return $author$project$Neat$Internal$FromColumn(_Utils_update(column_, {
                         nodeName: str
                     }));
+                case "FromTexts":
+                    var texts_ = view.a;
+                    return $author$project$Neat$Internal$FromTexts(_Utils_update(texts_, {
+                        nodeName: str
+                    }));
                 default:
                     return $author$project$Neat$Internal$None;
             }
@@ -8241,11 +8286,11 @@ type alias Process =
         horizontal: 0.3,
         vertical: 0.3
     });
-    var $author$project$Neat$Boundary$textBlock = function(str) {
-        return $author$project$Neat$Boundary$fromTexts(_List_fromArray([
+    var $author$project$Neat$View$textBlock = F2(function(gap, str) {
+        return A2($author$project$Neat$View$fromTexts, gap, _List_fromArray([
             $author$project$Neat$Text$fromString(str)
         ]));
-    };
+    });
     var $author$project$Neat$Internal$Layered = function(a) {
         return {
             $: "Layered",
@@ -8261,18 +8306,18 @@ type alias Process =
     var $author$project$Main$body = function(_v0) {
         return $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$column, $author$project$Neat$View$alignBottom($author$project$Neat$View$defaultColumn), _List_fromArray([
             A2($author$project$Neat$View$columnItem, "header", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("header"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
-                A2($author$project$Neat$View$grownMiddleItem, "text", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, $author$project$Neat$Boundary$textBlock("Header"))),
+                A2($author$project$Neat$View$grownMiddleItem, "text", A2($author$project$Neat$View$textBlock, $author$project$Gap$body, "Header")),
                 A2($author$project$Neat$View$grownMiddleItem, "input", A2($author$project$Neat$View$setNodeName, "input", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, A2($arowM$elm_mixin$Mixin$style, "padding", "0.4em"), A2($author$project$Neat$Boundary$setMixin, A2($arowM$elm_mixin$Mixin$attribute, "placeholder", "foo"), A2($author$project$Neat$Boundary$setMinWidthInEm, 4, $author$project$Neat$Boundary$empty)))))),
                 A2($author$project$Neat$View$middleItem, "hamburger", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("header_hamburger"), A2($author$project$Neat$Boundary$setMaxHeightInEm, 3, A2($author$project$Neat$Boundary$setMinHeightInEm, 3, A2($author$project$Neat$Boundary$setMaxWidthInEm, 3, A2($author$project$Neat$Boundary$setMinWidthInEm, 3, $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$alignCenter($author$project$Neat$View$defaultRow), _List_fromArray([
-                    A2($author$project$Neat$View$middleItem, "icon", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, $author$project$Neat$Boundary$textBlock("三")))
+                    A2($author$project$Neat$View$middleItem, "icon", A2($author$project$Neat$View$textBlock, $author$project$Neat$noGap, "三"))
                 ]))))))))))
             ])))))),
             A2($author$project$Neat$View$grownColumnItem, "body", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), $author$project$Neat$Boundary$enableVerticalScroll(A2($author$project$Neat$Boundary$setMinHeightInEm, 10, $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
-                A2($author$project$Neat$View$columnItem, "sampleText", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), A2($author$project$Neat$Boundary$setMinWidthInEm, 16, A2($author$project$Neat$Boundary$setMaxHeightInEm, 25, $author$project$Neat$Boundary$fromTexts(_List_fromArray([
+                A2($author$project$Neat$View$columnItem, "sampleText", A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$fromTexts, $author$project$Gap$sub, _List_fromArray([
                     $author$project$Neat$Text$fromString("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "),
                     A2($author$project$Neat$Text$setNodeName, "code", A2($author$project$Neat$Text$setClass, "inlineCode", $author$project$Neat$Text$fromString("<eiusmod>"))),
                     $author$project$Neat$Text$fromString(" tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
-                ]))))))),
+                ])))),
                 A2($author$project$Neat$View$columnItem, "subBoxes", A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
                     A2($author$project$Neat$View$columnItem, "sampleBox1", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$sub, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), A2($author$project$Neat$Boundary$setMaxWidthInEm, 20, A2($author$project$Neat$Boundary$setMinWidthInEm, 10, A2($author$project$Neat$Boundary$setMinHeightInEm, 2, $author$project$Neat$Boundary$empty)))))),
                     A2($author$project$Neat$View$columnItem, "sampleBox2", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$sub, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), A2($author$project$Neat$Boundary$setMinWidthInEm, 7, A2($author$project$Neat$Boundary$setMinHeightInEm, 2, $author$project$Neat$Boundary$empty)))))
@@ -8286,14 +8331,14 @@ type alias Process =
                 }, $author$project$Neat$Boundary$toLayered(A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), A2($author$project$Neat$Boundary$setMaxWidthInEm, 20, $author$project$Neat$Boundary$empty)))), A2($author$project$Neat$Boundary$setMaxHeightInEm, 33, A2($author$project$Neat$Boundary$setMaxWidthInEm, 40, A2($author$project$Neat$Boundary$setMinWidthInEm, 37, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$alignRight($author$project$Neat$View$defaultRow), _List_fromArray([
                     A2($author$project$Neat$View$grownRowItem, "sampleBox", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), A2($author$project$Neat$Boundary$setMaxWidthInEm, 23, A2($author$project$Neat$Boundary$setMinWidthInEm, 12, A2($author$project$Neat$Boundary$setMinHeightInEm, 5, $author$project$Neat$Boundary$empty))))))
                 ])))))))))),
-                A2($author$project$Neat$View$leftItem, "content1", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("scrollableText_content"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
-                    A2($author$project$Neat$View$grownRowItem, "content", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, $author$project$Neat$Boundary$enableVerticalScroll(A2($author$project$Neat$Boundary$setMaxHeightInEm, 8, $author$project$Neat$Boundary$textBlock("foo000000\nbar\nbar\nbar\nfoo\nbar\nbar\nbar\n")))))
-                ])))))),
-                A2($author$project$Neat$View$columnItem, "content2", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("scrollableText_content"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
-                    A2($author$project$Neat$View$grownRowItem, "content", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, $author$project$Neat$Boundary$enableVerticalScroll(A2($author$project$Neat$Boundary$setMaxHeightInEm, 8, $author$project$Neat$Boundary$textBlock("foo000000\nbar\nbar\nbar")))))
-                ]))))))
+                A2($author$project$Neat$View$grownLeftItem, "content1", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("scrollableText_content"), A2($author$project$Neat$Boundary$setMaxHeightInEm, 8, A2($author$project$Neat$Boundary$setMinHeightInEm, 1, $author$project$Neat$Boundary$enableVerticalScroll($author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
+                    A2($author$project$Neat$View$grownRowItem, "content", A2($author$project$Neat$View$textBlock, $author$project$Gap$sub, "foo000000\nbar\nbar\nbar\nfoo\nbar\nbar\nbar\n"))
+                ]))))))))),
+                A2($author$project$Neat$View$grownColumnItem, "content2", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("scrollableText_content"), A2($author$project$Neat$Boundary$setMaxHeightInEm, 8, A2($author$project$Neat$Boundary$setMinHeightInEm, 1, $author$project$Neat$Boundary$enableVerticalScroll($author$project$Neat$View$setBoundary(A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
+                    A2($author$project$Neat$View$grownRowItem, "content", A2($author$project$Neat$View$textBlock, $author$project$Gap$sub, "foo000000\nbar\nbar\nbar"))
+                ]))))))))))
             ])))))))),
-            A2($author$project$Neat$View$columnItem, "footer", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("footer"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, $author$project$Neat$Boundary$textBlock("Footer"))))))
+            A2($author$project$Neat$View$columnItem, "footer", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("footer"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$textBlock, $author$project$Gap$body, "Footer")))))
         ])));
     };
     var $author$project$Neat$Internal$Renderer = function(a) {
@@ -8331,7 +8376,7 @@ type alias Process =
         return f($arowM$elm_mixin$Mixin$toAttributes($arowM$elm_mixin$Mixin$batch(mixins)));
     });
     var $arowM$elm_mixin$Mixin$Html$div = $arowM$elm_mixin$Mixin$lift($elm$html$Html$div);
-    var $author$project$Neat$neatLayoutStyle = '.elmNeatLayout,.elmNeatLayout:before,.elmNeatLayout:after{box-sizing:border-box;margin:0;padding:0}.elmNeatLayout--top{display:block;position:fixed;inset:0;overflow:hidden}.elmNeatLayout--overlay{pointer-events:none;top:var(--overlay-top);bottom:var(--overlay-bottom);left:var(--overlay-left);right:var(--overlay-right);z-index:var(--overlay-priority);display:block;position:absolute;overflow:hidden}.elmNeatLayout--boundary{overflow:hidden}.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--boundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller{height:100%;width:100%}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller-verticalScroll>.elmNeatLayout--boundaryContent{height:auto;min-height:100%}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller-horizontalScroll>.elmNeatLayout--boundaryContent{width:auto;min-width:100%}.elmNeatLayout--boundary-view-hasContent,.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller{padding:var(--inner-gap-y)var(--inner-gap-x)}.elmNeatLayout--boundary-text{overflow:visible}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin{height:auto;width:100%}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin:before{width:0;height:0;margin-top:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin:after{width:0;height:0;margin-bottom:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin>.elmNeatLayout--boundary_text{line-height:calc(1em + var(--outer-gap-y));display:inline}.elmNeatLayout--boundary-horizontalOverflow,.elmNeatLayout--boundary-horizontalOverflow>.elmNeatLayout--boundary_scroller{overflow-x:auto}.elmNeatLayout--boundary-verticalOverflow,.elmNeatLayout--boundary-verticalOverflow>.elmNeatLayout--boundary_scroller{overflow-y:auto}.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin{overflow-y:hidden}.elmNeatLayout--boundary-verticalOverflow>.elmNeatLayout--boundaryContent.elmNeatLayout--column{height:auto}.elmNeatLayout--boundary-hasMinHeight{min-height:var(--min-height)}.elmNeatLayout--boundary-hasMaxHeight:not(.elmNeatLayout--boundary-verticalOverflow){max-height:var(--max-height)}.elmNeatLayout--boundary-hasMinWidth{min-width:var(--min-width)}.elmNeatLayout--boundary-hasMaxWidth:not(.elmNeatLayout--boundary-horizontalOverflow){max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--rowChild{flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild:not(.elmNeatLayout--boundary-horizontalOverflow){width:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow){height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow).elmNeatLayout--rowChild-alignStretch,.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--max-height)}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize{height:auto;max-height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize.elmNeatLayout--boundary-hasMaxHeight{max-height:min(var(--max-height),100%)}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow{width:0;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--columnChild{flex-shrink:0}.elmNeatLayout--boundary.elmNeatLayout--columnChild:not(.elmNeatLayout--boundary-verticalOverflow){height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow){width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow).elmNeatLayout--columnChild-alignStretch,.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize{width:auto;max-width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize.elmNeatLayout--boundary-hasMaxWidth{max-width:min(var(--max-width),100%)}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow{height:0;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--max-height)}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow{height:auto;max-height:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight{max-height:min(var(--max-height),100%)}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow{width:auto;max-width:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth{max-width:min(var(--max-width),100%)}.elmNeatLayout--row{gap:var(--content-gap-y)var(--content-gap-x);flex-flow:row;display:flex}.elmNeatLayout--row.elmNeatLayout--row-wrap{flex-wrap:wrap}.elmNeatLayout--row.elmNeatLayout--row-justifyStart{justify-content:flex-start}.elmNeatLayout--row.elmNeatLayout--row-justifyCenter{justify-content:center}.elmNeatLayout--row.elmNeatLayout--row-justifyEnd{justify-content:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--row.elmNeatLayout--rowChild{width:auto;height:auto;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild{height:auto;width:100%;flex-shrink:0}.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--row.elmNeatLayout--boundaryContent{width:100%;height:100%}.elmNeatLayout--column{gap:var(--content-gap-y)var(--content-gap-x);flex-flow:column;display:flex}.elmNeatLayout--column.elmNeatLayout--column-justifyStart{justify-content:flex-start}.elmNeatLayout--column.elmNeatLayout--column-justifyCenter{justify-content:center}.elmNeatLayout--column.elmNeatLayout--column-justifyEnd{justify-content:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--column.elmNeatLayout--rowChild{width:auto;height:100%;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--column.elmNeatLayout--columnChild{height:auto;width:auto;flex-shrink:0}.elmNeatLayout--column.elmNeatLayout--boundaryContent{width:100%;height:100%}';
+    var $author$project$Neat$neatLayoutStyle = '.elmNeatLayout,.elmNeatLayout:before,.elmNeatLayout:after{box-sizing:border-box;margin:0;padding:0}.elmNeatLayout--top{display:block;position:fixed;inset:0;overflow:hidden}.elmNeatLayout--overlay{pointer-events:none;top:var(--overlay-top);bottom:var(--overlay-bottom);left:var(--overlay-left);right:var(--overlay-right);z-index:var(--overlay-priority);display:block;position:absolute;overflow:hidden}.elmNeatLayout--boundary{overflow:hidden}.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--boundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller{height:100%;width:100%}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller-verticalScroll>.elmNeatLayout--boundaryContent{height:auto;min-height:100%}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller-horizontalScroll>.elmNeatLayout--boundaryContent{width:auto;min-width:100%}.elmNeatLayout--boundary-view-hasContent,.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller{padding:var(--inner-gap-y)var(--inner-gap-x)}.elmNeatLayout--boundary-text{overflow:visible}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin{height:auto;width:100%}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin:before{width:0;height:0;margin-top:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin:after{width:0;height:0;margin-bottom:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin>.elmNeatLayout--boundary_text{line-height:calc(1em + var(--outer-gap-y));display:inline}.elmNeatLayout--boundary-horizontalOverflow,.elmNeatLayout--boundary-horizontalOverflow>.elmNeatLayout--boundary_scroller{overflow-x:auto}.elmNeatLayout--boundary-verticalOverflow,.elmNeatLayout--boundary-verticalOverflow>.elmNeatLayout--boundary_scroller{overflow-y:auto}.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin{overflow-y:hidden}.elmNeatLayout--boundary-verticalOverflow>.elmNeatLayout--boundaryContent.elmNeatLayout--column{height:auto}.elmNeatLayout--boundary-hasMinHeight{min-height:var(--min-height)}.elmNeatLayout--boundary-hasMaxHeight:not(.elmNeatLayout--boundary-verticalOverflow){max-height:var(--max-height)}.elmNeatLayout--boundary-hasMinWidth{min-width:var(--min-width)}.elmNeatLayout--boundary-hasMaxWidth:not(.elmNeatLayout--boundary-horizontalOverflow){max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--rowChild{flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild:not(.elmNeatLayout--boundary-horizontalOverflow){width:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow){height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow).elmNeatLayout--rowChild-alignStretch,.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--max-height)}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize{height:auto;max-height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize.elmNeatLayout--boundary-hasMaxHeight{max-height:min(var(--max-height),100%)}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow{width:0;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--columnChild{flex-shrink:0}.elmNeatLayout--boundary.elmNeatLayout--columnChild:not(.elmNeatLayout--boundary-verticalOverflow){height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow){width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow).elmNeatLayout--columnChild-alignStretch,.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize{width:auto;max-width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize.elmNeatLayout--boundary-hasMaxWidth{max-width:min(var(--max-width),100%)}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow{height:0;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--max-height)}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow{height:auto;max-height:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight{max-height:min(var(--max-height),100%)}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow{width:auto;max-width:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth{max-width:min(var(--max-width),100%)}.elmNeatLayout--row{gap:var(--content-gap-y)var(--content-gap-x);flex-flow:row;display:flex}.elmNeatLayout--row.elmNeatLayout--row-wrap{flex-wrap:wrap}.elmNeatLayout--row.elmNeatLayout--row-justifyStart{justify-content:flex-start}.elmNeatLayout--row.elmNeatLayout--row-justifyCenter{justify-content:center}.elmNeatLayout--row.elmNeatLayout--row-justifyEnd{justify-content:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--row.elmNeatLayout--rowChild{width:auto;height:auto;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild{height:auto;width:100%;flex-shrink:0}.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--row.elmNeatLayout--boundaryContent{width:100%;height:100%}.elmNeatLayout--column{gap:var(--content-gap-y)var(--content-gap-x);flex-flow:column;display:flex}.elmNeatLayout--column.elmNeatLayout--column-justifyStart{justify-content:flex-start}.elmNeatLayout--column.elmNeatLayout--column-justifyCenter{justify-content:center}.elmNeatLayout--column.elmNeatLayout--column-justifyEnd{justify-content:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--column.elmNeatLayout--rowChild{width:auto;height:100%;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--column.elmNeatLayout--columnChild{height:auto;width:auto;flex-shrink:0}.elmNeatLayout--column.elmNeatLayout--boundaryContent{width:100%;height:100%}.elmNeatLayout--textView{overflow:visible}.elmNeatLayout--textView>textView_textMargin{height:auto;width:100%}.elmNeatLayout--textView>textView_textMargin:before{width:0;height:0;margin-top:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--textView>textView_textMargin:after{width:0;height:0;margin-bottom:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--textView>textView_textMargin>.elmNeatLayout--textView_inline{line-height:calc(1em + var(--content-gap-y));display:inline}';
     var $arowM$elm_mixin$Mixin$Html$node = function(name) {
         return $arowM$elm_mixin$Mixin$lift($elm$html$Html$node(name));
     };
@@ -8463,6 +8508,35 @@ type alias Process =
         }
     };
     var $arowM$elm_mixin$Mixin$Html$text = $elm$html$Html$text;
+    var $author$project$Neat$renderTexts = F3(function(renderer, _v0, o) {
+        var self = _v0.self;
+        var consTexts = function(_v1) {
+            var t = _v1.a;
+            var ts = _v1.b;
+            return A2($elm$core$List$cons, t, ts);
+        };
+        var base = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+            o.mixin,
+            self,
+            $author$project$Neat$class("textView"),
+            A2($arowM$elm_mixin$Mixin$style, "--content-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.horizontal, renderer.baseSize))),
+            A2($arowM$elm_mixin$Mixin$style, "--content-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.vertical, renderer.baseSize)))
+        ]));
+        return A3($arowM$elm_mixin$Mixin$Html$node, o.nodeName, _List_fromArray([
+            base
+        ]), _List_fromArray([
+            A2($arowM$elm_mixin$Mixin$Html$div, _List_fromArray([
+                $author$project$Neat$class("textView_textMargin")
+            ]), A2($elm$core$List$map, function(inline) {
+                return A3($arowM$elm_mixin$Mixin$Html$node, inline.nodeName, _List_fromArray([
+                    inline.mixin,
+                    $author$project$Neat$class("textView_inline")
+                ]), _List_fromArray([
+                    $arowM$elm_mixin$Mixin$Html$text(inline.text)
+                ]));
+            }, consTexts(o.texts)))
+        ]));
+    });
     var $author$project$Neat$renderBoundary = F4(function(renderer, _v10, props, o) {
         var self = _v10.self;
         var overlays = $elm$core$List$reverse(o.overlays);
@@ -8729,6 +8803,9 @@ type alias Process =
             case "FromColumn":
                 var o = view.a;
                 return A3($author$project$Neat$renderColumn, renderer, childMixin, o);
+            case "FromTexts":
+                var o = view.a;
+                return A3($author$project$Neat$renderTexts, renderer, childMixin, o);
             default:
                 return $arowM$elm_mixin$Mixin$Html$text("");
         }
