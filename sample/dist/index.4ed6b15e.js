@@ -7821,6 +7821,38 @@ type alias Process =
             }
         }());
     });
+    var $author$project$Neat$Text$none = {
+        mixin: $arowM$elm_mixin$Mixin$none,
+        nodeName: "span",
+        text: ""
+    };
+    var $author$project$Neat$Text$fromString = function(str) {
+        if (str === "") return $author$project$Neat$Text$none;
+        else return {
+            mixin: $arowM$elm_mixin$Mixin$none,
+            nodeName: "span",
+            text: str
+        };
+    };
+    var $author$project$Neat$Internal$TextsContent = function(a) {
+        return {
+            $: "TextsContent",
+            a: a
+        };
+    };
+    var $elm$core$List$filter = F2(function(isGood, list) {
+        return A3($elm$core$List$foldr, F2(function(x, xs) {
+            return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+        }), _List_Nil, list);
+    });
+    var $author$project$Neat$Boundary$fromTexts = function(ls) {
+        var texts = A2($elm$core$List$filter, function(a) {
+            return a.text !== "";
+        }, ls);
+        return $author$project$Neat$Internal$Boundary(_Utils_update($author$project$Neat$Boundary$defaultBoundary, {
+            content: $elm$core$List$isEmpty(texts) ? $author$project$Neat$Internal$ViewContent($author$project$Neat$Internal$None) : $author$project$Neat$Internal$TextsContent(texts)
+        }));
+    };
     var $author$project$Neat$View$grownCenterItem = F2(function(key, _v0) {
         var content = _v0.a;
         return $author$project$Neat$Internal$ColumnItem({
@@ -7895,12 +7927,6 @@ type alias Process =
     var $author$project$Neat$Internal$StringContent = function(a) {
         return {
             $: "StringContent",
-            a: a
-        };
-    };
-    var $author$project$Neat$Internal$TextsContent = function(a) {
-        return {
-            $: "TextsContent",
             a: a
         };
     };
@@ -8087,6 +8113,27 @@ type alias Process =
             padding: $author$project$Neat$View$extractNominalGap(view)
         }));
     };
+    var $arowM$elm_mixin$Mixin$mempty = $arowM$elm_mixin$Mixin$Mixin({
+        attributes: _List_Nil,
+        styles: _List_Nil
+    });
+    var $arowM$elm_mixin$Mixin$batch = A2($elm$core$List$foldl, F2(function(_v0, _v1) {
+        var a = _v0.a;
+        var acc = _v1.a;
+        return $arowM$elm_mixin$Mixin$Mixin({
+            attributes: _Utils_ap(a.attributes, acc.attributes),
+            styles: _Utils_ap(a.styles, acc.styles)
+        });
+    }), $arowM$elm_mixin$Mixin$mempty);
+    var $author$project$Neat$Text$setMixin = F2(function(mixin, node) {
+        return _Utils_update(node, {
+            mixin: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+                node.mixin,
+                mixin
+            ]))
+        });
+    });
+    var $author$project$Neat$Text$setClass = A2($elm$core$Basics$composeL, $author$project$Neat$Text$setMixin, $arowM$elm_mixin$Mixin$class);
     var $author$project$Neat$Boundary$setGap = F2(function(_v0, _v1) {
         var gap = _v0.a;
         var boundary = _v1.a;
@@ -8143,18 +8190,6 @@ type alias Process =
         }));
     });
     var $author$project$Neat$Boundary$setMinWidthInEm = A2($elm$core$Basics$composeL, $author$project$Neat$Boundary$setMinWidth, $author$project$Neat$Internal$MinWidthInUnit("em"));
-    var $arowM$elm_mixin$Mixin$mempty = $arowM$elm_mixin$Mixin$Mixin({
-        attributes: _List_Nil,
-        styles: _List_Nil
-    });
-    var $arowM$elm_mixin$Mixin$batch = A2($elm$core$List$foldl, F2(function(_v0, _v1) {
-        var a = _v0.a;
-        var acc = _v1.a;
-        return $arowM$elm_mixin$Mixin$Mixin({
-            attributes: _Utils_ap(a.attributes, acc.attributes),
-            styles: _Utils_ap(a.styles, acc.styles)
-        });
-    }), $arowM$elm_mixin$Mixin$mempty);
     var $author$project$Neat$Boundary$setMixin = F2(function(_new, _v0) {
         var boundary = _v0.a;
         return $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
@@ -8163,6 +8198,11 @@ type alias Process =
                 _new
             ]))
         }));
+    });
+    var $author$project$Neat$Text$setNodeName = F2(function(str, text) {
+        return _Utils_update(text, {
+            nodeName: str
+        });
     });
     var $author$project$Neat$View$setNodeName = F2(function(str, _v0) {
         var view = _v0.a;
@@ -8201,32 +8241,6 @@ type alias Process =
         horizontal: 0.3,
         vertical: 0.3
     });
-    var $author$project$Neat$Text$none = {
-        mixin: $arowM$elm_mixin$Mixin$none,
-        nodeName: "span",
-        text: ""
-    };
-    var $author$project$Neat$Text$fromString = function(str) {
-        if (str === "") return $author$project$Neat$Text$none;
-        else return {
-            mixin: $arowM$elm_mixin$Mixin$none,
-            nodeName: "span",
-            text: str
-        };
-    };
-    var $elm$core$List$filter = F2(function(isGood, list) {
-        return A3($elm$core$List$foldr, F2(function(x, xs) {
-            return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-        }), _List_Nil, list);
-    });
-    var $author$project$Neat$Boundary$fromTexts = function(ls) {
-        var texts = A2($elm$core$List$filter, function(a) {
-            return a.text !== "";
-        }, ls);
-        return $author$project$Neat$Internal$Boundary(_Utils_update($author$project$Neat$Boundary$defaultBoundary, {
-            content: $elm$core$List$isEmpty(texts) ? $author$project$Neat$Internal$ViewContent($author$project$Neat$Internal$None) : $author$project$Neat$Internal$TextsContent(texts)
-        }));
-    };
     var $author$project$Neat$Boundary$textBlock = function(str) {
         return $author$project$Neat$Boundary$fromTexts(_List_fromArray([
             $author$project$Neat$Text$fromString(str)
@@ -8254,7 +8268,11 @@ type alias Process =
                 ]))))))))))
             ])))))),
             A2($author$project$Neat$View$grownColumnItem, "body", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), $author$project$Neat$Boundary$enableVerticalScroll(A2($author$project$Neat$Boundary$setMinHeightInEm, 10, $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
-                A2($author$project$Neat$View$columnItem, "sampleText", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), A2($author$project$Neat$Boundary$setMinWidthInEm, 16, A2($author$project$Neat$Boundary$setMaxHeightInEm, 25, $author$project$Neat$Boundary$textBlock("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")))))),
+                A2($author$project$Neat$View$columnItem, "sampleText", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), A2($author$project$Neat$Boundary$setMinWidthInEm, 16, A2($author$project$Neat$Boundary$setMaxHeightInEm, 25, $author$project$Neat$Boundary$fromTexts(_List_fromArray([
+                    $author$project$Neat$Text$fromString("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "),
+                    A2($author$project$Neat$Text$setNodeName, "code", A2($author$project$Neat$Text$setClass, "inlineCode", $author$project$Neat$Text$fromString("<eiusmod>"))),
+                    $author$project$Neat$Text$fromString(" tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
+                ]))))))),
                 A2($author$project$Neat$View$columnItem, "subBoxes", A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
                     A2($author$project$Neat$View$columnItem, "sampleBox1", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$sub, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), A2($author$project$Neat$Boundary$setMaxWidthInEm, 20, A2($author$project$Neat$Boundary$setMinWidthInEm, 10, A2($author$project$Neat$Boundary$setMinHeightInEm, 2, $author$project$Neat$Boundary$empty)))))),
                     A2($author$project$Neat$View$columnItem, "sampleBox2", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$sub, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), A2($author$project$Neat$Boundary$setMinWidthInEm, 7, A2($author$project$Neat$Boundary$setMinHeightInEm, 2, $author$project$Neat$Boundary$empty)))))

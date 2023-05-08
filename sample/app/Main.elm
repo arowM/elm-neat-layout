@@ -5,6 +5,7 @@ import Gap
 import Mixin
 import Neat
 import Neat.Boundary as Boundary exposing (Boundary)
+import Neat.Text as Text
 import Neat.View as View
 
 
@@ -95,8 +96,13 @@ body _ =
             |> View.columnItem "header"
         , View.column
             View.defaultColumn
-            [ Boundary.textBlock
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            [ Boundary.fromTexts
+                [ Text.fromString "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
+                , Text.fromString "<eiusmod>"
+                    |> Text.setClass "inlineCode"
+                    |> Text.setNodeName "code"
+                , Text.fromString " tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+                ]
                 -- |> Boundary.setMinHeightInEm 10
                 |> Boundary.setMaxHeightInEm 25
                 -- |> Boundary.setMaxWidthInEm 35
