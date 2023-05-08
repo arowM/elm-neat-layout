@@ -1,3 +1,7 @@
+# 3.2.0
+
+* Migrate `textBlock` and `fromTexts` from `Boundary` to `View`
+
 # 3.1.0
 
 * Add `Neat.View.expandGap` function
