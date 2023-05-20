@@ -408,7 +408,7 @@
   &--textView {
     overflow: visible;
 
-    & > #{textView}_textMargin {
+    & > #{$textView}_textMargin {
       height: auto;
       width: 100%;
 
