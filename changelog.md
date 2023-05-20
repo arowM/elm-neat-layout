@@ -1,3 +1,7 @@
+# 3.2.1
+
+* Bugfix about `Neat.View.textBlock`
+
 # 3.2.0
 
 * Migrate `textBlock` and `fromTexts` from `Boundary` to `View`
