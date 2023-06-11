@@ -1,3 +1,7 @@
+# 3.2.2
+
+* Bugfix about `Neat.Boundary.enableVerticalScroll`
+
 # 3.2.1
 
 * Bugfix about `Neat.View.textBlock`

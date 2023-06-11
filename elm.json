@@ -3,7 +3,7 @@
     "name": "arowM/elm-neat-layout",
     "summary": "Gap sensitive layout framework.",
     "license": "MIT",
-    "version": "3.2.1",
+    "version": "3.2.2",
     "exposed-modules": [
         "Neat",
         "Neat.Boundary",
