@@ -115,6 +115,10 @@
     &-verticalOverflow {
       overflow-y: auto;
 
+      &-wrapper {
+        overflow-y: hidden;
+      }
+
       & > #{$boundary}_scroller {
         overflow-y: auto;
       }
