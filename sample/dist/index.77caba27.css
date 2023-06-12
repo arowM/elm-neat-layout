@@ -88,15 +88,7 @@
   overflow-x: auto;
 }
 
-.elmNeatLayout--boundary-verticalOverflow {
-  overflow-y: auto;
-}
-
-.elmNeatLayout--boundary-verticalOverflow-wrapper {
-  overflow-y: hidden;
-}
-
-.elmNeatLayout--boundary-verticalOverflow > .elmNeatLayout--boundary_scroller {
+.elmNeatLayout--boundary-verticalOverflow, .elmNeatLayout--boundary-verticalOverflow > .elmNeatLayout--boundary_scroller {
   overflow-y: auto;
 }
 
@@ -384,12 +376,12 @@
   overflow: visible;
 }
 
-.elmNeatLayout--textView > .elmNeatLayout--textView_textMargin {
+.elmNeatLayout--textView > textView_textMargin {
   height: auto;
   width: 100%;
 }
 
-.elmNeatLayout--textView > .elmNeatLayout--textView_textMargin:before {
+.elmNeatLayout--textView > textView_textMargin:before {
   width: 0;
   height: 0;
   margin-top: calc(var(--outer-gap-y) / -2);
@@ -397,7 +389,7 @@
   display: block;
 }
 
-.elmNeatLayout--textView > .elmNeatLayout--textView_textMargin:after {
+.elmNeatLayout--textView > textView_textMargin:after {
   width: 0;
   height: 0;
   margin-bottom: calc(var(--outer-gap-y) / -2);
@@ -405,7 +397,7 @@
   display: block;
 }
 
-.elmNeatLayout--textView > .elmNeatLayout--textView_textMargin > .elmNeatLayout--textView_inline {
+.elmNeatLayout--textView > textView_textMargin > .elmNeatLayout--textView_inline {
   line-height: calc(1em + var(--content-gap-y));
   display: inline;
 }
