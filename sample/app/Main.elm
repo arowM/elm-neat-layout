@@ -57,9 +57,9 @@ view model =
 
 body : Model -> Boundary Msg
 body _ =
-    View.column
-        (View.defaultColumn
-            |> View.alignBottom
+    Boundary.column
+        (Boundary.defaultColumn
+            |> Boundary.alignBottom
         )
         [ View.row
             View.defaultRow
@@ -76,22 +76,17 @@ body _ =
                 (View.defaultRow
                     |> View.alignCenter
                 )
-                [ View.textBlock Neat.noGap "三"
+                [ View.textBlock Gap.body "三"
                     |> View.middleItem "icon"
                 ]
                 |> View.setBoundary
-                |> Boundary.setMinWidthInEm 3
-                |> Boundary.setMaxWidthInEm 3
-                |> Boundary.setMinHeightInEm 3
-                |> Boundary.setMaxHeightInEm 3
                 |> Boundary.setMixin (Mixin.class "header_hamburger")
                 |> Boundary.setGap Gap.body
                 |> View.middleItem "hamburger"
             ]
             |> View.setBoundary
             |> Boundary.setMixin (Mixin.class "header")
-            |> Boundary.setGap Neat.noGap
-            |> View.columnItem "header"
+            |> Boundary.columnItem "header"
         , View.column
             View.defaultColumn
             [ View.fromTexts Gap.sub
@@ -117,10 +112,20 @@ body _ =
                     |> Boundary.setMinWidthInEm 7
                     |> Boundary.setMixin (Mixin.class "blue")
                     |> Boundary.setGap Gap.sub
-                    |> View.columnItem "sampleBox2"
+                    |> View.grownColumnItem "sampleBox2"
                 ]
                 |> View.expandGap Gap.body
-                |> View.columnItem "subBoxes"
+                |> View.grownColumnItem "subBoxes"
+            , View.column
+                View.defaultColumn
+                [ View.textBlock Gap.body "Summary"
+                    |> View.setNodeName "summary"
+                    |> View.columnItem "summary"
+                , View.textBlock Gap.body "Foo"
+                    |> View.columnItem "body"
+                ]
+                |> View.setNodeName "details"
+                |> View.columnItem "details"
             , View.row
                 (View.defaultRow
                     |> View.alignRight
@@ -158,7 +163,7 @@ body _ =
                     |> View.grownRowItem "content"
                 ]
                 |> View.setBoundary
-                |> Boundary.enableVerticalScroll
+                |> Boundary.setVerticalScroller
                 |> Boundary.setMinHeightInEm 1
                 |> Boundary.setMaxHeightInEm 8
                 |> Boundary.setMixin (Mixin.class "scrollableText_content")
@@ -171,7 +176,7 @@ body _ =
                 ]
                 |> View.expandGap Gap.body
                 |> View.setBoundary
-                |> Boundary.enableVerticalScroll
+                |> Boundary.setVerticalScroller
                 |> Boundary.setMinHeightInEm 1
                 |> Boundary.setMaxHeightInEm 8
                 |> Boundary.setMixin (Mixin.class "scrollableText_content")
@@ -179,18 +184,15 @@ body _ =
                 |> View.grownColumnItem "content2"
             ]
             |> View.setBoundary
+            |> Boundary.setVerticalScroller
             |> Boundary.setMinHeightInEm 10
-            |> Boundary.enableVerticalScroll
             |> Boundary.setMixin (Mixin.class "blue")
-            |> Boundary.setGap Neat.noGap
-            |> View.grownColumnItem "body"
+            |> Boundary.grownColumnItem "body"
         , View.textBlock Gap.body "Footer"
             |> View.setBoundary
             |> Boundary.setMixin (Mixin.class "footer")
-            |> Boundary.setGap Neat.noGap
-            |> View.columnItem "footer"
+            |> Boundary.columnItem "footer"
         ]
-        |> View.setBoundary
 
 
 subscriptions : Model -> Sub Msg

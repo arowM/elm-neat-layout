@@ -89,7 +89,7 @@ fromString str =
 
         _ ->
             { mixin = Mixin.none
-            , nodeName = "span"
+            , nodeName = Nothing
             , text = str
             }
 
@@ -111,7 +111,7 @@ In most cases, a function such as `when` will suffice, though.
 none : Text msg
 none =
     { mixin = Mixin.none
-    , nodeName = "span"
+    , nodeName = Nothing
     , text = ""
     }
 
@@ -231,14 +231,11 @@ withMaybe ma f =
 setNodeName : String -> Text msg -> Text msg
 setNodeName str text =
     { text
-        | nodeName = str
+        | nodeName = Just str
     }
 
 
 {-| -}
 map : (a -> b) -> Text a -> Text b
-map f text =
-    { mixin = Mixin.map f text.mixin
-    , nodeName = text.nodeName
-    , text = text.text
-    }
+map =
+    Internal.mapText

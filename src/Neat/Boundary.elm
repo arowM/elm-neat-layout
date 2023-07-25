@@ -23,8 +23,38 @@ module Neat.Boundary exposing
     , setMaxHeightInBs
     , setMaxHeightInEm
     , setMaxHeightInRem
-    , enableVerticalScroll
-    , enableHorizontalScroll
+    , row
+    , Row
+    , defaultRow
+    , enableWrap
+    , enableHScroll
+    , RowItem
+    , alignCenter
+    , alignRight
+    , rowItem
+    , topItem
+    , middleItem
+    , bottomItem
+    , grownRowItem
+    , grownTopItem
+    , grownMiddleItem
+    , grownBottomItem
+    , column
+    , Column
+    , defaultColumn
+    , enableVScroll
+    , setVerticalScroller
+    , ColumnItem
+    , alignMiddle
+    , alignBottom
+    , columnItem
+    , leftItem
+    , centerItem
+    , rightItem
+    , grownColumnItem
+    , grownLeftItem
+    , grownCenterItem
+    , grownRightItem
     , putLayer
     , Layer
     , defaultLayer
@@ -37,10 +67,6 @@ module Neat.Boundary exposing
     , withMaybe
     , setGap
     , setNodeName
-    , html
-    , htmlNode
-    , textBlock
-    , fromTexts
     )
 
 {-| Module for building `Boundary`.
@@ -79,7 +105,7 @@ The following styles are not reflected by the `style` attribute or CSS files.
   - position
       - Use putLayer
   - line-height
-      - Specify with `textBlock`
+      - Specify with `Neat.View.textBlock` of `Neat.View.fromTexts`
 
 @docs setMixin
 @docs setMixins
@@ -138,10 +164,64 @@ The default value for maximum height is _fit_, which shrinks as much as its chil
 @docs setMaxHeightInRem
 
 
-# Scroll
+# Row
 
-@docs enableVerticalScroll
-@docs enableHorizontalScroll
+@docs row
+
+
+## Config
+
+@docs Row
+@docs defaultRow
+@docs enableWrap
+@docs enableHScroll
+@docs RowItem
+@docs alignCenter
+@docs alignRight
+
+
+## Item
+
+Each function has the `String` argument, which helps make the DOM modifications more efficient. It must be unique among items in the same row.
+
+@docs rowItem
+@docs topItem
+@docs middleItem
+@docs bottomItem
+@docs grownRowItem
+@docs grownTopItem
+@docs grownMiddleItem
+@docs grownBottomItem
+
+
+# Column
+
+@docs column
+
+
+## Config
+
+@docs Column
+@docs defaultColumn
+@docs enableVScroll
+@docs setVerticalScroller
+@docs ColumnItem
+@docs alignMiddle
+@docs alignBottom
+
+
+## Item
+
+Each function has the `String` argument, which helps make the DOM modifications more efficient. It must be unique among items in the same row.
+
+@docs columnItem
+@docs leftItem
+@docs centerItem
+@docs rightItem
+@docs grownColumnItem
+@docs grownLeftItem
+@docs grownCenterItem
+@docs grownRightItem
 
 
 # Overlay
@@ -170,14 +250,6 @@ The default value for maximum height is _fit_, which shrinks as much as its chil
 # Lower level functions for HTML
 
 @docs setNodeName
-@docs html
-@docs htmlNode
-
-
-# DEPRECATED
-
-@docs textBlock
-@docs fromTexts
 
 -}
 
@@ -185,24 +257,28 @@ import Html exposing (Attribute)
 import Mixin exposing (Mixin)
 import Neat.Internal as Internal
     exposing
-        ( Boundary(..)
-        , Boundary_
-        , Children(..)
-        , Content(..)
-        , Gap
+        ( Alignment(..)
+        , Boundary(..)
+        , BoundaryProps
+        , Boundary_(..)
+        , ChildBoundaries(..)
+        , ColumnBoundary_
         , IsGap(..)
-        , Item_
+        , ItemBoundary_
+        , Justify(..)
         , Layered(..)
         , MaxHeight(..)
         , MaxWidth(..)
         , MinHeight(..)
         , MinWidth(..)
-        , Overlay
+        , Overlay(..)
+        , RowBoundary_
         , Size(..)
         , View(..)
         , View_(..)
+        , defaultBoundaryProps
+        , mapBoundary
         )
-import Neat.Text as Text exposing (Text)
 
 
 
@@ -218,174 +294,14 @@ type alias Boundary msg =
     Internal.Boundary msg
 
 
-defaultBoundary : Boundary_ msg
-defaultBoundary =
-    { mixin = Mixin.none
-    , nodeName = "div"
-    , padding = emptyGap
-    , overlays = []
-    , width = MinSize
-    , minWidth = MinWidthInUnit "" 0
-    , maxWidth = MaxWidthFit
-    , horizontalOverflow = False
-    , height = MinSize
-    , minHeight = MinHeightInUnit "" 0
-    , maxHeight = MaxHeightFit
-    , verticalOverflow = False
-    , content = NoContent
-    , enforcePointerEvent = False
-    }
-
-
-emptyGap : Gap
-emptyGap =
-    { vertical = 0
-    , horizontal = 0
-    }
-
-
-mapView_ : (a -> b) -> View_ a -> View_ b
-mapView_ f view =
-    case view of
-        FromBoundary g boundary ->
-            FromBoundary g <| mapBoundary_ f boundary
-
-        FromRow o ->
-            FromRow
-                { mixin = Mixin.map f o.mixin
-                , nominalGap = o.nominalGap
-                , contentGap = o.contentGap
-                , nodeName = o.nodeName
-                , justifyContent = o.justifyContent
-                , children = modifyChild (mapView_ f) o.children
-                , wrap = o.wrap
-                }
-
-        FromColumn o ->
-            FromColumn
-                { mixin = Mixin.map f o.mixin
-                , nominalGap = o.nominalGap
-                , contentGap = o.contentGap
-                , nodeName = o.nodeName
-                , justifyContent = o.justifyContent
-                , children = modifyChild (mapView_ f) o.children
-                }
-
-        FromTexts o ->
-            FromTexts
-                { mixin = Mixin.map f o.mixin
-                , nominalGap = o.nominalGap
-                , contentGap = o.contentGap
-                , nodeName = o.nodeName
-                , texts =
-                    let
-                        ( head, tail ) =
-                            o.texts
-                    in
-                    ( Text.map f head
-                    , List.map (Text.map f) tail
-                    )
-                }
-
-        None ->
-            None
-
-
-modifyChild : (View_ a -> View_ b) -> Children a -> Children b
-modifyChild f (Children item0 items) =
-    let
-        modifyContent : Item_ a -> Item_ b
-        modifyContent item =
-            { alignSelf = item.alignSelf
-            , grow = item.grow
-            , key = item.key
-            , content = f item.content
-            }
-    in
-    List.map modifyContent items
-        |> Children (modifyContent item0)
-
-
 {-| -}
 map : (a -> b) -> Boundary a -> Boundary b
 map =
-    mapBoundary
-
-
-mapBoundary : (a -> b) -> Boundary a -> Boundary b
-mapBoundary f (Boundary boundary) =
-    mapBoundary_ f boundary
-        |> Boundary
-
-
-mapBoundary_ : (a -> b) -> Boundary_ a -> Boundary_ b
-mapBoundary_ f o =
-    { mixin = Mixin.map f o.mixin
-    , nodeName = o.nodeName
-    , padding = o.padding
-    , overlays = mapOverlays f o.overlays
-    , width = o.width
-    , minWidth = o.minWidth
-    , maxWidth = o.maxWidth
-    , horizontalOverflow = o.horizontalOverflow
-    , height = o.height
-    , minHeight = o.minHeight
-    , maxHeight = o.maxHeight
-    , verticalOverflow = o.verticalOverflow
-    , content =
-        case o.content of
-            TextsContent texts ->
-                TextsContent <| List.map (Text.map f) texts
-
-            ViewContent view ->
-                ViewContent <| mapView_ f view
-
-            HtmlContent children ->
-                HtmlContent <|
-                    List.map
-                        (\( k, b ) ->
-                            ( k, mapBoundary_ f b )
-                        )
-                        children
-
-            StringContent str ->
-                StringContent str
-
-            NoContent ->
-                NoContent
-    , enforcePointerEvent = o.enforcePointerEvent
-    }
-
-
-mapOverlays : (a -> b) -> List (Overlay a) -> List (Overlay b)
-mapOverlays f =
-    List.map
-        (\o ->
-            { name = o.name
-            , area = o.area
-            , boundary = mapBoundary f o.boundary
-            }
-        )
+    Internal.mapBoundary
 
 
 
 -- Primitive Constructors
-
-
-{-| ⚠ DEPRECATED ⚠
-
-Generates a boundary view that displays a text.
-
-It is an alias for `\str -> fromTexts [ Neat.Text.fromString str ]`.
-
-Note that `textBlock ""` is equivalent to `empty`.
-
--}
-textBlock : String -> Boundary msg
-textBlock str =
-    fromTexts
-        [ Text.fromString str
-        ]
 
 
 {-| An empty block.
@@ -393,61 +309,8 @@ textBlock str =
 empty : Boundary msg
 empty =
     Boundary
-        { defaultBoundary
-            | content = ViewContent None
-        }
-
-
-{-| ⚠ DEPRECATED ⚠
-
-Build a text block from `Text`s.
-
-Unlike a `Neat.View.row` consist of `textBlock`s, the `fromTexts` generates a single coherent sentence.
-
-For example, the `View` built by the following code will be broken as follows:
-
-    Neat.View.row
-        [ textBlock "foo bar baz"
-            |> setGap myGap
-            |> Neat.View.rowItem "elem1"
-        , textBlock "a b c d e f"
-            |> setGap myGap
-            |> Neat.View.rowItem "elem2"
-        ]
-
-    | foo bar | a b c d |
-    | baz     | e f     |
-
-In contrast, the `View` built by the following code will be broken as follows:
-
-    import Neat.Text as Text
-
-    fromTexts
-        [ Text.fromString "foo bar baz"
-        , Text.fromString "a b c d e f"
-        ]
-
-    | foo bar baz a b c |
-    | d e f             |
-
-The gap height between lines will be the same as the gap height set with the `setGap` function.
-
--}
-fromTexts : List (Text msg) -> Boundary msg
-fromTexts ls =
-    let
-        texts =
-            List.filter (\a -> a.text /= "") ls
-    in
-    Boundary
-        { defaultBoundary
-            | content =
-                if List.isEmpty texts then
-                    ViewContent None
-
-                else
-                    TextsContent texts
-        }
+        defaultBoundaryProps
+        EmptyBoundary
 
 
 
@@ -457,8 +320,16 @@ fromTexts ls =
 {-| Append `Mixin` on boundaries.
 -}
 setMixin : Mixin msg -> Boundary msg -> Boundary msg
-setMixin new (Boundary boundary) =
-    Boundary { boundary | mixin = Mixin.batch [ boundary.mixin, new ] }
+setMixin new =
+    modifyProps <|
+        \props ->
+            { props
+                | mixin =
+                    Mixin.batch
+                        [ props.mixin
+                        , new
+                        ]
+            }
 
 
 {-| Same as `setMixin` but takes a list of `Mixin`s.
@@ -558,9 +429,21 @@ setMinWidthInRem =
     setMinWidth << MinWidthInUnit "rem"
 
 
+modifyProps : (BoundaryProps msg -> BoundaryProps msg) -> Boundary msg -> Boundary msg
+modifyProps f boundary =
+    case boundary of
+        NoneBoundary ->
+            NoneBoundary
+
+        Boundary props content ->
+            Boundary (f props) content
+
+
 setMinWidth : MinWidth -> Boundary msg -> Boundary msg
-setMinWidth length (Boundary boundary) =
-    Boundary { boundary | minWidth = length }
+setMinWidth length =
+    modifyProps <|
+        \props ->
+            { props | minWidth = length }
 
 
 {-| Set the minimum height as a percentage of the _base size_.
@@ -592,8 +475,10 @@ setMinHeightInRem =
 
 
 setMinHeight : MinHeight -> Boundary msg -> Boundary msg
-setMinHeight length (Boundary boundary) =
-    Boundary { boundary | minHeight = length }
+setMinHeight length =
+    modifyProps <|
+        \props ->
+            { props | minHeight = length }
 
 
 {-| Set the maximum width as a percentage of the _base size_.
@@ -625,12 +510,13 @@ setMaxWidthInRem =
 
 
 setMaxWidth : MaxWidth -> Boundary msg -> Boundary msg
-setMaxWidth length (Boundary boundary) =
-    Boundary
-        { boundary
-            | maxWidth = length
-            , width = FlexSize
-        }
+setMaxWidth length =
+    modifyProps <|
+        \props ->
+            { props
+                | maxWidth = length
+                , width = FlexSize
+            }
 
 
 {-| Set the maximum height as a percentage of the _base size_.
@@ -662,34 +548,495 @@ setMaxHeightInRem =
 
 
 setMaxHeight : MaxHeight -> Boundary msg -> Boundary msg
-setMaxHeight length (Boundary boundary) =
-    Boundary
-        { boundary
-            | maxHeight = length
-            , height = FlexSize
-        }
+setMaxHeight length =
+    modifyProps <|
+        \props ->
+            { props
+                | maxHeight = length
+                , height = FlexSize
+            }
 
 
 
--- Scroll
+-- Row
+
+
+{-| Align children horizontally.
+-}
+row : Row -> List (RowItem msg) -> Boundary msg
+row (Row { justify, wrap, scrollable }) children_ =
+    let
+        children =
+            children_
+                |> List.filterMap
+                    (\item ->
+                        case item of
+                            NoneRowItem ->
+                                Nothing
+
+                            RowItem item_ ->
+                                Just item_
+                    )
+    in
+    case children of
+        [] ->
+            NoneBoundary
+
+        item :: items ->
+            let
+                row_ =
+                    defaultRowBoundary_ <|
+                        ChildBoundaries
+                            { head = item
+                            , tail = items
+                            }
+            in
+            Boundary defaultBoundaryProps <|
+                RowBoundary
+                    { row_
+                        | justifyContent = justify
+                        , wrap = wrap
+                        , scrollable = scrollable
+                    }
+
+
+defaultRowBoundary_ : ChildBoundaries msg -> RowBoundary_ msg
+defaultRowBoundary_ children =
+    { children = children
+    , justifyContent = JustifyStart
+    , wrap = False
+    , scrollable = False
+    }
 
 
 {-| -}
-enableVerticalScroll : Boundary msg -> Boundary msg
-enableVerticalScroll (Boundary boundary) =
-    Boundary
-        { boundary
-            | verticalOverflow = True
+type Row
+    = Row RowConfig
+
+
+type alias RowConfig =
+    { justify : Justify
+    , wrap : Bool
+    , scrollable : Bool
+    }
+
+
+{-| Default setting for rows.
+
+  - horizontal alignment: left
+  - wrapping: disabled
+  - horizontal scroll: disabled
+
+-}
+defaultRow : Row
+defaultRow =
+    Row
+        { justify = JustifyStart
+        , wrap = False
+        , scrollable = False
         }
 
 
 {-| -}
-enableHorizontalScroll : Boundary msg -> Boundary msg
-enableHorizontalScroll (Boundary boundary) =
-    Boundary
-        { boundary
-            | horizontalOverflow = True
+enableWrap : Row -> Row
+enableWrap (Row config) =
+    Row
+        { config | wrap = True }
+
+
+{-| -}
+enableHScroll : Row -> Row
+enableHScroll (Row config) =
+    Row
+        { config | scrollable = True }
+
+
+{-| -}
+type RowItem msg
+    = RowItem (ItemBoundary_ msg)
+    | NoneRowItem
+
+
+{-| -}
+alignCenter : Row -> Row
+alignCenter (Row config) =
+    Row
+        { config | justify = JustifyCenter }
+
+
+{-| -}
+alignRight : Row -> Row
+alignRight (Row config) =
+    Row
+        { config | justify = JustifyEnd }
+
+
+rowItem_ : (BoundaryProps msg -> Boundary_ msg -> ItemBoundary_ msg) -> Boundary msg -> RowItem msg
+rowItem_ f boundary =
+    case boundary of
+        NoneBoundary ->
+            NoneRowItem
+
+        Boundary props boundary_ ->
+            RowItem <| f props boundary_
+
+
+{-| Row item with stretched height.
+-}
+rowItem : String -> Boundary msg -> RowItem msg
+rowItem key =
+    rowItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignStretch
+            , grow = False
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Row item with stretched height and width.
+-}
+grownRowItem : String -> Boundary msg -> RowItem msg
+grownRowItem key =
+    rowItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignStretch
+            , grow = True
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Top-aligned item.
+-}
+topItem : String -> Boundary msg -> RowItem msg
+topItem key =
+    rowItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignStart
+            , grow = False
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Top-aligned item which grows its width as much as possible.
+-}
+grownTopItem : String -> Boundary msg -> RowItem msg
+grownTopItem key =
+    rowItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignStart
+            , grow = True
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Vertically centered item.
+-}
+middleItem : String -> Boundary msg -> RowItem msg
+middleItem key =
+    rowItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignCenter
+            , grow = False
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Vertically centered item which grows its width as much as possible.
+-}
+grownMiddleItem : String -> Boundary msg -> RowItem msg
+grownMiddleItem key =
+    rowItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignCenter
+            , grow = True
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Bottom-aligned item.
+-}
+bottomItem : String -> Boundary msg -> RowItem msg
+bottomItem key =
+    rowItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignEnd
+            , grow = False
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Bottom-aligned item which grows its width as much as possible.
+-}
+grownBottomItem : String -> Boundary msg -> RowItem msg
+grownBottomItem key =
+    rowItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignEnd
+            , grow = True
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+
+-- Column
+
+
+{-| Align children horizontally.
+-}
+column : Column -> List (ColumnItem msg) -> Boundary msg
+column (Column { justify, scrollable }) children_ =
+    let
+        children =
+            children_
+                |> List.filterMap
+                    (\item ->
+                        case item of
+                            NoneColumnItem ->
+                                Nothing
+
+                            ColumnItem item_ ->
+                                Just item_
+                    )
+    in
+    case children of
+        [] ->
+            NoneBoundary
+
+        item :: items ->
+            let
+                column_ =
+                    defaultColumnBoundary_ <|
+                        ChildBoundaries
+                            { head = item
+                            , tail = items
+                            }
+            in
+            Boundary defaultBoundaryProps <|
+                ColumnBoundary
+                    { column_
+                        | justifyContent = justify
+                        , scrollable = scrollable
+                    }
+
+
+defaultColumnBoundary_ : ChildBoundaries msg -> ColumnBoundary_ msg
+defaultColumnBoundary_ children =
+    { children = children
+    , justifyContent = JustifyStart
+    , scrollable = False
+    }
+
+
+{-| -}
+type Column
+    = Column ColumnConfig
+
+
+type alias ColumnConfig =
+    { justify : Justify
+    , scrollable : Bool
+    }
+
+
+{-| Default setting for columns.
+
+  - vertical alignment: top
+  - vertical scroll: disabled
+
+-}
+defaultColumn : Column
+defaultColumn =
+    Column
+        { justify = JustifyStart
+        , scrollable = False
         }
+
+
+{-| Enable vertical scroll.
+-}
+enableVScroll : Column -> Column
+enableVScroll (Column config) =
+    Column
+        { config | scrollable = True }
+
+
+{-| Just for convenience.
+
+    setVerticalScroller boundary =
+        column
+            (defaultColumn
+                |> enableVScroll
+            )
+            [ grownColumnItem "content" boundary
+            ]
+
+-}
+setVerticalScroller : Boundary msg -> Boundary msg
+setVerticalScroller boundary =
+    column
+        (defaultColumn
+            |> enableVScroll
+        )
+        [ grownColumnItem "content" boundary
+        ]
+
+
+{-| -}
+type ColumnItem msg
+    = ColumnItem (ItemBoundary_ msg)
+    | NoneColumnItem
+
+
+{-| -}
+alignMiddle : Column -> Column
+alignMiddle (Column config) =
+    Column
+        { config | justify = JustifyCenter }
+
+
+{-| -}
+alignBottom : Column -> Column
+alignBottom (Column config) =
+    Column
+        { config | justify = JustifyEnd }
+
+
+columnItem_ : (BoundaryProps msg -> Boundary_ msg -> ItemBoundary_ msg) -> Boundary msg -> ColumnItem msg
+columnItem_ f boundary =
+    case boundary of
+        NoneBoundary ->
+            NoneColumnItem
+
+        Boundary props boundary_ ->
+            ColumnItem <| f props boundary_
+
+
+{-| Column item with stretched height.
+-}
+columnItem : String -> Boundary msg -> ColumnItem msg
+columnItem key =
+    columnItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignStretch
+            , grow = False
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Column item with stretched height and width.
+-}
+grownColumnItem : String -> Boundary msg -> ColumnItem msg
+grownColumnItem key =
+    columnItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignStretch
+            , grow = True
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Left-aligned item.
+-}
+leftItem : String -> Boundary msg -> ColumnItem msg
+leftItem key =
+    columnItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignStart
+            , grow = False
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Left-aligned item which grows its width as much as possible.
+-}
+grownLeftItem : String -> Boundary msg -> ColumnItem msg
+grownLeftItem key =
+    columnItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignStart
+            , grow = True
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Horizontally centered item.
+-}
+centerItem : String -> Boundary msg -> ColumnItem msg
+centerItem key =
+    columnItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignCenter
+            , grow = False
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Horizontally centered item which grows its width as much as possible.
+-}
+grownCenterItem : String -> Boundary msg -> ColumnItem msg
+grownCenterItem key =
+    columnItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignCenter
+            , grow = True
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Right-aligned item.
+-}
+rightItem : String -> Boundary msg -> ColumnItem msg
+rightItem key =
+    columnItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignEnd
+            , grow = False
+            , key = key
+            , props = props
+            , content = boundary_
+            }
+
+
+{-| Right-aligned item which grows its width as much as possible.
+-}
+grownRightItem : String -> Boundary msg -> ColumnItem msg
+grownRightItem key =
+    columnItem_ <|
+        \props boundary_ ->
+            { alignSelf = AlignEnd
+            , grow = True
+            , key = key
+            , props = props
+            , content = boundary_
+            }
 
 
 
@@ -734,16 +1081,24 @@ defaultLayer =
 {-| Put overlay layer on the parent view.
 -}
 putLayer : String -> ( Layer, Boundary (Layered msg) ) -> Boundary msg -> Boundary msg
-putLayer name ( area, layered ) (Boundary boundary) =
-    Boundary
-        { boundary
-            | overlays =
-                { name = name
-                , area = area
-                , boundary = mapBoundary (\(Layered a) -> a) layered
-                }
-                    :: boundary.overlays
-        }
+putLayer name ( area, layered ) =
+    modifyProps <|
+        \props ->
+            { props
+                | overlays =
+                    case mapBoundary (\(Layered a) -> a) layered of
+                        NoneBoundary ->
+                            props.overlays
+
+                        Boundary props_ boundary_ ->
+                            Overlay
+                                { name = name
+                                , area = area
+                                , props = props_
+                                , boundary_ = boundary_
+                                }
+                                :: props.overlays
+            }
 
 
 {-| -}
@@ -760,11 +1115,14 @@ mapLayered f =
 {-| Convert `Boundary` for `putLayer`. The `Boundary (Layered msg)` ignores pointer events; this feature is especially helpfull for realizing popups with clickable background.
 -}
 toLayered : Boundary msg -> Boundary (Layered msg)
-toLayered (Boundary boundary) =
-    Boundary
-        { boundary
-            | enforcePointerEvent = True
-        }
+toLayered boundary =
+    modifyProps
+        (\props ->
+            { props
+                | enforcePointerEvent = True
+            }
+        )
+        boundary
         |> mapBoundary Layered
 
 
@@ -785,7 +1143,7 @@ This is useful for handling elements which only appears under certain conditions
 -}
 none : Boundary a
 none =
-    Boundary defaultBoundary
+    NoneBoundary
 
 
 {-| Insert a view only when a condition is met.
@@ -825,14 +1183,13 @@ withMaybe ma f =
 {-| Set Gap around a view.
 -}
 setGap : IsGap gap -> Boundary msg -> View gap msg
-setGap (IsGap gap) (Boundary boundary) =
-    View <|
-        case boundary.content of
-            NoContent ->
-                None
+setGap (IsGap gap) boundary =
+    case boundary of
+        NoneBoundary ->
+            None
 
-            _ ->
-                FromBoundary gap boundary
+        Boundary props boundary_ ->
+            View <| FromBoundary gap props boundary_
 
 
 
@@ -842,80 +1199,7 @@ setGap (IsGap gap) (Boundary boundary) =
 {-| Set HTML node name on `Boundary`.
 -}
 setNodeName : String -> Boundary msg -> Boundary msg
-setNodeName str (Boundary boundary) =
-    Boundary { boundary | nodeName = str }
-
-
-{-| Build HTML tag. When you need to build a HTML tag with its children, `html` will help you.
-
-    animalSelect : Maybe Animal -> Boundary msg
-    animalSelect animal =
-        Boundary.html "select"
-            [ animalOption Nothing animal
-            , animalOption (Just Goat) animal
-            , animalOption (Just Dog) animal
-            , animalOption (Just Cat) animal
-            ]
-            |> Boundary.setMixin
-                (Mixin.Events.onChange ChangeAnimal)
-
--}
-html : String -> List ( String, Boundary msg ) -> Boundary msg
-html tag children_ =
-    let
-        children =
-            List.map (\( key, Boundary boundary_ ) -> ( key, boundary_ )) children_
-    in
-    Boundary
-        { defaultBoundary
-            | content = HtmlContent children
-            , nodeName = tag
-        }
-
-
-{-| A special `Boundary` which only has text content. For example, you can use `htmlNode` to build `option` tag.
-
-    animalOption :
-        Maybe Animal
-        -> Maybe Animal
-        -> ( String, Boundary msg )
-    animalOption animal selected =
-        let
-            key =
-                animal
-                    |> Maybe.map Animal.toValue
-                    |> Maybe.withDefault "default"
-
-            disabled =
-                animal == Nothing
-
-            selected =
-                animal == selected
-
-            value =
-                animal
-                    |> Maybe.map Animal.toValue
-                    |> Maybe.withDefault ""
-
-            label =
-                animal
-                    |> Maybe.map Animal.toLabel
-                    |> Maybe.withDefault "-- Select one --"
-        in
-        ( key
-        , Boundary.htmlNode "option" label
-            |> Boundary.setAttributes
-                [ Attributes.disabled disabled
-                , Attributes.selected selected
-                , Attributes.value value
-                ]
-        )
-
--}
-htmlNode : String -> String -> Boundary msg
-htmlNode tag text =
-    Boundary
-        { defaultBoundary
-            | content = StringContent text
-            , nodeName = tag
-        }
+setNodeName str =
+    modifyProps <|
+        \props ->
+            { props | nodeName = str }

@@ -1,8 +1,6 @@
 module Neat exposing
     ( View
     , Boundary
-    , NoGap
-    , noGap
     , render
     , Renderer
     , defaultRenderer
@@ -22,8 +20,6 @@ module Neat exposing
 
 @docs View
 @docs Boundary
-@docs NoGap
-@docs noGap
 
 
 # Render
@@ -65,31 +61,35 @@ You can use custom gaps just by declaring new types and `IsGap` values for them.
 
 import Mixin exposing (Mixin)
 import Mixin.Html as Html exposing (Html)
+import Neat.Boundary
 import Neat.Internal as Internal
     exposing
         ( Alignment(..)
         , BaseSize(..)
         , Boundary(..)
-        , Boundary_
+        , BoundaryProps
+        , Boundary_(..)
+        , ChildBoundaries(..)
         , Children(..)
+        , ColumnBoundary_
         , Column_
-        , Content(..)
         , Gap
         , IsGap(..)
-        , Item_
+        , Justify(..)
         , MaxHeight(..)
         , MaxWidth(..)
         , MinHeight(..)
         , MinWidth(..)
-        , Overlay
+        , Overlay(..)
         , Renderer(..)
         , Renderer_
+        , RowBoundary_
         , Row_
         , Size(..)
         , Texts_
         , View_(..)
         )
-import Neat.Text as Text
+import Neat.View
 
 
 
@@ -99,7 +99,7 @@ import Neat.Text as Text
 {-| A gap-sensible `Html msg` alternative.
 -}
 type alias View gap msg =
-    Internal.View gap msg
+    Neat.View.View gap msg
 
 
 {-| A bounded View without gap.
@@ -108,148 +108,7 @@ Convert to/from View by `setGap`/`setBoundary`.
 
 -}
 type alias Boundary msg =
-    Internal.Boundary msg
-
-
-mapOverlays : (a -> b) -> List (Overlay a) -> List (Overlay b)
-mapOverlays f =
-    List.map
-        (\o ->
-            { name = o.name
-            , area = o.area
-            , boundary = mapBoundary f o.boundary
-            }
-        )
-
-
-modifyChild : (View_ a -> View_ b) -> Children a -> Children b
-modifyChild f (Children item0 items) =
-    let
-        modifyContent : Item_ a -> Item_ b
-        modifyContent item =
-            { alignSelf = item.alignSelf
-            , grow = item.grow
-            , key = item.key
-            , content = f item.content
-            }
-    in
-    List.map modifyContent items
-        |> Children (modifyContent item0)
-
-
-map_ : (a -> b) -> View_ a -> View_ b
-map_ f view =
-    case view of
-        FromBoundary g boundary ->
-            FromBoundary g <| mapBoundary_ f boundary
-
-        FromRow o ->
-            FromRow
-                { mixin = Mixin.map f o.mixin
-                , nominalGap = o.nominalGap
-                , contentGap = o.contentGap
-                , nodeName = o.nodeName
-                , justifyContent = o.justifyContent
-                , children = modifyChild (map_ f) o.children
-                , wrap = o.wrap
-                }
-
-        FromColumn o ->
-            FromColumn
-                { mixin = Mixin.map f o.mixin
-                , nominalGap = o.nominalGap
-                , contentGap = o.contentGap
-                , nodeName = o.nodeName
-                , justifyContent = o.justifyContent
-                , children = modifyChild (map_ f) o.children
-                }
-
-        FromTexts o ->
-            FromTexts
-                { mixin = Mixin.map f o.mixin
-                , nominalGap = o.nominalGap
-                , contentGap = o.contentGap
-                , nodeName = o.nodeName
-                , texts =
-                    let
-                        ( head, tail ) =
-                            o.texts
-                    in
-                    ( Text.map f head
-                    , List.map (Text.map f) tail
-                    )
-                }
-
-        None ->
-            None
-
-
-{-| -}
-mapBoundary : (a -> b) -> Boundary a -> Boundary b
-mapBoundary f (Boundary boundary) =
-    mapBoundary_ f boundary
-        |> Boundary
-
-
-mapBoundary_ : (a -> b) -> Boundary_ a -> Boundary_ b
-mapBoundary_ f o =
-    { mixin = Mixin.map f o.mixin
-    , nodeName = o.nodeName
-    , padding = o.padding
-    , overlays = mapOverlays f o.overlays
-    , width = o.width
-    , minWidth = o.minWidth
-    , maxWidth = o.maxWidth
-    , horizontalOverflow = o.horizontalOverflow
-    , height = o.height
-    , minHeight = o.minHeight
-    , maxHeight = o.maxHeight
-    , verticalOverflow = o.verticalOverflow
-    , content =
-        case o.content of
-            TextsContent texts ->
-                TextsContent <| List.map (Text.map f) texts
-
-            ViewContent view ->
-                ViewContent <| map_ f view
-
-            HtmlContent children ->
-                HtmlContent <|
-                    List.map
-                        (\( k, b ) ->
-                            ( k, mapBoundary_ f b )
-                        )
-                        children
-
-            StringContent str ->
-                StringContent str
-
-            NoContent ->
-                NoContent
-    , enforcePointerEvent = o.enforcePointerEvent
-    }
-
-
-{-| A primitive type that represents that there is no Gap
-
-For custom gaps, see [Custom gaps](#custom-gaps).
-
--}
-type NoGap
-    = NoGap Never
-
-
-{-| -}
-noGap : IsGap NoGap
-noGap =
-    IsGap emptyGap
-
-
-emptyGap : Gap
-emptyGap =
-    { vertical = 0
-    , horizontal = 0
-    }
+    Neat.Boundary.Boundary msg
 
 
 
@@ -372,17 +231,7 @@ minHeightZero minHeight =
 {-| Render the `View` into `Html` so that it spreads across the screen.
 -}
 render : Renderer -> Boundary msg -> Html msg
-render (Renderer renderer) (Boundary boundary) =
-    let
-        childMixin =
-            { inherit =
-                Mixin.batch
-                    [ class "heightFlex"
-                    , class "widthFlex"
-                    ]
-            , self = class "top"
-            }
-    in
+render (Renderer renderer) boundary =
     Html.div
         []
         [ Html.node "style"
@@ -390,220 +239,451 @@ render (Renderer renderer) (Boundary boundary) =
             ]
             [ Html.text neatLayoutStyle
             ]
-        , { boundary
-            | height = FlexSize
-            , width = FlexSize
-          }
-            |> renderBoundary
-                renderer
-                childMixin
-                { outerGap = emptyGap
-                }
+        , case boundary of
+            Boundary props boundary_ ->
+                renderBoundary_
+                    renderer
+                    (class "top")
+                    { props
+                        | height = FlexSize
+                        , width = FlexSize
+                    }
+                    boundary_
+
+            NoneBoundary ->
+                Html.text ""
         ]
 
 
-type alias ChildMixin msg =
-    { inherit : Mixin msg
-    , self : Mixin msg
-    }
-
-
-render_ :
+renderView_ :
     Renderer_
-    -> ChildMixin msg
+    -> Mixin msg
     -> View_ msg
     -> Html msg
-render_ renderer childMixin view =
+renderView_ renderer extraMixin view =
     case view of
-        FromBoundary outerGap o ->
-            renderBoundary
+        FromBoundary _ props boundary_ ->
+            renderBoundary_
                 renderer
-                childMixin
-                { outerGap = outerGap
-                }
-                o
+                extraMixin
+                props
+                boundary_
 
         FromRow o ->
-            renderRow renderer childMixin o
+            renderRow renderer extraMixin o
 
         FromColumn o ->
-            renderColumn renderer childMixin o
+            renderColumn renderer extraMixin o
 
         FromTexts o ->
-            renderTexts renderer childMixin o
-
-        None ->
-            Html.text ""
+            renderTexts renderer extraMixin o
 
 
-renderBoundary :
+renderBoundary_ :
     Renderer_
-    -> ChildMixin msg
-    -> { outerGap : Gap }
+    -> Mixin msg
+    -> BoundaryProps msg
     -> Boundary_ msg
     -> Html msg
-renderBoundary renderer { self } props o =
+renderBoundary_ renderer extraMixin props boundary_ =
     let
-        childMixin =
-            { inherit =
-                Mixin.batch
-                    [ case o.height of
-                        MinSize ->
-                            class "heightMinSize"
-
-                        FlexSize ->
-                            class "heightFlex"
-                    , case o.width of
-                        MinSize ->
-                            class "widthMinSize"
-
-                        FlexSize ->
-                            class "widthFlex"
-                    ]
-            , self = class "boundaryContent"
-            }
-
-        base =
+        wrapper =
             Mixin.batch
-                [ o.mixin
-                , boundaryCustomProperty renderer props o
-                , childMixin.inherit
-                , self
+                [ boundaryCustomProperty renderer props
+                , extraMixin
                 , class "boundary"
-                , if o.horizontalOverflow then
-                    class "boundary-horizontalOverflow"
+                , case props.height of
+                    MinSize ->
+                        class "heightMinSize"
 
-                  else
-                    Mixin.none
-                , if o.verticalOverflow then
-                    class "boundary-verticalOverflow"
+                    FlexSize ->
+                        class "heightFlex"
+                , case props.width of
+                    MinSize ->
+                        class "widthMinSize"
 
-                  else
-                    Mixin.none
-                , if hasMaxHeight o.maxHeight then
+                    FlexSize ->
+                        class "widthFlex"
+                , Mixin.when (hasMaxHeight props.maxHeight) <|
                     class "boundary-hasMaxHeight"
-
-                  else
-                    Mixin.none
-                , if hasMaxWidth o.maxWidth then
+                , Mixin.when (hasMaxWidth props.maxWidth) <|
                     class "boundary-hasMaxWidth"
-
-                  else
-                    Mixin.none
-                , if not (minHeightZero o.minHeight) then
+                , Mixin.unless (minHeightZero props.minHeight) <|
                     class "boundary-hasMinHeight"
-
-                  else
-                    Mixin.none
-                , if not (minWidthZero o.minWidth) then
+                , Mixin.unless (minWidthZero props.minWidth) <|
                     class "boundary-hasMinWidth"
-
-                  else
-                    Mixin.none
-                , if not <| List.isEmpty o.overlays then
+                , Mixin.unless (List.isEmpty props.overlays) <|
                     class "boundary-hasOverlays"
-
-                  else
-                    Mixin.none
-                , if o.enforcePointerEvent then
+                , Mixin.when props.enforcePointerEvent <|
                     class "boundary-enforcePointerEvent"
-
-                  else
-                    Mixin.none
                 ]
 
         overlays =
-            List.reverse o.overlays
+            List.reverse props.overlays
+
+        uniqueKey =
+            List.map (\(Overlay { name }) -> name) overlays
+                |> uniqueKeyFrom
     in
-    case o.content of
-        NoContent ->
-            Html.text ""
+    case boundary_ of
+        FromView param ->
+            let
+                nominalGap =
+                    extractNominalGap param.content
 
-        ViewContent content ->
-            if o.verticalOverflow && o.padding.vertical /= 0 then
-                Html.node o.nodeName
-                    [ base
-                    ]
-                    [ Html.keyed "div"
-                        [ class "boundary_scroller"
-                        , class "boundary_scroller-verticalScroll"
+                innerGap =
+                    Mixin.batch
+                        [ variable "inner-gap-x"
+                            (multipleBaseSize nominalGap.horizontal renderer.baseSize
+                                |> renderBaseSize
+                            )
+                        , variable "inner-gap-y"
+                            (multipleBaseSize nominalGap.vertical renderer.baseSize
+                                |> renderBaseSize
+                            )
                         ]
-                        (( "content", render_ renderer childMixin content )
-                            :: List.map (renderOverlay renderer) overlays
-                        )
-                    ]
 
-            else if content == None then
-                Html.keyed o.nodeName
-                    [ base
-                    , class "boundary-view"
-                    , class "boundary-view-noContent"
+                childMixin =
+                    class "boundaryChild"
+            in
+            if overlays == [] then
+                Html.node props.nodeName
+                    [ props.mixin
+                    , innerGap
+                    , wrapper
+                    , class "boundary_content"
                     ]
-                    (List.map (renderOverlay renderer) overlays)
+                    [ renderView_ renderer childMixin param.content
+                    ]
 
             else
-                Html.keyed o.nodeName
-                    [ base
-                    , class "boundary-view"
-                    , class "boundary-view-hasContent"
+                -- Some elements are only allowed to contain text in their content.
+                -- This is a way to prevent Overlay from being included in such elements.
+                Html.keyed "div"
+                    [ wrapper
                     ]
-                    (( "content", render_ renderer childMixin content )
+                    (( uniqueKey
+                     , Html.node props.nodeName
+                        [ props.mixin
+                        , innerGap
+                        , class "boundary_content"
+                        ]
+                        [ renderView_ renderer childMixin param.content
+                        ]
+                     )
                         :: List.map (renderOverlay renderer) overlays
                     )
 
-        HtmlContent children ->
-            children
+        EmptyBoundary ->
+            if overlays == [] then
+                Html.node props.nodeName
+                    [ props.mixin
+                    , wrapper
+                    , class "boundary_content"
+                    ]
+                    []
+
+            else
+                -- Some elements are not allowed to contain any contents.
+                -- This is a way to prevent Overlay from being included in such elements.
+                Html.keyed "div"
+                    [ wrapper
+                    ]
+                    (( uniqueKey
+                     , Html.node props.nodeName
+                        [ props.mixin
+                        , class "boundary_content"
+                        ]
+                        []
+                     )
+                        :: List.map (renderOverlay renderer) overlays
+                    )
+
+        RowBoundary param ->
+            renderRowBoundary
+                renderer
+                extraMixin
+                props
+                param
+
+        ColumnBoundary param ->
+            renderColumnBoundary
+                renderer
+                extraMixin
+                props
+                param
+
+
+renderRowBoundary :
+    Renderer_
+    -> Mixin msg
+    -> BoundaryProps msg
+    -> RowBoundary_ msg
+    -> Html msg
+renderRowBoundary renderer extraMixin props o =
+    let
+        childMixin item =
+            Mixin.batch
+                [ class "rowChild"
+                , if item.grow then
+                    class "rowChild-grow"
+
+                  else
+                    Mixin.none
+                , case item.alignSelf of
+                    AlignStart ->
+                        class "rowChild-alignStart"
+
+                    AlignCenter ->
+                        class "rowChild-alignCenter"
+
+                    AlignEnd ->
+                        class "rowChild-alignEnd"
+
+                    AlignStretch ->
+                        class "rowChild-alignStretch"
+                ]
+
+        wrapper =
+            Mixin.batch
+                [ rowBoundaryCustomProperty renderer props
+                , extraMixin
+                , class "rowBoundary"
+                , Mixin.when o.wrap <|
+                    class "rowBoundary-wrap"
+                , case o.justifyContent of
+                    JustifyStart ->
+                        class "rowBoundary-justifyStart"
+
+                    JustifyCenter ->
+                        class "rowBoundary-justifyCenter"
+
+                    JustifyEnd ->
+                        class "rowBoundary-justifyEnd"
+                , case props.height of
+                    MinSize ->
+                        class "heightMinSize"
+
+                    FlexSize ->
+                        class "heightFlex"
+                , case props.width of
+                    MinSize ->
+                        class "widthMinSize"
+
+                    FlexSize ->
+                        class "widthFlex"
+                , Mixin.when o.scrollable <|
+                    class "rowBoundary-horizontalOverflow"
+                , Mixin.when (hasMaxHeight props.maxHeight) <|
+                    class "rowBoundary-hasMaxHeight"
+                , Mixin.when (hasMaxWidth props.maxWidth) <|
+                    class "rowBoundary-hasMaxWidth"
+                , Mixin.unless (minHeightZero props.minHeight) <|
+                    class "rowBoundary-hasMinHeight"
+                , Mixin.unless (minWidthZero props.minWidth) <|
+                    class "rowBoundary-hasMinWidth"
+                , Mixin.unless (List.isEmpty props.overlays) <|
+                    class "rowBoundary-hasOverlays"
+                , Mixin.when props.enforcePointerEvent <|
+                    class "rowBoundary-enforcePointerEvent"
+                ]
+
+        overlays =
+            List.reverse props.overlays
+
+        (ChildBoundaries children) =
+            o.children
+
+        contents =
+            (children.head :: children.tail)
                 |> List.map
-                    (\( k, b ) ->
-                        ( k
-                        , renderBoundary
+                    (\item ->
+                        ( item.key
+                        , renderBoundary_
                             renderer
-                            childMixin
-                            { outerGap = emptyGap }
-                            b
+                            (childMixin item)
+                            item.props
+                            item.content
                         )
                     )
-                |> (\cs ->
-                        cs
-                            ++ List.map (renderOverlay renderer) overlays
-                   )
-                |> Html.keyed o.nodeName
-                    [ base
-                    , class "boundary-html"
-                    ]
 
-        TextsContent texts ->
-            Html.node o.nodeName
-                [ base
-                , class "boundary-text"
+        uniqueKey =
+            List.map (\(Overlay { name }) -> name) overlays
+                |> uniqueKeyFrom
+    in
+    if overlays /= [] && o.scrollable then
+        -- Prevent overlay elements from moving together when scrolling.
+        Html.keyed "div"
+            [ wrapper
+            ]
+            (( uniqueKey
+             , Html.keyed props.nodeName
+                [ props.mixin
+                , class "rowBoundary_content"
+                , Mixin.when o.scrollable <|
+                    class "rowBoundary_content-horizontalOverflow"
                 ]
-                [ texts
-                    |> List.indexedMap
-                        (\n inline ->
-                            ( "content" ++ String.fromInt n
-                            , Html.node inline.nodeName
-                                [ inline.mixin
-                                , class "boundary_text"
-                                ]
-                                [ Html.text inline.text
-                                ]
-                            )
+                contents
+             )
+                :: List.map (renderOverlay renderer) overlays
+            )
+
+    else
+        Html.keyed props.nodeName
+            [ props.mixin
+            , wrapper
+            , class "rowBoundary_content"
+            , Mixin.when o.scrollable <|
+                class "rowBoundary_content-horizontalOverflow"
+            ]
+            (List.map
+                (\( key, c ) -> ( uniqueKey ++ key, c ))
+                contents
+                ++ List.map (renderOverlay renderer) overlays
+            )
+
+
+uniqueKeyFrom : List String -> String
+uniqueKeyFrom =
+    List.foldl
+        (\str ( length, acc ) ->
+            let
+                strLength =
+                    String.length str
+            in
+            if strLength > length then
+                ( strLength, str )
+
+            else
+                ( length, acc )
+        )
+        ( 0, "" )
+        >> Tuple.second
+        >> String.append "Unique"
+
+
+renderColumnBoundary :
+    Renderer_
+    -> Mixin msg
+    -> BoundaryProps msg
+    -> ColumnBoundary_ msg
+    -> Html msg
+renderColumnBoundary renderer extraMixin props o =
+    let
+        childMixin item =
+            Mixin.batch
+                [ class "columnChild"
+                , Mixin.when item.grow <|
+                    class "columnChild-grow"
+                , case item.alignSelf of
+                    AlignStart ->
+                        class "columnChild-alignStart"
+
+                    AlignCenter ->
+                        class "columnChild-alignCenter"
+
+                    AlignEnd ->
+                        class "columnChild-alignEnd"
+
+                    AlignStretch ->
+                        class "columnChild-alignStretch"
+                ]
+
+        wrapper =
+            Mixin.batch
+                [ columnBoundaryCustomProperty renderer props
+                , extraMixin
+                , class "columnBoundary"
+                , case o.justifyContent of
+                    JustifyStart ->
+                        class "columnBoundary-justifyStart"
+
+                    JustifyCenter ->
+                        class "columnBoundary-justifyCenter"
+
+                    JustifyEnd ->
+                        class "columnBoundary-justifyEnd"
+                , Mixin.when o.scrollable <|
+                    class "columnBoundary-verticalOverflow"
+                , Mixin.when (hasMaxHeight props.maxHeight) <|
+                    class "columnBoundary-hasMaxHeight"
+                , Mixin.when (hasMaxWidth props.maxWidth) <|
+                    class "columnBoundary-hasMaxWidth"
+                , Mixin.unless (minHeightZero props.minHeight) <|
+                    class "columnBoundary-hasMinHeight"
+                , Mixin.unless (minWidthZero props.minWidth) <|
+                    class "columnBoundary-hasMinWidth"
+                , case props.height of
+                    MinSize ->
+                        class "heightMinSize"
+
+                    FlexSize ->
+                        class "heightFlex"
+                , case props.width of
+                    MinSize ->
+                        class "widthMinSize"
+
+                    FlexSize ->
+                        class "widthFlex"
+                , Mixin.unless (List.isEmpty props.overlays) <|
+                    class "columnBoundary-hasOverlays"
+                , Mixin.when props.enforcePointerEvent <|
+                    class "columnBoundary-enforcePointerEvent"
+                ]
+
+        overlays =
+            List.reverse props.overlays
+
+        (ChildBoundaries children) =
+            o.children
+
+        contents =
+            (children.head :: children.tail)
+                |> List.map
+                    (\item ->
+                        ( item.key
+                        , renderBoundary_
+                            renderer
+                            (childMixin item)
+                            item.props
+                            item.content
                         )
-                    |> (\children ->
-                            children
-                                ++ List.map (renderOverlay renderer) overlays
-                       )
-                    |> Html.keyed "div"
-                        [ class "boundary_textMargin"
-                        ]
-                ]
+                    )
 
-        StringContent str ->
-            Html.node o.nodeName
-                [ base
+        uniqueKey =
+            List.map (\(Overlay { name }) -> name) overlays
+                |> uniqueKeyFrom
+    in
+    if overlays /= [] && o.scrollable then
+        -- Prevent overlay elements from moving together when scrolling.
+        Html.keyed "div"
+            [ wrapper
+            ]
+            (( uniqueKey
+             , Html.keyed props.nodeName
+                [ props.mixin
+                , class "columnBoundary_content"
+                , Mixin.when o.scrollable <|
+                    class "columnBoundary_content-verticalOverflow"
                 ]
-                [ Html.text str
-                ]
+                contents
+             )
+                :: List.map (renderOverlay renderer) overlays
+            )
+
+    else
+        Html.keyed props.nodeName
+            [ props.mixin
+            , wrapper
+            , class "columnBoundary_content"
+            , Mixin.when o.scrollable <|
+                class "columnBoundary_content-verticalOverflow"
+            ]
+            (List.map
+                (\( key, c ) -> ( uniqueKey ++ key, c ))
+                contents
+                ++ List.map (renderOverlay renderer) overlays
+            )
 
 
 hasMaxHeight : MaxHeight -> Bool
@@ -632,71 +712,70 @@ hasMaxWidth mw =
             False
 
 
+extractNominalGap : View_ msg -> Gap
+extractNominalGap view_ =
+    case view_ of
+        FromBoundary g _ _ ->
+            g
+
+        FromRow row_ ->
+            row_.nominalGap
+
+        FromColumn column_ ->
+            column_.nominalGap
+
+        FromTexts texts_ ->
+            texts_.nominalGap
+
+
 boundaryCustomProperty :
     Renderer_
-    -> { outerGap : Gap }
-    -> Boundary_ msg
+    -> BoundaryProps msg
     -> Mixin msg
-boundaryCustomProperty renderer { outerGap } o =
+boundaryCustomProperty renderer o =
     Mixin.batch
-        [ Mixin.style "--outer-gap-x"
-            (multipleBaseSize outerGap.horizontal renderer.baseSize
-                |> renderBaseSize
-            )
-        , Mixin.style "--outer-gap-y"
-            (multipleBaseSize outerGap.vertical renderer.baseSize
-                |> renderBaseSize
-            )
-        , Mixin.style "--inner-gap-x"
-            (multipleBaseSize o.padding.horizontal renderer.baseSize
-                |> renderBaseSize
-            )
-        , Mixin.style "--inner-gap-y"
-            (multipleBaseSize o.padding.vertical renderer.baseSize
-                |> renderBaseSize
-            )
-        , case o.minWidth of
+        [ case o.minWidth of
             MinWidthInBs bs ->
-                Mixin.style "--min-width"
+                variable "min-width"
                     (multipleBaseSize bs renderer.baseSize
                         |> renderBaseSize
                     )
 
             MinWidthInUnit unit v ->
-                Mixin.style "--min-width"
+                variable "min-width"
                     (String.fromFloat v ++ unit)
         , case o.maxWidth of
             MaxWidthInBs bs ->
-                Mixin.style "--max-width"
+                variable "max-width"
                     (multipleBaseSize bs renderer.baseSize
                         |> renderBaseSize
                     )
 
             MaxWidthInUnit unit v ->
-                Mixin.style "--max-width"
+                variable "max-width"
                     (String.fromFloat v ++ unit)
 
             _ ->
                 Mixin.none
         , case o.minHeight of
             MinHeightInBs bs ->
-                Mixin.style "--min-height"
+                variable "min-height"
                     (multipleBaseSize bs renderer.baseSize
                         |> renderBaseSize
                     )
 
             MinHeightInUnit unit v ->
-                Mixin.style "--min-height"
+                variable "min-height"
                     (String.fromFloat v ++ unit)
         , case o.maxHeight of
             MaxHeightInBs bs ->
-                Mixin.style "--max-height"
+                variable "max-height"
                     (multipleBaseSize bs renderer.baseSize
                         |> renderBaseSize
                     )
 
             MaxHeightInUnit unit v ->
-                Mixin.style "--max-height"
+                variable "max-height"
                     (String.fromFloat v ++ unit)
 
             _ ->
@@ -704,165 +783,236 @@ boundaryCustomProperty renderer { outerGap } o =
         ]
 
 
-renderRow : Renderer_ -> ChildMixin msg -> Row_ msg -> Html msg
-renderRow renderer { inherit, self } o =
+rowBoundaryCustomProperty :
+    Renderer_
+    -> BoundaryProps msg
+    -> Mixin msg
+rowBoundaryCustomProperty renderer o =
+    Mixin.batch
+        [ case o.minWidth of
+            MinWidthInBs bs ->
+                variable "min-width"
+                    (multipleBaseSize bs renderer.baseSize
+                        |> renderBaseSize
+                    )
+
+            MinWidthInUnit unit v ->
+                variable "min-width"
+                    (String.fromFloat v ++ unit)
+        , case o.maxWidth of
+            MaxWidthInBs bs ->
+                variable "max-width"
+                    (multipleBaseSize bs renderer.baseSize
+                        |> renderBaseSize
+                    )
+
+            MaxWidthInUnit unit v ->
+                variable "max-width"
+                    (String.fromFloat v ++ unit)
+
+            _ ->
+                Mixin.none
+        , case o.minHeight of
+            MinHeightInBs bs ->
+                variable "min-height"
+                    (multipleBaseSize bs renderer.baseSize
+                        |> renderBaseSize
+                    )
+
+            MinHeightInUnit unit v ->
+                variable "min-height"
+                    (String.fromFloat v ++ unit)
+        , case o.maxHeight of
+            MaxHeightInBs bs ->
+                variable "max-height"
+                    (multipleBaseSize bs renderer.baseSize
+                        |> renderBaseSize
+                    )
+
+            MaxHeightInUnit unit v ->
+                variable "max-height"
+                    (String.fromFloat v ++ unit)
+
+            _ ->
+                Mixin.none
+        ]
+
+
+columnBoundaryCustomProperty :
+    Renderer_
+    -> BoundaryProps msg
+    -> Mixin msg
+columnBoundaryCustomProperty renderer o =
+    Mixin.batch
+        [ case o.minWidth of
+            MinWidthInBs bs ->
+                variable "min-width"
+                    (multipleBaseSize bs renderer.baseSize
+                        |> renderBaseSize
+                    )
+
+            MinWidthInUnit unit v ->
+                variable "min-width"
+                    (String.fromFloat v ++ unit)
+        , case o.maxWidth of
+            MaxWidthInBs bs ->
+                variable "max-width"
+                    (multipleBaseSize bs renderer.baseSize
+                        |> renderBaseSize
+                    )
+
+            MaxWidthInUnit unit v ->
+                variable "max-width"
+                    (String.fromFloat v ++ unit)
+
+            _ ->
+                Mixin.none
+        , case o.minHeight of
+            MinHeightInBs bs ->
+                variable "min-height"
+                    (multipleBaseSize bs renderer.baseSize
+                        |> renderBaseSize
+                    )
+
+            MinHeightInUnit unit v ->
+                variable "min-height"
+                    (String.fromFloat v ++ unit)
+        , case o.maxHeight of
+            MaxHeightInBs bs ->
+                variable "max-height"
+                    (multipleBaseSize bs renderer.baseSize
+                        |> renderBaseSize
+                    )
+
+            MaxHeightInUnit unit v ->
+                variable "max-height"
+                    (String.fromFloat v ++ unit)
+
+            _ ->
+                Mixin.none
+        ]
+
+
+renderRow : Renderer_ -> Mixin msg -> Row_ msg -> Html msg
+renderRow renderer extraMixin o =
     let
         base =
             Mixin.batch
                 [ o.mixin
-                , self
+                , extraMixin
                 , class "row"
-                , if o.wrap then
+                , variable "content-gap-x"
+                    (multipleBaseSize o.contentGap.horizontal renderer.baseSize
+                        |> renderBaseSize
+                    )
+                , variable "content-gap-y"
+                    (multipleBaseSize o.contentGap.vertical renderer.baseSize
+                        |> renderBaseSize
+                    )
+                , Mixin.when o.wrap <|
                     class "row-wrap"
-
-                  else
-                    Mixin.none
                 , case o.justifyContent of
-                    AlignStart ->
+                    JustifyStart ->
                         class "row-justifyStart"
 
-                    AlignCenter ->
+                    JustifyCenter ->
                         class "row-justifyCenter"
 
-                    AlignEnd ->
+                    JustifyEnd ->
                         class "row-justifyEnd"
-
-                    AlignStretch ->
-                        class "row-justifyStretch"
-                , Mixin.style "--content-gap-x"
-                    (multipleBaseSize o.contentGap.horizontal renderer.baseSize
-                        |> renderBaseSize
-                    )
-                , Mixin.style "--content-gap-y"
-                    (multipleBaseSize o.contentGap.vertical renderer.baseSize
-                        |> renderBaseSize
-                    )
                 ]
 
         childMixin item =
-            { inherit = inherit
-            , self =
-                Mixin.batch
-                    [ class "rowChild"
-                    , if item.grow then
-                        class "rowChild-grow"
+            Mixin.batch
+                [ class "rowChild"
+                , Mixin.when item.grow <|
+                    class "rowChild-grow"
+                , case item.alignSelf of
+                    AlignStart ->
+                        class "rowChild-alignStart"
 
-                      else
-                        Mixin.none
-                    , case item.alignSelf of
-                        AlignStart ->
-                            class "rowChild-alignStart"
+                    AlignCenter ->
+                        class "rowChild-alignCenter"
 
-                        AlignCenter ->
-                            class "rowChild-alignCenter"
+                    AlignEnd ->
+                        class "rowChild-alignEnd"
 
-                        AlignEnd ->
-                            class "rowChild-alignEnd"
-
-                        AlignStretch ->
-                            class "rowChild-alignStretch"
-                    ]
-            }
+                    AlignStretch ->
+                        class "rowChild-alignStretch"
+                ]
     in
     case o.children of
-        Children item [] ->
-            Html.keyed o.nodeName
-                [ base
-                , class "row-single"
-                ]
-                [ ( item.key, render_ renderer (childMixin item) item.content )
-                ]
-
         Children item0 items ->
             (item0 :: items)
                 |> List.map
                     (\item ->
-                        ( item.key, render_ renderer (childMixin item) item.content )
+                        ( item.key, renderView_ renderer (childMixin item) item.content )
                     )
                 |> Html.keyed o.nodeName
                     [ base
-                    , class "row-multi"
                     ]
 
 
-renderColumn : Renderer_ -> ChildMixin msg -> Column_ msg -> Html msg
-renderColumn renderer { inherit, self } o =
+renderColumn : Renderer_ -> Mixin msg -> Column_ msg -> Html msg
+renderColumn renderer extraMixin o =
     let
         base =
             Mixin.batch
                 [ o.mixin
-                , self
+                , extraMixin
                 , class "column"
-                , case o.justifyContent of
-                    AlignStart ->
-                        class "column-justifyStart"
-
-                    AlignCenter ->
-                        class "column-justifyCenter"
-
-                    AlignEnd ->
-                        class "column-justifyEnd"
-
-                    AlignStretch ->
-                        class "column-justifyStretch"
-                , Mixin.style "--content-gap-x"
+                , variable "content-gap-x"
                     (multipleBaseSize o.contentGap.horizontal renderer.baseSize
                         |> renderBaseSize
                     )
-                , Mixin.style "--content-gap-y"
+                , variable "content-gap-y"
                     (multipleBaseSize o.contentGap.vertical renderer.baseSize
                         |> renderBaseSize
                     )
+                , case o.justifyContent of
+                    JustifyStart ->
+                        class "column-justifyStart"
+
+                    JustifyCenter ->
+                        class "column-justifyCenter"
+
+                    JustifyEnd ->
+                        class "column-justifyEnd"
                 ]
 
         childMixin item =
-            { inherit = inherit
-            , self =
-                Mixin.batch
-                    [ class "columnChild"
-                    , if item.grow then
-                        class "columnChild-grow"
+            Mixin.batch
+                [ class "columnChild"
+                , Mixin.when item.grow <|
+                    class "columnChild-grow"
+                , case item.alignSelf of
+                    AlignStart ->
+                        class "columnChild-alignStart"
 
-                      else
-                        Mixin.none
-                    , case item.alignSelf of
-                        AlignStart ->
-                            class "columnChild-alignStart"
+                    AlignCenter ->
+                        class "columnChild-alignCenter"
 
-                        AlignCenter ->
-                            class "columnChild-alignCenter"
+                    AlignEnd ->
+                        class "columnChild-alignEnd"
 
-                        AlignEnd ->
-                            class "columnChild-alignEnd"
-
-                        AlignStretch ->
-                            class "columnChild-alignStretch"
-                    ]
-            }
+                    AlignStretch ->
+                        class "columnChild-alignStretch"
+                ]
     in
     case o.children of
-        Children item [] ->
-            Html.keyed o.nodeName
-                [ base
-                , class "column-single"
-                ]
-                [ ( item.key, render_ renderer (childMixin item) item.content )
-                ]
-
         Children item0 items ->
             (item0 :: items)
                 |> List.map
                     (\item ->
-                        ( item.key, render_ renderer (childMixin item) item.content )
+                        ( item.key, renderView_ renderer (childMixin item) item.content )
                     )
                 |> Html.keyed o.nodeName
                     [ base
-                    , class "column-multi"
                     ]
 
 
-renderTexts : Renderer_ -> ChildMixin msg -> Texts_ msg -> Html msg
-renderTexts renderer { self } o =
+renderTexts : Renderer_ -> Mixin msg -> Texts_ msg -> Html msg
+renderTexts renderer extraMixin o =
     let
         consTexts ( t, ts ) =
             t :: ts
@@ -870,80 +1020,91 @@ renderTexts renderer { self } o =
         base =
             Mixin.batch
                 [ o.mixin
-                , self
+                , extraMixin
                 , class "textView"
-                , Mixin.style "--content-gap-x"
-                    (multipleBaseSize o.contentGap.horizontal renderer.baseSize
-                        |> renderBaseSize
-                    )
-                , Mixin.style "--content-gap-y"
+                , variable "content-gap-y"
                     (multipleBaseSize o.contentGap.vertical renderer.baseSize
                         |> renderBaseSize
                     )
                 ]
+
+        textHtmls =
+            renderTextList
+                (class "textView_inline")
+                (consTexts o.texts)
     in
     Html.node o.nodeName
         [ base
         ]
-        [ consTexts o.texts
-            |> List.map
-                (\inline ->
-                    Html.node inline.nodeName
+        textHtmls
+
+
+renderTextList : Mixin msg -> List (Internal.Text msg) -> List (Html msg)
+renderTextList mixin =
+    List.filterMap
+        (\inline ->
+            case inline.nodeName of
+                Nothing ->
+                    if inline.mixin == Mixin.none then
+                        if inline.text == "" then
+                            Nothing
+
+                        else
+                            -- Some elements are only allowed to contain text in their content.
+                            -- For such cases, we convert the expression here to be as simple as possible.
+                            Html.text inline.text
+                                |> Just
+
+                    else
+                        Html.span
+                            [ inline.mixin
+                            , mixin
+                            ]
+                            [ Html.text inline.text
+                            ]
+                            |> Just
+
+                Just nodeName ->
+                    Html.node nodeName
                         [ inline.mixin
-                        , class "textView_inline"
+                        , mixin
                         ]
                         [ Html.text inline.text
                         ]
-                )
-            |> Html.div
-                [ class "textView_textMargin"
-                ]
-        ]
+                        |> Just
+        )
 
 
 renderOverlay : Renderer_ -> Overlay msg -> ( String, Html msg )
-renderOverlay renderer overlay =
+renderOverlay renderer (Overlay overlay) =
     let
-        (Boundary boundary) =
-            overlay.boundary
-
         childMixin =
-            { inherit =
-                Mixin.batch
-                    [ class "heightFlex"
-                    , class "widthFlex"
-                    ]
-            , self =
-                Mixin.batch
-                    [ class "overlay"
-                    , Mixin.style "--overlay-top" (String.fromFloat overlay.area.top ++ "%")
-                    , Mixin.style "--overlay-bottom" (String.fromFloat overlay.area.bottom ++ "%")
-                    , Mixin.style "--overlay-left" (String.fromFloat overlay.area.left ++ "%")
-                    , Mixin.style "--overlay-right" (String.fromFloat overlay.area.right ++ "%")
-                    , Mixin.style "--overlay-priority"
-                        (overlay.area.priority
-                            |> Maybe.map String.fromInt
-                            |> Maybe.withDefault "auto"
-                        )
-                    ]
-            }
+            Mixin.batch
+                [ class "overlay"
+                , variable "overlay-top" (String.fromFloat overlay.area.top ++ "%")
+                , variable "overlay-bottom" (String.fromFloat overlay.area.bottom ++ "%")
+                , variable "overlay-left" (String.fromFloat overlay.area.left ++ "%")
+                , variable "overlay-right" (String.fromFloat overlay.area.right ++ "%")
+                , variable "overlay-priority"
+                    (overlay.area.priority
+                        |> Maybe.map String.fromInt
+                        |> Maybe.withDefault "auto"
+                    )
+                ]
     in
     ( "overlay-" ++ overlay.name
-    , { boundary
-        | height = FlexSize
-        , width = FlexSize
-      }
-        |> renderBoundary
-            renderer
-            childMixin
-            { outerGap = emptyGap
-            }
+    , renderBoundary_ renderer childMixin overlay.props overlay.boundary_
     )
 
 
 class : String -> Mixin msg
 class str =
     Mixin.class <| "elmNeatLayout--" ++ str
+
+
+variable : String -> String -> Mixin msg
+variable prop val =
+    Mixin.style ("--elmNeatLayout--" ++ prop) val
 
 
 
@@ -982,4 +1143,4 @@ withMaybe ma f =
 
 neatLayoutStyle : String
 neatLayoutStyle =
-    """.elmNeatLayout,.elmNeatLayout:before,.elmNeatLayout:after{box-sizing:border-box;margin:0;padding:0}.elmNeatLayout--top{display:block;position:fixed;inset:0;overflow:hidden}.elmNeatLayout--overlay{pointer-events:none;top:var(--overlay-top);bottom:var(--overlay-bottom);left:var(--overlay-left);right:var(--overlay-right);z-index:var(--overlay-priority);display:block;position:absolute;overflow:hidden}.elmNeatLayout--boundary{overflow:hidden}.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--boundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller{height:100%;width:100%}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller-verticalScroll>.elmNeatLayout--boundaryContent{height:auto;min-height:100%}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller-horizontalScroll>.elmNeatLayout--boundaryContent{width:auto;min-width:100%}.elmNeatLayout--boundary-view-hasContent,.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller{padding:var(--inner-gap-y)var(--inner-gap-x)}.elmNeatLayout--boundary-text{overflow:visible}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin{height:auto;width:100%}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin:before{width:0;height:0;margin-top:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin:after{width:0;height:0;margin-bottom:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin>.elmNeatLayout--boundary_text{line-height:calc(1em + var(--outer-gap-y));display:inline}.elmNeatLayout--boundary-horizontalOverflow,.elmNeatLayout--boundary-horizontalOverflow>.elmNeatLayout--boundary_scroller{overflow-x:auto}.elmNeatLayout--boundary-verticalOverflow,.elmNeatLayout--boundary-verticalOverflow>.elmNeatLayout--boundary_scroller{overflow-y:auto}.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin{overflow-y:hidden}.elmNeatLayout--boundary-verticalOverflow>.elmNeatLayout--boundaryContent.elmNeatLayout--column{height:auto}.elmNeatLayout--boundary-hasMinHeight{min-height:var(--min-height)}.elmNeatLayout--boundary-hasMaxHeight:not(.elmNeatLayout--boundary-verticalOverflow){max-height:var(--max-height)}.elmNeatLayout--boundary-hasMinWidth{min-width:var(--min-width)}.elmNeatLayout--boundary-hasMaxWidth:not(.elmNeatLayout--boundary-horizontalOverflow){max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--rowChild{flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild:not(.elmNeatLayout--boundary-horizontalOverflow){width:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow){height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow).elmNeatLayout--rowChild-alignStretch,.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--max-height)}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize{height:auto;max-height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize.elmNeatLayout--boundary-hasMaxHeight{max-height:min(var(--max-height),100%)}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow{width:0;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--columnChild{flex-shrink:0}.elmNeatLayout--boundary.elmNeatLayout--columnChild:not(.elmNeatLayout--boundary-verticalOverflow){height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow){width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow).elmNeatLayout--columnChild-alignStretch,.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize{width:auto;max-width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize.elmNeatLayout--boundary-hasMaxWidth{max-width:min(var(--max-width),100%)}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow{height:0;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--max-height)}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow{height:auto;max-height:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight{max-height:min(var(--max-height),100%)}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow{width:auto;max-width:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth{max-width:min(var(--max-width),100%)}.elmNeatLayout--row{gap:var(--content-gap-y)var(--content-gap-x);flex-flow:row;display:flex}.elmNeatLayout--row.elmNeatLayout--row-wrap{flex-wrap:wrap}.elmNeatLayout--row.elmNeatLayout--row-justifyStart{justify-content:flex-start}.elmNeatLayout--row.elmNeatLayout--row-justifyCenter{justify-content:center}.elmNeatLayout--row.elmNeatLayout--row-justifyEnd{justify-content:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--row.elmNeatLayout--rowChild{width:auto;height:auto;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild{height:auto;width:100%;flex-shrink:0}.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--row.elmNeatLayout--boundaryContent{width:100%;height:100%}.elmNeatLayout--column{gap:var(--content-gap-y)var(--content-gap-x);flex-flow:column;display:flex}.elmNeatLayout--column.elmNeatLayout--column-justifyStart{justify-content:flex-start}.elmNeatLayout--column.elmNeatLayout--column-justifyCenter{justify-content:center}.elmNeatLayout--column.elmNeatLayout--column-justifyEnd{justify-content:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--column.elmNeatLayout--rowChild{width:auto;height:100%;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--column.elmNeatLayout--columnChild{height:auto;width:auto;flex-shrink:0}.elmNeatLayout--column.elmNeatLayout--boundaryContent{width:100%;height:100%}.elmNeatLayout--textView{overflow:visible}.elmNeatLayout--textView>.elmNeatLayout--textView_textMargin{height:auto;width:100%}.elmNeatLayout--textView>.elmNeatLayout--textView_textMargin:before{width:0;height:0;margin-top:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--textView>.elmNeatLayout--textView_textMargin:after{width:0;height:0;margin-bottom:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--textView>.elmNeatLayout--textView_textMargin>.elmNeatLayout--textView_inline{line-height:calc(1em + var(--content-gap-y));display:inline}"""
+    """.elmNeatLayout,.elmNeatLayout:before,.elmNeatLayout:after{box-sizing:border-box;margin:0;padding:0}.elmNeatLayout--top{display:block;position:fixed;inset:0;overflow:hidden}.elmNeatLayout--overlay{pointer-events:none;top:var(--elmNeatLayout--overlay-top);bottom:var(--elmNeatLayout--overlay-bottom);left:var(--elmNeatLayout--overlay-left);right:var(--elmNeatLayout--overlay-right);z-index:var(--elmNeatLayout--overlay-priority);display:block;position:absolute;overflow:hidden}.elmNeatLayout--boundary_content{padding:var(--elmNeatLayout--inner-gap-y)var(--elmNeatLayout--inner-gap-x);overflow:hidden}.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--boundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--boundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--boundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--boundary:not(.elmNeatLayout--boundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--boundary:not(.elmNeatLayout--boundary_content)>.elmNeatLayout--boundary_content{height:auto;flex-grow:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild{width:auto;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild{height:auto;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--rowBoundary_content{flex-flow:row;display:flex;overflow:hidden}.elmNeatLayout--rowBoundary-wrap{flex-wrap:wrap}.elmNeatLayout--rowBoundary-justifyStart{justify-content:flex-start}.elmNeatLayout--rowBoundary-justifyCenter{justify-content:center}.elmNeatLayout--rowBoundary-justifyEnd{justify-content:flex-end}.elmNeatLayout--rowBoundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--rowBoundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--rowBoundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--rowBoundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--rowBoundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--rowBoundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--rowBoundary:not(.elmNeatLayout--rowBoundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--rowBoundary:not(.elmNeatLayout--rowBoundary_content)>.elmNeatLayout--rowBoundary_content{height:auto;flex-grow:1}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild:not(.elmNeatLayout--rowBoundary-horizontalOverflow){width:auto;flex-shrink:0}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow{flex-shrink:1}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow:not(.elmNeatLayout--rowChild-grow){width:0}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow.elmNeatLayout--rowChild-grow{width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild{height:auto;flex-shrink:1}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--rowBoundary_content-horizontalOverflow{overflow-x:auto;overflow-y:hidden}.elmNeatLayout--rowBoundary_content-horizontalOverflow>.elmNeatLayout--rowChild{flex-shrink:0}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--columnBoundary_content{flex-flow:column;display:flex;overflow:hidden}.elmNeatLayout--columnBoundary-justifyStart{justify-content:flex-start}.elmNeatLayout--columnBoundary-justifyCenter{justify-content:center}.elmNeatLayout--columnBoundary-justifyEnd{justify-content:flex-end}.elmNeatLayout--columnBoundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--columnBoundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--columnBoundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--columnBoundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--columnBoundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--columnBoundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--columnBoundary:not(.elmNeatLayout--columnBoundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--columnBoundary:not(.elmNeatLayout--columnBoundary_content)>.elmNeatLayout--columnBoundary_content{height:auto;flex-grow:1}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild{width:auto;flex-shrink:1}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild:not(.elmNeatLayout--columnBoundary-verticalOverflow){height:auto;flex-shrink:0}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow{flex-shrink:1}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow:not(.elmNeatLayout--columnChild-grow){height:0}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow.elmNeatLayout--columnChild-grow{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--columnBoundary_content-verticalOverflow{overflow-x:hidden;overflow-y:auto}.elmNeatLayout--columnBoundary_content-verticalOverflow>.elmNeatLayout--columnChild{flex-shrink:0}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--row{gap:var(--elmNeatLayout--content-gap-y)var(--elmNeatLayout--content-gap-x);flex-flow:row;display:flex}.elmNeatLayout--row-wrap{flex-wrap:wrap}.elmNeatLayout--row-justifyStart{justify-content:flex-start}.elmNeatLayout--row-justifyCenter{justify-content:center}.elmNeatLayout--row-justifyEnd{justify-content:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--row.elmNeatLayout--rowChild{width:auto;height:auto;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild{height:auto;width:100%;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--row.elmNeatLayout--boundaryChild{width:100%;height:100%}.elmNeatLayout--column{gap:var(--elmNeatLayout--content-gap-y)var(--elmNeatLayout--content-gap-x);flex-flow:column;display:flex}.elmNeatLayout--column-justifyStart{justify-content:flex-start}.elmNeatLayout--column-justifyCenter{justify-content:center}.elmNeatLayout--column-justifyEnd{justify-content:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--column.elmNeatLayout--rowChild{width:auto;height:100%;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--column.elmNeatLayout--columnChild{height:auto;width:auto;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--boundaryChild{width:100%;height:100%}.elmNeatLayout--textView{overflow:visible}.elmNeatLayout--textView>.elmNeatLayout--textView_inline{line-height:calc(1em + var(--elmNeatLayout--content-gap-y));display:inline}"""

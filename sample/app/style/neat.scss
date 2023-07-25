@@ -1,12 +1,15 @@
 .elmNeatLayout {
   $prefix: &;
+  $variable: elmneatlayout;
   $top: #{$prefix}--top;
   $boundary: #{$prefix}--boundary;
-  $boundaryContent: #{$prefix}--boundaryContent;
+  $boundaryChild: #{$prefix}--boundaryChild;
   $row: #{$prefix}--row;
   $rowChild: #{$prefix}--rowChild;
+  $rowBoundary: #{$prefix}--rowBoundary;
   $column: #{$prefix}--column;
   $columnChild: #{$prefix}--columnChild;
+  $columnBoundary: #{$prefix}--columnBoundary;
   $textView: #{$prefix}--textView;
   $heightFlex: #{$prefix}--heightFlex;
   $heightMinSize: #{$prefix}--heightMinSize;
@@ -35,16 +38,35 @@
     display: block;
     position: absolute;
     pointer-events: none;
-    top: var(--overlay-top);
-    bottom: var(--overlay-bottom);
-    left: var(--overlay-left);
-    right: var(--overlay-right);
-    z-index: var(--overlay-priority);
+    top: var(--#{$variable}--overlay-top);
+    bottom: var(--#{$variable}--overlay-bottom);
+    left: var(--#{$variable}--overlay-left);
+    right: var(--#{$variable}--overlay-right);
+    z-index: var(--#{$variable}--overlay-priority);
     overflow: hidden;
   }
 
   &--boundary {
-    overflow: hidden;
+    &_content {
+      overflow: hidden;
+      padding: var(--#{$variable}--inner-gap-y) var(--#{$variable}--inner-gap-x);
+    }
+
+    &-hasMaxHeight {
+      max-height: var(--#{$variable}--max-height);
+    }
+
+    &-hasMaxWidth {
+      max-width: var(--#{$variable}--max-width);
+    }
+
+    &-hasMinHeight {
+      min-height: var(--#{$variable}--min-height);
+    }
+
+    &-hasMinWidth {
+      min-width: var(--#{$variable}--min-width);
+    }
 
     &-hasOverlays:not(#{$top}) {
       position: relative;
@@ -54,228 +76,327 @@
       pointer-events: auto;
     }
 
-    & > #{$boundary}_scroller {
-      height: 100%;
-      width: 100%;
+    // wrapper
+    &:not(#{$boundary}_content) {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
 
-      &-verticalScroll > #{$boundaryContent} {
-        height: auto;
-        min-height: 100%;
-      }
-
-      &-horizontalScroll > #{$boundaryContent} {
-        width: auto;
-        min-width: 100%;
-      }
-    }
-
-    &-view-hasContent,
-    & > &_scroller {
-      padding: var(--inner-gap-y) var(--inner-gap-x);
-    }
-
-    &-text {
-      overflow: visible;
-    }
-
-    &-text > &_textMargin {
-      height: auto;
-      width: 100%;
-
-      &::before {
-        display: block;
-        width: 0;
-        height: 0;
-        margin-top: calc(var(--outer-gap-y) / -2);
-        content: "";
-      }
-
-      &::after {
-        display: block;
-        width: 0;
-        height: 0;
-        margin-bottom: calc(var(--outer-gap-y) / -2);
-        content: "";
-      }
-
-      & > #{$boundary}_text {
-        display: inline;
-        line-height: calc(1em + var(--outer-gap-y));
-      }
-    }
-
-    &-horizontalOverflow {
-      overflow-x: auto;
-
-      & > #{$boundary}_scroller {
-        overflow-x: auto;
-      }
-    }
-
-    &-verticalOverflow {
-      overflow-y: auto;
-
-      & > #{$boundary}_scroller {
-        overflow-y: auto;
-      }
-
-      &#{$boundary}-text > #{$boundary}_textMargin {
-        overflow-y: hidden;
-      }
-
-      & > #{$boundaryContent}#{$column} {
+      & > #{$boundary}_content {
+        flex-grow: 1;
         height: auto;
       }
-    }
-
-    &-hasMinHeight {
-      min-height: var(--min-height);
-    }
-
-    &-hasMaxHeight:not(#{$boundary}-verticalOverflow) {
-      max-height: var(--max-height);
-    }
-
-    &-hasMinWidth {
-      min-width: var(--min-width);
-    }
-
-    &-hasMaxWidth:not(#{$boundary}-horizontalOverflow) {
-      max-width: var(--max-width);
     }
 
     &#{$rowChild} {
       flex-shrink: 1;
+      width: auto;
 
-      &:not(#{$boundary}-horizontalOverflow) {
-        width: auto;
+      &#{$heightMinSize} {
+        height: auto;
       }
 
-      &#{$heightFlex}:not(#{$boundary}-verticalOverflow) {
+      &#{$heightFlex} {
         height: 100%;
 
         &#{$rowChild}-alignStretch {
           height: auto;
         }
       }
-
-      &#{$heightMinSize} {
-        height: auto;
-      }
-
-      &#{$boundary}-verticalOverflow {
-        &#{$heightFlex} {
-          height: 100%;
-
-          &#{$rowChild}-alignStretch {
-            height: auto;
-          }
-
-          &#{$boundary}-hasMaxHeight {
-            max-height: var(--max-height);
-          }
-        }
-
-        &#{$heightMinSize} {
-          height: auto;
-          max-height: 100%;
-
-          &#{$boundary}-hasMaxHeight {
-            max-height: min(var(--max-height), 100%);
-          }
-        }
-      }
-
-      &#{$boundary}-horizontalOverflow {
-        width: 0;
-        flex-shrink: 1;
-
-        &#{$boundary}-hasMaxWidth {
-          max-width: var(--max-width);
-        }
-      }
     }
 
     &#{$columnChild} {
-      flex-shrink: 0;
+      flex-shrink: 1;
+      height: auto;
 
-      &:not(#{$boundary}-verticalOverflow) {
-        height: auto;
+      &#{$widthMinSize} {
+        width: auto;
       }
 
-      &#{$widthFlex}:not(#{$boundary}-horizontalOverflow) {
+      &#{$widthFlex} {
         width: 100%;
 
         &#{$columnChild}-alignStretch {
           width: auto;
         }
       }
-      &#{$widthMinSize} {
+    }
+  }
+
+  &--rowBoundary {
+    &_content {
+      overflow: hidden;
+      flex-flow: row nowrap;
+      display: flex;
+    }
+
+    &-wrap {
+      flex-wrap: wrap;
+    }
+
+    &-justifyStart {
+      justify-content: flex-start;
+    }
+
+    &-justifyCenter {
+      justify-content: center;
+    }
+
+    &-justifyEnd {
+      justify-content: flex-end;
+    }
+
+    &-hasMaxHeight {
+      max-height: var(--#{$variable}--max-height);
+    }
+
+    &-hasMaxWidth {
+      max-width: var(--#{$variable}--max-width);
+    }
+
+    &-hasMinHeight {
+      min-height: var(--#{$variable}--min-height);
+    }
+
+    &-hasMinWidth {
+      min-width: var(--#{$variable}--min-width);
+    }
+
+    &-hasOverlays:not(#{$top}) {
+      position: relative;
+    }
+
+    &-enforcePointerEvent {
+      pointer-events: auto;
+    }
+
+    // wrapper
+    &:not(#{$rowBoundary}_content) {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+
+      & > #{$rowBoundary}_content {
+        flex-grow: 1;
+        height: auto;
+      }
+    }
+
+    &#{$rowChild} {
+
+      &:not(#{$rowBoundary}-horizontalOverflow) {
+        flex-shrink: 0;
         width: auto;
       }
 
-      &#{$boundary}-horizontalOverflow {
-        &#{$widthFlex} {
-          width: 100%;
+      &#{$rowBoundary}-horizontalOverflow {
+        flex-shrink: 1;
 
-          &#{$columnChild}-alignStretch {
-            width: auto;
-          }
-          &#{$boundary}-hasMaxWidth {
-            max-width: var(--max-width);
-          }
+        &:not(#{$rowChild}-grow) {
+          width: 0;
         }
-
-        &#{$widthMinSize} {
+        &#{$rowChild}-grow {
           width: auto;
-          max-width: 100%;
-
-          &#{$boundary}-hasMaxWidth {
-            max-width: min(var(--max-width), 100%);
-          }
         }
       }
 
-      &#{$boundary}-verticalOverflow {
-        flex-shrink: 1;
-        height: 0;
+      &#{$heightMinSize} {
+        height: auto;
+      }
 
-        &#{$boundary}-hasMaxHeight {
-          max-height: var(--max-height);
+      &#{$heightFlex} {
+        height: 100%;
+
+        &#{$rowChild}-alignStretch {
+          height: auto;
         }
       }
     }
 
-    &#{$boundaryContent} {
-      &#{$heightFlex} {
-        height: 100%;
-      }
-      &#{$heightMinSize} {
-        height: auto;
-      }
-      &#{$widthFlex} {
-        width: 100%;
-      }
+    &#{$columnChild} {
+      height: auto;
+      flex-shrink: 1;
+
       &#{$widthMinSize} {
         width: auto;
       }
 
-      &#{$boundary}-verticalOverflow {
-        height: auto;
-        max-height: 100%;
+      &#{$widthFlex} {
+        width: 100%;
 
-        &#{$boundary}-hasMaxHeight {
-          max-height: min(var(--max-height), 100%);
+        &#{$columnChild}-alignStretch {
+          width: auto;
+        }
+      }
+    }
+
+    &_content-horizontalOverflow {
+      overflow-x: auto;
+      overflow-y: hidden;
+
+      & > #{$rowChild} {
+        flex-shrink: 0;
+      }
+    }
+
+    &_content > #{$rowChild} {
+      flex-grow: 0;
+
+      &-grow {
+        flex-grow: 1;
+      }
+
+      &-alignStart {
+        align-self: flex-start;
+      }
+
+      &-alignCenter {
+        align-self: center;
+      }
+
+      &-alignEnd {
+        align-self: flex-end;
+      }
+
+      &-alignStretch {
+        align-self: stretch;
+      }
+    }
+  }
+
+  &--columnBoundary {
+    &_content {
+      overflow: hidden;
+      flex-flow: column nowrap;
+      display: flex;
+    }
+
+    &-justifyStart {
+      justify-content: flex-start;
+    }
+
+    &-justifyCenter {
+      justify-content: center;
+    }
+
+    &-justifyEnd {
+      justify-content: flex-end;
+    }
+
+    &-hasMaxHeight {
+      max-height: var(--#{$variable}--max-height);
+    }
+
+    &-hasMaxWidth {
+      max-width: var(--#{$variable}--max-width);
+    }
+
+    &-hasMinHeight {
+      min-height: var(--#{$variable}--min-height);
+    }
+
+    &-hasMinWidth {
+      min-width: var(--#{$variable}--min-width);
+    }
+
+    &-hasOverlays:not(#{$top}) {
+      position: relative;
+    }
+
+    &-enforcePointerEvent {
+      pointer-events: auto;
+    }
+
+    // wrapper
+    &:not(#{$columnBoundary}_content) {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+
+      & > #{$columnBoundary}_content {
+        flex-grow: 1;
+        height: auto;
+      }
+    }
+
+    &#{$rowChild} {
+      width: auto;
+      flex-shrink: 1;
+
+      &#{$heightMinSize} {
+        height: auto;
+      }
+
+      &#{$heightFlex} {
+        height: 100%;
+
+        &#{$rowChild}-alignStretch {
+          height: auto;
+        }
+      }
+    }
+
+    &#{$columnChild} {
+
+      &:not(#{$columnBoundary}-verticalOverflow) {
+        flex-shrink: 0;
+        height: auto;
+      }
+
+      &#{$columnBoundary}-verticalOverflow {
+        flex-shrink: 1;
+
+        &:not(#{$columnChild}-grow) {
+          height: 0;
+        }
+        &#{$columnChild}-grow {
+          height: auto;
         }
       }
 
-      &#{$boundary}-horizontalOverflow {
+      &#{$widthMinSize} {
         width: auto;
-        max-width: 100%;
+      }
 
-        &#{$boundary}-hasMaxWidth {
-          max-width: min(var(--max-width), 100%);
+      &#{$widthFlex} {
+        width: 100%;
+
+        &#{$columnChild}-alignStretch {
+          width: auto;
         }
+      }
+    }
+
+    &_content-verticalOverflow {
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      & > #{$columnChild} {
+        flex-shrink: 0;
+      }
+    }
+
+    &_content > #{$columnChild} {
+      flex-grow: 0;
+
+      &-grow {
+        flex-grow: 1;
+      }
+
+      &-alignStart {
+        align-self: flex-start;
+      }
+
+      &-alignCenter {
+        align-self: center;
+      }
+
+      &-alignEnd {
+        align-self: flex-end;
+      }
+
+      &-alignStretch {
+        align-self: stretch;
       }
     }
   }
@@ -283,21 +404,21 @@
   &--row {
     flex-flow: row nowrap;
     display: flex;
-    gap: var(--content-gap-y) var(--content-gap-x);
+    gap: var(--#{$variable}--content-gap-y) var(--#{$variable}--content-gap-x);
 
-    &#{$row}-wrap {
+    &-wrap {
       flex-wrap: wrap;
     }
 
-    &#{$row}-justifyStart {
+    &-justifyStart {
       justify-content: flex-start;
     }
 
-    &#{$row}-justifyCenter {
+    &-justifyCenter {
       justify-content: center;
     }
 
-    &#{$row}-justifyEnd {
+    &-justifyEnd {
       justify-content: flex-end;
     }
 
@@ -326,22 +447,22 @@
     }
 
     &#{$rowChild} {
+      flex-shrink: 1;
       width: auto;
       height: auto;
-      flex-shrink: 1;
     }
 
     &#{$columnChild} {
+      flex-shrink: 1;
       height: auto;
       width: 100%;
-      flex-shrink: 0;
 
       &#{$columnChild}-alignStretch {
         width: auto;
       }
     }
 
-    &#{$boundaryContent} {
+    &#{$boundaryChild} {
       width: 100%;
       height: 100%;
     }
@@ -350,15 +471,17 @@
   &--column {
     flex-flow: column nowrap;
     display: flex;
-    gap: var(--content-gap-y) var(--content-gap-x);
+    gap: var(--#{$variable}--content-gap-y) var(--#{$variable}--content-gap-x);
 
-    &#{$column}-justifyStart {
+    &-justifyStart {
       justify-content: flex-start;
     }
-    &#{$column}-justifyCenter {
+
+    &-justifyCenter {
       justify-content: center;
     }
-    &#{$column}-justifyEnd {
+
+    &-justifyEnd {
       justify-content: flex-end;
     }
 
@@ -384,8 +507,8 @@
     }
 
     &#{$rowChild} {
-      width: auto;
       flex-shrink: 1;
+      width: auto;
       height: 100%;
 
       &#{$rowChild}-alignStretch {
@@ -394,12 +517,12 @@
     }
 
     &#{$columnChild} {
+      flex-shrink: 1;
       height: auto;
       width: auto;
-      flex-shrink: 0;
     }
 
-    &#{$boundaryContent} {
+    &#{$boundaryChild} {
       width: 100%;
       height: 100%;
     }
@@ -408,30 +531,9 @@
   &--textView {
     overflow: visible;
 
-    & > #{$textView}_textMargin {
-      height: auto;
-      width: 100%;
-
-      &::before {
-        display: block;
-        width: 0;
-        height: 0;
-        margin-top: calc(var(--outer-gap-y) / -2);
-        content: "";
-      }
-
-      &::after {
-        display: block;
-        width: 0;
-        height: 0;
-        margin-bottom: calc(var(--outer-gap-y) / -2);
-        content: "";
-      }
-
-      & > #{$textView}_inline {
-        display: inline;
-        line-height: calc(1em + var(--content-gap-y));
-      }
+    & > #{$textView}_inline {
+      display: inline;
+      line-height: calc(1em + var(--#{$variable}--content-gap-y));
     }
   }
 }

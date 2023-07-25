@@ -2,26 +2,31 @@ module Neat.Internal exposing
     ( Alignment(..)
     , BaseSize(..)
     , Boundary(..)
-    , Boundary_
+    , BoundaryProps
+    , Boundary_(..)
+    , ChildBoundaries(..)
     , Children(..)
     , Column(..)
+    , ColumnBoundary_
     , ColumnConfig
     , ColumnItem(..)
     , Column_
-    , Content(..)
     , Gap
     , IsGap(..)
+    , ItemBoundary_
     , Item_
+    , Justify(..)
     , Layer
     , Layered(..)
     , MaxHeight(..)
     , MaxWidth(..)
     , MinHeight(..)
     , MinWidth(..)
-    , Overlay
+    , Overlay(..)
     , Renderer(..)
     , Renderer_
     , Row(..)
+    , RowBoundary_
     , RowConfig
     , RowItem(..)
     , Row_
@@ -30,6 +35,12 @@ module Neat.Internal exposing
     , Texts_
     , View(..)
     , View_(..)
+    , defaultBoundaryProps
+    , mapBoundary
+    , mapBoundary_
+    , mapOverlays
+    , mapText
+    , mapView_
     )
 
 import Mixin exposing (Mixin)
@@ -39,6 +50,7 @@ import Mixin exposing (Mixin)
 -}
 type View gap msg
     = View (View_ msg)
+    | None
 
 
 {-| Internal view.
@@ -48,51 +60,11 @@ type View_ msg
     = FromBoundary
         -- Gap that will be set around Boundary
         Gap
+        (BoundaryProps msg)
         (Boundary_ msg)
     | FromRow (Row_ msg)
     | FromColumn (Column_ msg)
     | FromTexts (Texts_ msg)
-    | None
-
-
-{-| A bounded View without gap.
-
-Convert to/from View by `setGap`/`setBoundary`.
-
--}
-type Boundary msg
-    = Boundary (Boundary_ msg)
-
-
-type alias Boundary_ msg =
-    { mixin : Mixin msg
-    , nodeName : String
-    , padding : Gap
-    , overlays : List (Overlay msg)
-    , width : Size
-    , minWidth : MinWidth
-    , maxWidth : MaxWidth
-    , horizontalOverflow : Bool
-    , height : Size
-    , minHeight : MinHeight
-    , maxHeight : MaxHeight
-    , verticalOverflow : Bool
-    , content : Content msg
-    , enforcePointerEvent : Bool
-    }
-
-
-type Content msg
-    = TextsContent (List (Text msg))
-    | ViewContent (View_ msg)
-    | HtmlContent (List ( String, Boundary_ msg ))
-    | StringContent String
-    | NoContent
-
-
-type Size
-    = MinSize
-    | FlexSize
 
 
 type alias Row_ msg =
@@ -100,17 +72,10 @@ type alias Row_ msg =
     , nominalGap : Gap
     , contentGap : Gap
     , nodeName : String
-    , justifyContent : Alignment
+    , justifyContent : Justify
     , children : Children msg
     , wrap : Bool
     }
-
-
-type Alignment
-    = AlignStart
-    | AlignCenter
-    | AlignEnd
-    | AlignStretch
 
 
 type alias Column_ msg =
@@ -118,7 +83,7 @@ type alias Column_ msg =
     , nominalGap : Gap
     , contentGap : Gap
     , nodeName : String
-    , justifyContent : Alignment
+    , justifyContent : Justify
     , children : Children msg
     }
 
@@ -132,23 +97,18 @@ type alias Texts_ msg =
     }
 
 
-type alias Overlay msg =
-    { name : String
-    , area : Layer
-    , boundary : Boundary msg
-    }
-
-
 type Children msg
     = Children (Item_ msg) (List (Item_ msg))
 
 
 type RowItem gap msg
     = RowItem (Item_ msg)
+    | NoneRowItem
 
 
 type ColumnItem gap msg
     = ColumnItem (Item_ msg)
+    | NoneColumnItem
 
 
 type alias Item_ msg =
@@ -157,6 +117,281 @@ type alias Item_ msg =
     , key : String
     , content : View_ msg
     }
+
+
+mapView_ : (a -> b) -> View_ a -> View_ b
+mapView_ f view =
+    case view of
+        FromBoundary g props boundary_ ->
+            FromBoundary g
+                (mapBoundaryProps f props)
+                (mapBoundary_ f boundary_)
+
+        FromRow o ->
+            FromRow
+                { mixin = Mixin.map f o.mixin
+                , nominalGap = o.nominalGap
+                , contentGap = o.contentGap
+                , nodeName = o.nodeName
+                , justifyContent = o.justifyContent
+                , children = modifyChild (mapView_ f) o.children
+                , wrap = o.wrap
+                }
+
+        FromColumn o ->
+            FromColumn
+                { mixin = Mixin.map f o.mixin
+                , nominalGap = o.nominalGap
+                , contentGap = o.contentGap
+                , nodeName = o.nodeName
+                , justifyContent = o.justifyContent
+                , children = modifyChild (mapView_ f) o.children
+                }
+
+        FromTexts o ->
+            FromTexts
+                { mixin = Mixin.map f o.mixin
+                , nominalGap = o.nominalGap
+                , contentGap = o.contentGap
+                , nodeName = o.nodeName
+                , texts =
+                    let
+                        ( head, tail ) =
+                            o.texts
+                    in
+                    ( mapText f head
+                    , List.map (mapText f) tail
+                    )
+                }
+
+
+modifyChild : (View_ a -> View_ b) -> Children a -> Children b
+modifyChild f (Children item0 items) =
+    let
+        modifyContent : Item_ a -> Item_ b
+        modifyContent item =
+            { alignSelf = item.alignSelf
+            , grow = item.grow
+            , key = item.key
+            , content = f item.content
+            }
+    in
+    List.map modifyContent items
+        |> Children (modifyContent item0)
+
+
+{-| A bounded View without gap.
+
+Convert to/from View by `setGap`/`setBoundary`.
+
+-}
+type Boundary msg
+    = Boundary (BoundaryProps msg) (Boundary_ msg)
+    | NoneBoundary
+
+
+type Boundary_ msg
+    = FromView (FromView_ msg)
+    | RowBoundary (RowBoundary_ msg)
+    | ColumnBoundary (ColumnBoundary_ msg)
+      -- e.g., `input`
+    | EmptyBoundary
+
+
+mapBoundary : (a -> b) -> Boundary a -> Boundary b
+mapBoundary f boundary =
+    case boundary of
+        Boundary props boundary_ ->
+            Boundary
+                (mapBoundaryProps f props)
+                (mapBoundary_ f boundary_)
+
+        NoneBoundary ->
+            NoneBoundary
+
+
+mapBoundary_ : (a -> b) -> Boundary_ a -> Boundary_ b
+mapBoundary_ f boundary_ =
+    case boundary_ of
+        FromView props ->
+            mapFromView_ f props
+                |> FromView
+
+        RowBoundary props ->
+            mapRowBoundary_ f props
+                |> RowBoundary
+
+        ColumnBoundary props ->
+            mapColumnBoundary_ f props
+                |> ColumnBoundary
+
+        EmptyBoundary ->
+            EmptyBoundary
+
+
+mapFromView_ : (a -> b) -> FromView_ a -> FromView_ b
+mapFromView_ f props =
+    { content =
+        mapView_ f props.content
+    }
+
+
+{-| Property about all types of boundaries.
+-}
+type alias BoundaryProps msg =
+    { mixin : Mixin msg
+    , nodeName : String
+    , overlays : List (Overlay msg)
+    , width : Size
+    , minWidth : MinWidth
+    , maxWidth : MaxWidth
+    , height : Size
+    , minHeight : MinHeight
+    , maxHeight : MaxHeight
+    , enforcePointerEvent : Bool
+    }
+
+
+type Size
+    = MinSize
+    | FlexSize
+
+
+defaultBoundaryProps : BoundaryProps msg
+defaultBoundaryProps =
+    { mixin = Mixin.none
+    , nodeName = "div"
+    , overlays = []
+    , width = MinSize
+    , minWidth = MinWidthInUnit "" 0
+    , maxWidth = MaxWidthFit
+    , height = MinSize
+    , minHeight = MinHeightInUnit "" 0
+    , maxHeight = MaxHeightFit
+    , enforcePointerEvent = False
+    }
+
+
+mapBoundaryProps : (a -> b) -> BoundaryProps a -> BoundaryProps b
+mapBoundaryProps f o =
+    { mixin = Mixin.map f o.mixin
+    , nodeName = o.nodeName
+    , overlays = mapOverlays f o.overlays
+    , width = o.width
+    , minWidth = o.minWidth
+    , maxWidth = o.maxWidth
+    , height = o.height
+    , minHeight = o.minHeight
+    , maxHeight = o.maxHeight
+    , enforcePointerEvent = o.enforcePointerEvent
+    }
+
+
+type alias FromView_ msg =
+    { content : View_ msg
+    }
+
+
+type alias RowBoundary_ msg =
+    { children : ChildBoundaries msg
+    , justifyContent : Justify
+    , wrap : Bool
+    , scrollable : Bool
+    }
+
+
+mapRowBoundary_ : (a -> b) -> RowBoundary_ a -> RowBoundary_ b
+mapRowBoundary_ f o =
+    { children = mapChildBoundaries f o.children
+    , justifyContent = o.justifyContent
+    , wrap = o.wrap
+    , scrollable = o.scrollable
+    }
+
+
+type alias ColumnBoundary_ msg =
+    { justifyContent : Justify
+    , children : ChildBoundaries msg
+    , scrollable : Bool
+    }
+
+
+mapColumnBoundary_ : (a -> b) -> ColumnBoundary_ a -> ColumnBoundary_ b
+mapColumnBoundary_ f o =
+    { children = mapChildBoundaries f o.children
+    , justifyContent = o.justifyContent
+    , scrollable = o.scrollable
+    }
+
+
+type ChildBoundaries msg
+    = ChildBoundaries
+        { head : ItemBoundary_ msg
+        , tail : List (ItemBoundary_ msg)
+        }
+
+
+mapChildBoundaries : (a -> b) -> ChildBoundaries a -> ChildBoundaries b
+mapChildBoundaries f (ChildBoundaries param) =
+    ChildBoundaries
+        { head = mapItemBoundary_ f param.head
+        , tail =
+            List.map (mapItemBoundary_ f) param.tail
+        }
+
+
+type alias ItemBoundary_ msg =
+    { alignSelf : Alignment
+    , grow : Bool
+    , key : String
+    , props : BoundaryProps msg
+    , content : Boundary_ msg
+    }
+
+
+mapItemBoundary_ : (a -> b) -> ItemBoundary_ a -> ItemBoundary_ b
+mapItemBoundary_ f boundary_ =
+    { alignSelf = boundary_.alignSelf
+    , grow = boundary_.grow
+    , key = boundary_.key
+    , props = mapBoundaryProps f boundary_.props
+    , content = mapBoundary_ f boundary_.content
+    }
+
+
+type Justify
+    = JustifyStart
+    | JustifyCenter
+    | JustifyEnd
+
+
+type Alignment
+    = AlignStart
+    | AlignCenter
+    | AlignEnd
+    | AlignStretch
+
+
+type Overlay msg
+    = Overlay
+        { name : String
+        , area : Layer
+        , props : BoundaryProps msg
+        , boundary_ : Boundary_ msg
+        }
+
+
+mapOverlays : (a -> b) -> List (Overlay a) -> List (Overlay b)
+mapOverlays f =
+    List.map
+        (\(Overlay o) ->
+            Overlay
+                { name = o.name
+                , area = o.area
+                , props = mapBoundaryProps f o.props
+                , boundary_ = mapBoundary_ f o.boundary_
+                }
+        )
 
 
 type IsGap p
@@ -188,7 +423,8 @@ type Row
 
 
 type alias RowConfig =
-    { justify : Alignment
+    { nodeName : String
+    , justify : Justify
     , wrap : Bool
     }
 
@@ -198,7 +434,8 @@ type Column
 
 
 type alias ColumnConfig =
-    { justify : Alignment
+    { nodeName : String
+    , justify : Justify
     }
 
 
@@ -239,6 +476,14 @@ type Layered msg
 
 type alias Text msg =
     { mixin : Mixin msg
-    , nodeName : String
+    , nodeName : Maybe String
     , text : String
+    }
+
+
+mapText : (a -> b) -> Text a -> Text b
+mapText f text =
+    { mixin = Mixin.map f text.mixin
+    , nodeName = text.nodeName
+    , text = text.text
     }

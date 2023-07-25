@@ -7546,23 +7546,23 @@ type alias Process =
     var $author$project$Main$update = F2(function(_v0, model) {
         return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
     });
-    var $author$project$Neat$Internal$AlignEnd = {
-        $: "AlignEnd"
-    };
-    var $author$project$Neat$Internal$Column = function(a) {
+    var $author$project$Neat$Boundary$Column = function(a) {
         return {
             $: "Column",
             a: a
         };
     };
-    var $author$project$Neat$View$alignBottom = function(_v0) {
+    var $author$project$Neat$Internal$JustifyEnd = {
+        $: "JustifyEnd"
+    };
+    var $author$project$Neat$Boundary$alignBottom = function(_v0) {
         var config = _v0.a;
-        return $author$project$Neat$Internal$Column(_Utils_update(config, {
-            justify: $author$project$Neat$Internal$AlignEnd
+        return $author$project$Neat$Boundary$Column(_Utils_update(config, {
+            justify: $author$project$Neat$Internal$JustifyEnd
         }));
     };
-    var $author$project$Neat$Internal$AlignCenter = {
-        $: "AlignCenter"
+    var $author$project$Neat$Internal$JustifyCenter = {
+        $: "JustifyCenter"
     };
     var $author$project$Neat$Internal$Row = function(a) {
         return {
@@ -7573,13 +7573,13 @@ type alias Process =
     var $author$project$Neat$View$alignCenter = function(_v0) {
         var config = _v0.a;
         return $author$project$Neat$Internal$Row(_Utils_update(config, {
-            justify: $author$project$Neat$Internal$AlignCenter
+            justify: $author$project$Neat$Internal$JustifyCenter
         }));
     };
     var $author$project$Neat$View$alignRight = function(_v0) {
         var config = _v0.a;
         return $author$project$Neat$Internal$Row(_Utils_update(config, {
-            justify: $author$project$Neat$Internal$AlignEnd
+            justify: $author$project$Neat$Internal$JustifyEnd
         }));
     };
     var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
@@ -7616,122 +7616,27 @@ type alias Process =
             $elm$html$Html$Attributes$class(name)
         ]));
     };
-    var $author$project$Neat$Internal$Children = F2(function(a, b) {
+    var $author$project$Neat$Internal$Boundary = F2(function(a, b) {
         return {
-            $: "Children",
+            $: "Boundary",
             a: a,
             b: b
         };
     });
-    var $author$project$Neat$Internal$FromColumn = function(a) {
+    var $author$project$Neat$Internal$ChildBoundaries = function(a) {
         return {
-            $: "FromColumn",
+            $: "ChildBoundaries",
             a: a
         };
     };
-    var $author$project$Neat$Internal$None = {
-        $: "None"
-    };
-    var $author$project$Neat$Internal$View = function(a) {
+    var $author$project$Neat$Internal$ColumnBoundary = function(a) {
         return {
-            $: "View",
+            $: "ColumnBoundary",
             a: a
         };
     };
-    var $author$project$Neat$Internal$AlignStart = {
-        $: "AlignStart"
-    };
-    var $arowM$elm_mixin$Mixin$none = $arowM$elm_mixin$Mixin$Mixin({
-        attributes: _List_Nil,
-        styles: _List_Nil
-    });
-    var $author$project$Neat$View$defaultColumn_ = F2(function(gap, children) {
-        return {
-            children: children,
-            contentGap: gap,
-            justifyContent: $author$project$Neat$Internal$AlignStart,
-            mixin: $arowM$elm_mixin$Mixin$none,
-            nodeName: "div",
-            nominalGap: gap
-        };
-    });
-    var $author$project$Neat$View$emptyGap = {
-        horizontal: 0,
-        vertical: 0
-    };
-    var $author$project$Neat$View$extractNominalGap = function(view) {
-        switch(view.$){
-            case "FromBoundary":
-                var g = view.a;
-                return g;
-            case "FromRow":
-                var o = view.a;
-                return o.nominalGap;
-            case "FromColumn":
-                var o = view.a;
-                return o.nominalGap;
-            case "FromTexts":
-                var o = view.a;
-                return o.nominalGap;
-            default:
-                return $author$project$Neat$View$emptyGap;
-        }
-    };
-    var $author$project$Neat$View$column = F2(function(_v0, children_) {
-        var justify = _v0.a.justify;
-        var children = A2($elm$core$List$filterMap, function(_v2) {
-            var item = _v2.a;
-            return _Utils_eq(item.content, $author$project$Neat$Internal$None) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(item);
-        }, children_);
-        return $author$project$Neat$Internal$View(function() {
-            if (!children.b) return $author$project$Neat$Internal$None;
-            else {
-                var item = children.a;
-                var items = children.b;
-                var itemGap = $author$project$Neat$View$extractNominalGap(item.content);
-                var column_ = A2($author$project$Neat$View$defaultColumn_, itemGap, A2($author$project$Neat$Internal$Children, item, items));
-                return $author$project$Neat$Internal$FromColumn(_Utils_update(column_, {
-                    justifyContent: justify
-                }));
-            }
-        }());
-    });
-    var $author$project$Neat$Internal$AlignStretch = {
-        $: "AlignStretch"
-    };
-    var $author$project$Neat$Internal$ColumnItem = function(a) {
-        return {
-            $: "ColumnItem",
-            a: a
-        };
-    };
-    var $author$project$Neat$View$columnItem = F2(function(key, _v0) {
-        var content = _v0.a;
-        return $author$project$Neat$Internal$ColumnItem({
-            alignSelf: $author$project$Neat$Internal$AlignStretch,
-            content: content,
-            grow: false,
-            key: key
-        });
-    });
-    var $author$project$Neat$View$defaultColumn = $author$project$Neat$Internal$Column({
-        justify: $author$project$Neat$Internal$AlignStart
-    });
-    var $author$project$Neat$View$defaultRow = $author$project$Neat$Internal$Row({
-        justify: $author$project$Neat$Internal$AlignStart,
-        wrap: false
-    });
-    var $author$project$Neat$Internal$Boundary = function(a) {
-        return {
-            $: "Boundary",
-            a: a
-        };
-    };
-    var $author$project$Neat$Internal$ViewContent = function(a) {
-        return {
-            $: "ViewContent",
-            a: a
-        };
+    var $author$project$Neat$Internal$NoneBoundary = {
+        $: "NoneBoundary"
     };
     var $author$project$Neat$Internal$MaxHeightFit = {
         $: "MaxHeightFit"
@@ -7756,18 +7661,13 @@ type alias Process =
             b: b
         };
     });
-    var $author$project$Neat$Internal$NoContent = {
-        $: "NoContent"
-    };
-    var $author$project$Neat$Boundary$emptyGap = {
-        horizontal: 0,
-        vertical: 0
-    };
-    var $author$project$Neat$Boundary$defaultBoundary = {
-        content: $author$project$Neat$Internal$NoContent,
+    var $arowM$elm_mixin$Mixin$none = $arowM$elm_mixin$Mixin$Mixin({
+        attributes: _List_Nil,
+        styles: _List_Nil
+    });
+    var $author$project$Neat$Internal$defaultBoundaryProps = {
         enforcePointerEvent: false,
         height: $author$project$Neat$Internal$MinSize,
-        horizontalOverflow: false,
         maxHeight: $author$project$Neat$Internal$MaxHeightFit,
         maxWidth: $author$project$Neat$Internal$MaxWidthFit,
         minHeight: A2($author$project$Neat$Internal$MinHeightInUnit, "", 0),
@@ -7775,24 +7675,196 @@ type alias Process =
         mixin: $arowM$elm_mixin$Mixin$none,
         nodeName: "div",
         overlays: _List_Nil,
-        padding: $author$project$Neat$Boundary$emptyGap,
-        verticalOverflow: false,
         width: $author$project$Neat$Internal$MinSize
     };
-    var $author$project$Neat$Boundary$empty = $author$project$Neat$Internal$Boundary(_Utils_update($author$project$Neat$Boundary$defaultBoundary, {
-        content: $author$project$Neat$Internal$ViewContent($author$project$Neat$Internal$None)
-    }));
-    var $author$project$Neat$Boundary$enableVerticalScroll = function(_v0) {
-        var boundary = _v0.a;
-        return $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
-            verticalOverflow: true
+    var $author$project$Neat$Internal$JustifyStart = {
+        $: "JustifyStart"
+    };
+    var $author$project$Neat$Boundary$defaultColumnBoundary_ = function(children) {
+        return {
+            children: children,
+            justifyContent: $author$project$Neat$Internal$JustifyStart,
+            scrollable: false
+        };
+    };
+    var $author$project$Neat$Boundary$column = F2(function(_v0, children_) {
+        var justify = _v0.a.justify;
+        var scrollable = _v0.a.scrollable;
+        var children = A2($elm$core$List$filterMap, function(item) {
+            if (item.$ === "NoneColumnItem") return $elm$core$Maybe$Nothing;
+            else {
+                var item_ = item.a;
+                return $elm$core$Maybe$Just(item_);
+            }
+        }, children_);
+        if (!children.b) return $author$project$Neat$Internal$NoneBoundary;
+        else {
+            var item = children.a;
+            var items = children.b;
+            var column_ = $author$project$Neat$Boundary$defaultColumnBoundary_($author$project$Neat$Internal$ChildBoundaries({
+                head: item,
+                tail: items
+            }));
+            return A2($author$project$Neat$Internal$Boundary, $author$project$Neat$Internal$defaultBoundaryProps, $author$project$Neat$Internal$ColumnBoundary(_Utils_update(column_, {
+                justifyContent: justify,
+                scrollable: scrollable
+            })));
+        }
+    });
+    var $author$project$Neat$Internal$Children = F2(function(a, b) {
+        return {
+            $: "Children",
+            a: a,
+            b: b
+        };
+    });
+    var $author$project$Neat$Internal$FromColumn = function(a) {
+        return {
+            $: "FromColumn",
+            a: a
+        };
+    };
+    var $author$project$Neat$Internal$None = {
+        $: "None"
+    };
+    var $author$project$Neat$Internal$View = function(a) {
+        return {
+            $: "View",
+            a: a
+        };
+    };
+    var $author$project$Neat$View$defaultColumn_ = F2(function(gap, children) {
+        return {
+            children: children,
+            contentGap: gap,
+            justifyContent: $author$project$Neat$Internal$JustifyStart,
+            mixin: $arowM$elm_mixin$Mixin$none,
+            nodeName: "div",
+            nominalGap: gap
+        };
+    });
+    var $author$project$Neat$View$extractNominalGap = function(view) {
+        switch(view.$){
+            case "FromBoundary":
+                var g = view.a;
+                return g;
+            case "FromRow":
+                var o = view.a;
+                return o.nominalGap;
+            case "FromColumn":
+                var o = view.a;
+                return o.nominalGap;
+            default:
+                var o = view.a;
+                return o.nominalGap;
+        }
+    };
+    var $author$project$Neat$View$column = F2(function(_v0, children_) {
+        var justify = _v0.a.justify;
+        var children = A2($elm$core$List$filterMap, function(item) {
+            if (item.$ === "NoneColumnItem") return $elm$core$Maybe$Nothing;
+            else {
+                var item_ = item.a;
+                return $elm$core$Maybe$Just(item_);
+            }
+        }, children_);
+        if (!children.b) return $author$project$Neat$Internal$None;
+        else {
+            var item = children.a;
+            var items = children.b;
+            var itemGap = $author$project$Neat$View$extractNominalGap(item.content);
+            var column_ = A2($author$project$Neat$View$defaultColumn_, itemGap, A2($author$project$Neat$Internal$Children, item, items));
+            return $author$project$Neat$Internal$View($author$project$Neat$Internal$FromColumn(_Utils_update(column_, {
+                justifyContent: justify
+            })));
+        }
+    });
+    var $author$project$Neat$Internal$AlignStretch = {
+        $: "AlignStretch"
+    };
+    var $author$project$Neat$Boundary$ColumnItem = function(a) {
+        return {
+            $: "ColumnItem",
+            a: a
+        };
+    };
+    var $author$project$Neat$Boundary$NoneColumnItem = {
+        $: "NoneColumnItem"
+    };
+    var $author$project$Neat$Boundary$columnItem_ = F2(function(f, boundary) {
+        if (boundary.$ === "NoneBoundary") return $author$project$Neat$Boundary$NoneColumnItem;
+        else {
+            var props = boundary.a;
+            var boundary_ = boundary.b;
+            return $author$project$Neat$Boundary$ColumnItem(A2(f, props, boundary_));
+        }
+    });
+    var $author$project$Neat$Boundary$columnItem = function(key) {
+        return $author$project$Neat$Boundary$columnItem_(F2(function(props, boundary_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignStretch,
+                content: boundary_,
+                grow: false,
+                key: key,
+                props: props
+            };
         }));
     };
-    var $author$project$Neat$Internal$FromBoundary = F2(function(a, b) {
+    var $author$project$Neat$Internal$ColumnItem = function(a) {
+        return {
+            $: "ColumnItem",
+            a: a
+        };
+    };
+    var $author$project$Neat$Internal$NoneColumnItem = {
+        $: "NoneColumnItem"
+    };
+    var $author$project$Neat$View$columnItem_ = F2(function(f, view) {
+        if (view.$ === "None") return $author$project$Neat$Internal$NoneColumnItem;
+        else {
+            var view_ = view.a;
+            return $author$project$Neat$Internal$ColumnItem(f(view_));
+        }
+    });
+    var $author$project$Neat$View$columnItem = function(key) {
+        return $author$project$Neat$View$columnItem_(function(view_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignStretch,
+                content: view_,
+                grow: false,
+                key: key
+            };
+        });
+    };
+    var $author$project$Neat$Boundary$defaultColumn = $author$project$Neat$Boundary$Column({
+        justify: $author$project$Neat$Internal$JustifyStart,
+        scrollable: false
+    });
+    var $author$project$Neat$Internal$Column = function(a) {
+        return {
+            $: "Column",
+            a: a
+        };
+    };
+    var $author$project$Neat$View$defaultColumn = $author$project$Neat$Internal$Column({
+        justify: $author$project$Neat$Internal$JustifyStart,
+        nodeName: "div"
+    });
+    var $author$project$Neat$View$defaultRow = $author$project$Neat$Internal$Row({
+        justify: $author$project$Neat$Internal$JustifyStart,
+        nodeName: "div",
+        wrap: false
+    });
+    var $author$project$Neat$Internal$EmptyBoundary = {
+        $: "EmptyBoundary"
+    };
+    var $author$project$Neat$Boundary$empty = A2($author$project$Neat$Internal$Boundary, $author$project$Neat$Internal$defaultBoundaryProps, $author$project$Neat$Internal$EmptyBoundary);
+    var $author$project$Neat$Internal$FromBoundary = F3(function(a, b, c) {
         return {
             $: "FromBoundary",
             a: a,
-            b: b
+            b: b,
+            c: c
         };
     });
     var $author$project$Neat$Internal$FromRow = function(a) {
@@ -7807,44 +7879,46 @@ type alias Process =
             a: a
         };
     };
-    var $author$project$Neat$View$expandGap = F2(function(_v0, _v1) {
+    var $author$project$Neat$View$expandGap = F2(function(_v0, view) {
         var g2 = _v0.a;
-        var view = _v1.a;
-        return $author$project$Neat$Internal$View(function() {
-            switch(view.$){
-                case "FromBoundary":
-                    var boundary = view.b;
-                    return A2($author$project$Neat$Internal$FromBoundary, g2, boundary);
-                case "FromRow":
-                    var row_ = view.a;
-                    return $author$project$Neat$Internal$FromRow(_Utils_update(row_, {
-                        nominalGap: g2
-                    }));
-                case "FromColumn":
-                    var column_ = view.a;
-                    return $author$project$Neat$Internal$FromColumn(_Utils_update(column_, {
-                        nominalGap: g2
-                    }));
-                case "FromTexts":
-                    var texts_ = view.a;
-                    return $author$project$Neat$Internal$FromTexts(_Utils_update(texts_, {
-                        nominalGap: g2
-                    }));
-                default:
-                    return $author$project$Neat$Internal$None;
-            }
-        }());
+        if (view.$ === "None") return $author$project$Neat$Internal$None;
+        else {
+            var view_ = view.a;
+            return $author$project$Neat$Internal$View(function() {
+                switch(view_.$){
+                    case "FromBoundary":
+                        var props = view_.b;
+                        var boundary = view_.c;
+                        return A3($author$project$Neat$Internal$FromBoundary, g2, props, boundary);
+                    case "FromRow":
+                        var row_ = view_.a;
+                        return $author$project$Neat$Internal$FromRow(_Utils_update(row_, {
+                            nominalGap: g2
+                        }));
+                    case "FromColumn":
+                        var column_ = view_.a;
+                        return $author$project$Neat$Internal$FromColumn(_Utils_update(column_, {
+                            nominalGap: g2
+                        }));
+                    default:
+                        var texts_ = view_.a;
+                        return $author$project$Neat$Internal$FromTexts(_Utils_update(texts_, {
+                            nominalGap: g2
+                        }));
+                }
+            }());
+        }
     });
     var $author$project$Neat$Text$none = {
         mixin: $arowM$elm_mixin$Mixin$none,
-        nodeName: "span",
+        nodeName: $elm$core$Maybe$Nothing,
         text: ""
     };
     var $author$project$Neat$Text$fromString = function(str) {
         if (str === "") return $author$project$Neat$Text$none;
         else return {
             mixin: $arowM$elm_mixin$Mixin$none,
-            nodeName: "span",
+            nodeName: $elm$core$Maybe$Nothing,
             text: str
         };
     };
@@ -7858,101 +7932,127 @@ type alias Process =
         var texts = A2($elm$core$List$filter, function(a) {
             return a.text !== "";
         }, ls);
-        return $author$project$Neat$Internal$View(function() {
-            if (!texts.b) return $author$project$Neat$Internal$None;
-            else {
-                var item = texts.a;
-                var items = texts.b;
-                return $author$project$Neat$Internal$FromTexts({
-                    contentGap: gap,
-                    mixin: $arowM$elm_mixin$Mixin$none,
-                    nodeName: "div",
-                    nominalGap: gap,
-                    texts: _Utils_Tuple2(item, items)
-                });
-            }
-        }());
+        if (!texts.b) return $author$project$Neat$Internal$None;
+        else {
+            var item = texts.a;
+            var items = texts.b;
+            return $author$project$Neat$Internal$View($author$project$Neat$Internal$FromTexts({
+                contentGap: gap,
+                mixin: $arowM$elm_mixin$Mixin$none,
+                nodeName: "div",
+                nominalGap: gap,
+                texts: _Utils_Tuple2(item, items)
+            }));
+        }
     });
-    var $author$project$Neat$View$grownCenterItem = F2(function(key, _v0) {
-        var content = _v0.a;
-        return $author$project$Neat$Internal$ColumnItem({
-            alignSelf: $author$project$Neat$Internal$AlignCenter,
-            content: content,
-            grow: true,
-            key: key
+    var $author$project$Neat$Internal$AlignCenter = {
+        $: "AlignCenter"
+    };
+    var $author$project$Neat$View$grownCenterItem = function(key) {
+        return $author$project$Neat$View$columnItem_(function(view_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignCenter,
+                content: view_,
+                grow: true,
+                key: key
+            };
         });
-    });
-    var $author$project$Neat$View$grownColumnItem = F2(function(key, _v0) {
-        var content = _v0.a;
-        return $author$project$Neat$Internal$ColumnItem({
-            alignSelf: $author$project$Neat$Internal$AlignStretch,
-            content: content,
-            grow: true,
-            key: key
+    };
+    var $author$project$Neat$Boundary$grownColumnItem = function(key) {
+        return $author$project$Neat$Boundary$columnItem_(F2(function(props, boundary_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignStretch,
+                content: boundary_,
+                grow: true,
+                key: key,
+                props: props
+            };
+        }));
+    };
+    var $author$project$Neat$View$grownColumnItem = function(key) {
+        return $author$project$Neat$View$columnItem_(function(view_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignStretch,
+                content: view_,
+                grow: true,
+                key: key
+            };
         });
-    });
-    var $author$project$Neat$View$grownLeftItem = F2(function(key, _v0) {
-        var content = _v0.a;
-        return $author$project$Neat$Internal$ColumnItem({
-            alignSelf: $author$project$Neat$Internal$AlignStart,
-            content: content,
-            grow: true,
-            key: key
+    };
+    var $author$project$Neat$Internal$AlignStart = {
+        $: "AlignStart"
+    };
+    var $author$project$Neat$View$grownLeftItem = function(key) {
+        return $author$project$Neat$View$columnItem_(function(view_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignStart,
+                content: view_,
+                grow: true,
+                key: key
+            };
         });
-    });
+    };
+    var $author$project$Neat$Internal$NoneRowItem = {
+        $: "NoneRowItem"
+    };
     var $author$project$Neat$Internal$RowItem = function(a) {
         return {
             $: "RowItem",
             a: a
         };
     };
-    var $author$project$Neat$View$grownMiddleItem = F2(function(key, _v0) {
-        var content = _v0.a;
-        return $author$project$Neat$Internal$RowItem({
-            alignSelf: $author$project$Neat$Internal$AlignCenter,
-            content: content,
-            grow: true,
-            key: key
-        });
+    var $author$project$Neat$View$rowItem_ = F2(function(f, view) {
+        if (view.$ === "None") return $author$project$Neat$Internal$NoneRowItem;
+        else {
+            var view_ = view.a;
+            return $author$project$Neat$Internal$RowItem(f(view_));
+        }
     });
-    var $author$project$Neat$View$grownRowItem = F2(function(key, _v0) {
-        var content = _v0.a;
-        return $author$project$Neat$Internal$RowItem({
-            alignSelf: $author$project$Neat$Internal$AlignStretch,
-            content: content,
-            grow: true,
-            key: key
+    var $author$project$Neat$View$grownMiddleItem = function(key) {
+        return $author$project$Neat$View$rowItem_(function(view_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignCenter,
+                content: view_,
+                grow: true,
+                key: key
+            };
         });
-    });
-    var $author$project$Neat$View$middleItem = F2(function(key, _v0) {
-        var content = _v0.a;
-        return $author$project$Neat$Internal$RowItem({
-            alignSelf: $author$project$Neat$Internal$AlignCenter,
-            content: content,
-            grow: false,
-            key: key
-        });
-    });
-    var $author$project$Neat$emptyGap = {
-        horizontal: 0,
-        vertical: 0
     };
-    var $author$project$Neat$noGap = $author$project$Neat$Internal$IsGap($author$project$Neat$emptyGap);
-    var $author$project$Neat$Internal$HtmlContent = function(a) {
+    var $author$project$Neat$View$grownRowItem = function(key) {
+        return $author$project$Neat$View$rowItem_(function(view_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignStretch,
+                content: view_,
+                grow: true,
+                key: key
+            };
+        });
+    };
+    var $author$project$Neat$View$middleItem = function(key) {
+        return $author$project$Neat$View$rowItem_(function(view_) {
+            return {
+                alignSelf: $author$project$Neat$Internal$AlignCenter,
+                content: view_,
+                grow: false,
+                key: key
+            };
+        });
+    };
+    var $author$project$Neat$Internal$Overlay = function(a) {
         return {
-            $: "HtmlContent",
+            $: "Overlay",
             a: a
         };
     };
-    var $author$project$Neat$Internal$StringContent = function(a) {
+    var $author$project$Neat$Internal$FromView = function(a) {
         return {
-            $: "StringContent",
+            $: "FromView",
             a: a
         };
     };
-    var $author$project$Neat$Internal$TextsContent = function(a) {
+    var $author$project$Neat$Internal$RowBoundary = function(a) {
         return {
-            $: "TextsContent",
+            $: "RowBoundary",
             a: a
         };
     };
@@ -7965,14 +8065,14 @@ type alias Process =
             styles: mixin.styles
         });
     });
-    var $author$project$Neat$Text$map = F2(function(f, text) {
+    var $author$project$Neat$Internal$mapText = F2(function(f, text) {
         return {
             mixin: A2($arowM$elm_mixin$Mixin$map, f, text.mixin),
             nodeName: text.nodeName,
             text: text.text
         };
     });
-    var $author$project$Neat$Boundary$modifyChild = F2(function(f, _v0) {
+    var $author$project$Neat$Internal$modifyChild = F2(function(f, _v0) {
         var item0 = _v0.a;
         var items = _v0.b;
         var modifyContent = function(item) {
@@ -7985,69 +8085,93 @@ type alias Process =
         };
         return A2($author$project$Neat$Internal$Children, modifyContent(item0), A2($elm$core$List$map, modifyContent, items));
     });
-    var $author$project$Neat$Boundary$mapBoundary = F2(function(f, _v4) {
-        var boundary = _v4.a;
-        return $author$project$Neat$Internal$Boundary(A2($author$project$Neat$Boundary$mapBoundary_, f, boundary));
-    });
-    var $author$project$Neat$Boundary$mapBoundary_ = F2(function(f, o) {
+    var $author$project$Neat$Internal$mapBoundaryProps = F2(function(f, o) {
         return {
-            content: function() {
-                var _v2 = o.content;
-                switch(_v2.$){
-                    case "TextsContent":
-                        var texts = _v2.a;
-                        return $author$project$Neat$Internal$TextsContent(A2($elm$core$List$map, $author$project$Neat$Text$map(f), texts));
-                    case "ViewContent":
-                        var view = _v2.a;
-                        return $author$project$Neat$Internal$ViewContent(A2($author$project$Neat$Boundary$mapView_, f, view));
-                    case "HtmlContent":
-                        var children = _v2.a;
-                        return $author$project$Neat$Internal$HtmlContent(A2($elm$core$List$map, function(_v3) {
-                            var k = _v3.a;
-                            var b = _v3.b;
-                            return _Utils_Tuple2(k, A2($author$project$Neat$Boundary$mapBoundary_, f, b));
-                        }, children));
-                    case "StringContent":
-                        var str = _v2.a;
-                        return $author$project$Neat$Internal$StringContent(str);
-                    default:
-                        return $author$project$Neat$Internal$NoContent;
-                }
-            }(),
             enforcePointerEvent: o.enforcePointerEvent,
             height: o.height,
-            horizontalOverflow: o.horizontalOverflow,
             maxHeight: o.maxHeight,
             maxWidth: o.maxWidth,
             minHeight: o.minHeight,
             minWidth: o.minWidth,
             mixin: A2($arowM$elm_mixin$Mixin$map, f, o.mixin),
             nodeName: o.nodeName,
-            overlays: A2($author$project$Neat$Boundary$mapOverlays, f, o.overlays),
-            padding: o.padding,
-            verticalOverflow: o.verticalOverflow,
+            overlays: A2($author$project$Neat$Internal$mapOverlays, f, o.overlays),
             width: o.width
         };
     });
-    var $author$project$Neat$Boundary$mapOverlays = function(f) {
-        return $elm$core$List$map(function(o) {
-            return {
+    var $author$project$Neat$Internal$mapBoundary_ = F2(function(f, boundary_) {
+        switch(boundary_.$){
+            case "FromView":
+                var props = boundary_.a;
+                return $author$project$Neat$Internal$FromView(A2($author$project$Neat$Internal$mapFromView_, f, props));
+            case "RowBoundary":
+                var props = boundary_.a;
+                return $author$project$Neat$Internal$RowBoundary(A2($author$project$Neat$Internal$mapRowBoundary_, f, props));
+            case "ColumnBoundary":
+                var props = boundary_.a;
+                return $author$project$Neat$Internal$ColumnBoundary(A2($author$project$Neat$Internal$mapColumnBoundary_, f, props));
+            default:
+                return $author$project$Neat$Internal$EmptyBoundary;
+        }
+    });
+    var $author$project$Neat$Internal$mapChildBoundaries = F2(function(f, _v3) {
+        var param = _v3.a;
+        return $author$project$Neat$Internal$ChildBoundaries({
+            head: A2($author$project$Neat$Internal$mapItemBoundary_, f, param.head),
+            tail: A2($elm$core$List$map, $author$project$Neat$Internal$mapItemBoundary_(f), param.tail)
+        });
+    });
+    var $author$project$Neat$Internal$mapColumnBoundary_ = F2(function(f, o) {
+        return {
+            children: A2($author$project$Neat$Internal$mapChildBoundaries, f, o.children),
+            justifyContent: o.justifyContent,
+            scrollable: o.scrollable
+        };
+    });
+    var $author$project$Neat$Internal$mapFromView_ = F2(function(f, props) {
+        return {
+            content: A2($author$project$Neat$Internal$mapView_, f, props.content)
+        };
+    });
+    var $author$project$Neat$Internal$mapItemBoundary_ = F2(function(f, boundary_) {
+        return {
+            alignSelf: boundary_.alignSelf,
+            content: A2($author$project$Neat$Internal$mapBoundary_, f, boundary_.content),
+            grow: boundary_.grow,
+            key: boundary_.key,
+            props: A2($author$project$Neat$Internal$mapBoundaryProps, f, boundary_.props)
+        };
+    });
+    var $author$project$Neat$Internal$mapOverlays = function(f) {
+        return $elm$core$List$map(function(_v2) {
+            var o = _v2.a;
+            return $author$project$Neat$Internal$Overlay({
                 area: o.area,
-                boundary: A2($author$project$Neat$Boundary$mapBoundary, f, o.boundary),
-                name: o.name
-            };
+                boundary_: A2($author$project$Neat$Internal$mapBoundary_, f, o.boundary_),
+                name: o.name,
+                props: A2($author$project$Neat$Internal$mapBoundaryProps, f, o.props)
+            });
         });
     };
-    var $author$project$Neat$Boundary$mapView_ = F2(function(f, view) {
+    var $author$project$Neat$Internal$mapRowBoundary_ = F2(function(f, o) {
+        return {
+            children: A2($author$project$Neat$Internal$mapChildBoundaries, f, o.children),
+            justifyContent: o.justifyContent,
+            scrollable: o.scrollable,
+            wrap: o.wrap
+        };
+    });
+    var $author$project$Neat$Internal$mapView_ = F2(function(f, view) {
         switch(view.$){
             case "FromBoundary":
                 var g = view.a;
-                var boundary = view.b;
-                return A2($author$project$Neat$Internal$FromBoundary, g, A2($author$project$Neat$Boundary$mapBoundary_, f, boundary));
+                var props = view.b;
+                var boundary_ = view.c;
+                return A3($author$project$Neat$Internal$FromBoundary, g, A2($author$project$Neat$Internal$mapBoundaryProps, f, props), A2($author$project$Neat$Internal$mapBoundary_, f, boundary_));
             case "FromRow":
                 var o = view.a;
                 return $author$project$Neat$Internal$FromRow({
-                    children: A2($author$project$Neat$Boundary$modifyChild, $author$project$Neat$Boundary$mapView_(f), o.children),
+                    children: A2($author$project$Neat$Internal$modifyChild, $author$project$Neat$Internal$mapView_(f), o.children),
                     contentGap: o.contentGap,
                     justifyContent: o.justifyContent,
                     mixin: A2($arowM$elm_mixin$Mixin$map, f, o.mixin),
@@ -8058,14 +8182,14 @@ type alias Process =
             case "FromColumn":
                 var o = view.a;
                 return $author$project$Neat$Internal$FromColumn({
-                    children: A2($author$project$Neat$Boundary$modifyChild, $author$project$Neat$Boundary$mapView_(f), o.children),
+                    children: A2($author$project$Neat$Internal$modifyChild, $author$project$Neat$Internal$mapView_(f), o.children),
                     contentGap: o.contentGap,
                     justifyContent: o.justifyContent,
                     mixin: A2($arowM$elm_mixin$Mixin$map, f, o.mixin),
                     nodeName: o.nodeName,
                     nominalGap: o.nominalGap
                 });
-            case "FromTexts":
+            default:
                 var o = view.a;
                 return $author$project$Neat$Internal$FromTexts({
                     contentGap: o.contentGap,
@@ -8076,82 +8200,92 @@ type alias Process =
                         var _v1 = o.texts;
                         var head = _v1.a;
                         var tail = _v1.b;
-                        return _Utils_Tuple2(A2($author$project$Neat$Text$map, f, head), A2($elm$core$List$map, $author$project$Neat$Text$map(f), tail));
+                        return _Utils_Tuple2(A2($author$project$Neat$Internal$mapText, f, head), A2($elm$core$List$map, $author$project$Neat$Internal$mapText(f), tail));
                     }()
                 });
-            default:
-                return $author$project$Neat$Internal$None;
         }
     });
-    var $author$project$Neat$Boundary$putLayer = F3(function(name, _v0, _v1) {
+    var $author$project$Neat$Internal$mapBoundary = F2(function(f, boundary) {
+        if (boundary.$ === "Boundary") {
+            var props = boundary.a;
+            var boundary_ = boundary.b;
+            return A2($author$project$Neat$Internal$Boundary, A2($author$project$Neat$Internal$mapBoundaryProps, f, props), A2($author$project$Neat$Internal$mapBoundary_, f, boundary_));
+        } else return $author$project$Neat$Internal$NoneBoundary;
+    });
+    var $author$project$Neat$Boundary$modifyProps = F2(function(f, boundary) {
+        if (boundary.$ === "NoneBoundary") return $author$project$Neat$Internal$NoneBoundary;
+        else {
+            var props = boundary.a;
+            var content = boundary.b;
+            return A2($author$project$Neat$Internal$Boundary, f(props), content);
+        }
+    });
+    var $author$project$Neat$Boundary$putLayer = F2(function(name, _v0) {
         var area = _v0.a;
         var layered = _v0.b;
-        var boundary = _v1.a;
-        return $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
-            overlays: A2($elm$core$List$cons, {
-                area: area,
-                boundary: A2($author$project$Neat$Boundary$mapBoundary, function(_v2) {
-                    var a = _v2.a;
-                    return a;
-                }, layered),
-                name: name
-            }, boundary.overlays)
-        }));
+        return $author$project$Neat$Boundary$modifyProps(function(props) {
+            return _Utils_update(props, {
+                overlays: function() {
+                    var _v1 = A2($author$project$Neat$Internal$mapBoundary, function(_v2) {
+                        var a = _v2.a;
+                        return a;
+                    }, layered);
+                    if (_v1.$ === "NoneBoundary") return props.overlays;
+                    else {
+                        var props_ = _v1.a;
+                        var boundary_ = _v1.b;
+                        return A2($elm$core$List$cons, $author$project$Neat$Internal$Overlay({
+                            area: area,
+                            boundary_: boundary_,
+                            name: name,
+                            props: props_
+                        }), props.overlays);
+                    }
+                }()
+            });
+        });
     });
     var $author$project$Neat$View$defaultRow_ = F2(function(gap, children) {
         return {
             children: children,
             contentGap: gap,
-            justifyContent: $author$project$Neat$Internal$AlignStart,
+            justifyContent: $author$project$Neat$Internal$JustifyStart,
             mixin: $arowM$elm_mixin$Mixin$none,
             nodeName: "div",
             nominalGap: gap,
-            wrap: true
+            wrap: false
         };
     });
     var $author$project$Neat$View$row = F2(function(_v0, children_) {
         var justify = _v0.a.justify;
         var wrap = _v0.a.wrap;
-        var children = A2($elm$core$List$filterMap, function(_v2) {
-            var item = _v2.a;
-            return _Utils_eq(item.content, $author$project$Neat$Internal$None) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(item);
-        }, children_);
-        return $author$project$Neat$Internal$View(function() {
-            if (!children.b) return $author$project$Neat$Internal$None;
+        var children = A2($elm$core$List$filterMap, function(item) {
+            if (item.$ === "NoneRowItem") return $elm$core$Maybe$Nothing;
             else {
-                var item = children.a;
-                var items = children.b;
-                var itemGap = $author$project$Neat$View$extractNominalGap(item.content);
-                var row_ = A2($author$project$Neat$View$defaultRow_, itemGap, A2($author$project$Neat$Internal$Children, item, items));
-                return $author$project$Neat$Internal$FromRow(_Utils_update(row_, {
-                    justifyContent: justify,
-                    wrap: wrap
-                }));
+                var item_ = item.a;
+                return $elm$core$Maybe$Just(item_);
             }
-        }());
+        }, children_);
+        if (!children.b) return $author$project$Neat$Internal$None;
+        else {
+            var item = children.a;
+            var items = children.b;
+            var itemGap = $author$project$Neat$View$extractNominalGap(item.content);
+            var row_ = A2($author$project$Neat$View$defaultRow_, itemGap, A2($author$project$Neat$Internal$Children, item, items));
+            return $author$project$Neat$Internal$View($author$project$Neat$Internal$FromRow(_Utils_update(row_, {
+                justifyContent: justify,
+                wrap: wrap
+            })));
+        }
     });
-    var $author$project$Neat$View$defaultBoundary = {
-        content: $author$project$Neat$Internal$NoContent,
-        enforcePointerEvent: false,
-        height: $author$project$Neat$Internal$MinSize,
-        horizontalOverflow: false,
-        maxHeight: $author$project$Neat$Internal$MaxHeightFit,
-        maxWidth: $author$project$Neat$Internal$MaxWidthFit,
-        minHeight: A2($author$project$Neat$Internal$MinHeightInUnit, "", 0),
-        minWidth: A2($author$project$Neat$Internal$MinWidthInUnit, "", 0),
-        mixin: $arowM$elm_mixin$Mixin$none,
-        nodeName: "div",
-        overlays: _List_Nil,
-        padding: $author$project$Neat$View$emptyGap,
-        verticalOverflow: false,
-        width: $author$project$Neat$Internal$MinSize
-    };
-    var $author$project$Neat$View$setBoundary = function(_v0) {
-        var view = _v0.a;
-        return $author$project$Neat$Internal$Boundary(_Utils_update($author$project$Neat$View$defaultBoundary, {
-            content: _Utils_eq(view, $author$project$Neat$Internal$None) ? $author$project$Neat$Internal$NoContent : $author$project$Neat$Internal$ViewContent(view),
-            padding: $author$project$Neat$View$extractNominalGap(view)
-        }));
+    var $author$project$Neat$View$setBoundary = function(view) {
+        if (view.$ === "None") return $author$project$Neat$Internal$NoneBoundary;
+        else {
+            var view_ = view.a;
+            return A2($author$project$Neat$Internal$Boundary, $author$project$Neat$Internal$defaultBoundaryProps, $author$project$Neat$Internal$FromView({
+                content: view_
+            }));
+        }
     };
     var $arowM$elm_mixin$Mixin$mempty = $arowM$elm_mixin$Mixin$Mixin({
         attributes: _List_Nil,
@@ -8174,14 +8308,14 @@ type alias Process =
         });
     });
     var $author$project$Neat$Text$setClass = A2($elm$core$Basics$composeL, $author$project$Neat$Text$setMixin, $arowM$elm_mixin$Mixin$class);
-    var $author$project$Neat$Boundary$setGap = F2(function(_v0, _v1) {
+    var $author$project$Neat$Boundary$setGap = F2(function(_v0, boundary) {
         var gap = _v0.a;
-        var boundary = _v1.a;
-        return $author$project$Neat$Internal$View(function() {
-            var _v2 = boundary.content;
-            if (_v2.$ === "NoContent") return $author$project$Neat$Internal$None;
-            else return A2($author$project$Neat$Internal$FromBoundary, gap, boundary);
-        }());
+        if (boundary.$ === "NoneBoundary") return $author$project$Neat$Internal$None;
+        else {
+            var props = boundary.a;
+            var boundary_ = boundary.b;
+            return $author$project$Neat$Internal$View(A3($author$project$Neat$Internal$FromBoundary, gap, props, boundary_));
+        }
     });
     var $author$project$Neat$Internal$MaxHeightInUnit = F2(function(a, b) {
         return {
@@ -8193,13 +8327,14 @@ type alias Process =
     var $author$project$Neat$Internal$FlexSize = {
         $: "FlexSize"
     };
-    var $author$project$Neat$Boundary$setMaxHeight = F2(function(length, _v0) {
-        var boundary = _v0.a;
-        return $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
-            height: $author$project$Neat$Internal$FlexSize,
-            maxHeight: length
-        }));
-    });
+    var $author$project$Neat$Boundary$setMaxHeight = function(length) {
+        return $author$project$Neat$Boundary$modifyProps(function(props) {
+            return _Utils_update(props, {
+                height: $author$project$Neat$Internal$FlexSize,
+                maxHeight: length
+            });
+        });
+    };
     var $author$project$Neat$Boundary$setMaxHeightInEm = A2($elm$core$Basics$composeL, $author$project$Neat$Boundary$setMaxHeight, $author$project$Neat$Internal$MaxHeightInUnit("em"));
     var $author$project$Neat$Internal$MaxWidthInUnit = F2(function(a, b) {
         return {
@@ -8208,72 +8343,85 @@ type alias Process =
             b: b
         };
     });
-    var $author$project$Neat$Boundary$setMaxWidth = F2(function(length, _v0) {
-        var boundary = _v0.a;
-        return $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
-            maxWidth: length,
-            width: $author$project$Neat$Internal$FlexSize
-        }));
-    });
+    var $author$project$Neat$Boundary$setMaxWidth = function(length) {
+        return $author$project$Neat$Boundary$modifyProps(function(props) {
+            return _Utils_update(props, {
+                maxWidth: length,
+                width: $author$project$Neat$Internal$FlexSize
+            });
+        });
+    };
     var $author$project$Neat$Boundary$setMaxWidthInEm = A2($elm$core$Basics$composeL, $author$project$Neat$Boundary$setMaxWidth, $author$project$Neat$Internal$MaxWidthInUnit("em"));
-    var $author$project$Neat$Boundary$setMinHeight = F2(function(length, _v0) {
-        var boundary = _v0.a;
-        return $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
-            minHeight: length
-        }));
-    });
+    var $author$project$Neat$Boundary$setMinHeight = function(length) {
+        return $author$project$Neat$Boundary$modifyProps(function(props) {
+            return _Utils_update(props, {
+                minHeight: length
+            });
+        });
+    };
     var $author$project$Neat$Boundary$setMinHeightInEm = A2($elm$core$Basics$composeL, $author$project$Neat$Boundary$setMinHeight, $author$project$Neat$Internal$MinHeightInUnit("em"));
-    var $author$project$Neat$Boundary$setMinWidth = F2(function(length, _v0) {
-        var boundary = _v0.a;
-        return $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
-            minWidth: length
-        }));
-    });
+    var $author$project$Neat$Boundary$setMinWidth = function(length) {
+        return $author$project$Neat$Boundary$modifyProps(function(props) {
+            return _Utils_update(props, {
+                minWidth: length
+            });
+        });
+    };
     var $author$project$Neat$Boundary$setMinWidthInEm = A2($elm$core$Basics$composeL, $author$project$Neat$Boundary$setMinWidth, $author$project$Neat$Internal$MinWidthInUnit("em"));
-    var $author$project$Neat$Boundary$setMixin = F2(function(_new, _v0) {
-        var boundary = _v0.a;
-        return $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
-            mixin: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-                boundary.mixin,
-                _new
-            ]))
-        }));
-    });
+    var $author$project$Neat$Boundary$setMixin = function(_new) {
+        return $author$project$Neat$Boundary$modifyProps(function(props) {
+            return _Utils_update(props, {
+                mixin: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+                    props.mixin,
+                    _new
+                ]))
+            });
+        });
+    };
     var $author$project$Neat$Text$setNodeName = F2(function(str, text) {
         return _Utils_update(text, {
-            nodeName: str
+            nodeName: $elm$core$Maybe$Just(str)
         });
     });
-    var $author$project$Neat$View$setNodeName = F2(function(str, _v0) {
-        var view = _v0.a;
-        return $author$project$Neat$Internal$View(function() {
-            switch(view.$){
-                case "FromBoundary":
-                    var g = view.a;
-                    var boundary = view.b;
-                    return A2($author$project$Neat$Internal$FromBoundary, g, _Utils_update(boundary, {
-                        nodeName: str
-                    }));
-                case "FromRow":
-                    var row_ = view.a;
-                    return $author$project$Neat$Internal$FromRow(_Utils_update(row_, {
-                        nodeName: str
-                    }));
-                case "FromColumn":
-                    var column_ = view.a;
-                    return $author$project$Neat$Internal$FromColumn(_Utils_update(column_, {
-                        nodeName: str
-                    }));
-                case "FromTexts":
-                    var texts_ = view.a;
-                    return $author$project$Neat$Internal$FromTexts(_Utils_update(texts_, {
-                        nodeName: str
-                    }));
-                default:
-                    return $author$project$Neat$Internal$None;
-            }
-        }());
+    var $author$project$Neat$View$setNodeName = F2(function(str, view) {
+        if (view.$ === "View") switch(view.a.$){
+            case "FromBoundary":
+                var _v1 = view.a;
+                var g = _v1.a;
+                var props = _v1.b;
+                var boundary_ = _v1.c;
+                return $author$project$Neat$Internal$View(A3($author$project$Neat$Internal$FromBoundary, g, _Utils_update(props, {
+                    nodeName: str
+                }), boundary_));
+            case "FromRow":
+                var row_ = view.a.a;
+                return $author$project$Neat$Internal$View($author$project$Neat$Internal$FromRow(_Utils_update(row_, {
+                    nodeName: str
+                })));
+            case "FromColumn":
+                var column_ = view.a.a;
+                return $author$project$Neat$Internal$View($author$project$Neat$Internal$FromColumn(_Utils_update(column_, {
+                    nodeName: str
+                })));
+            default:
+                var texts_ = view.a.a;
+                return $author$project$Neat$Internal$View($author$project$Neat$Internal$FromTexts(_Utils_update(texts_, {
+                    nodeName: str
+                })));
+        }
+        else return $author$project$Neat$Internal$None;
     });
+    var $author$project$Neat$Boundary$enableVScroll = function(_v0) {
+        var config = _v0.a;
+        return $author$project$Neat$Boundary$Column(_Utils_update(config, {
+            scrollable: true
+        }));
+    };
+    var $author$project$Neat$Boundary$setVerticalScroller = function(boundary) {
+        return A2($author$project$Neat$Boundary$column, $author$project$Neat$Boundary$enableVScroll($author$project$Neat$Boundary$defaultColumn), _List_fromArray([
+            A2($author$project$Neat$Boundary$grownColumnItem, "content", boundary)
+        ]));
+    };
     var $arowM$elm_mixin$Mixin$style = F2(function(key, val) {
         return $arowM$elm_mixin$Mixin$Mixin({
             attributes: _List_Nil,
@@ -8297,30 +8445,35 @@ type alias Process =
             a: a
         };
     };
-    var $author$project$Neat$Boundary$toLayered = function(_v0) {
-        var boundary = _v0.a;
-        return A2($author$project$Neat$Boundary$mapBoundary, $author$project$Neat$Internal$Layered, $author$project$Neat$Internal$Boundary(_Utils_update(boundary, {
-            enforcePointerEvent: true
-        })));
+    var $author$project$Neat$Boundary$toLayered = function(boundary) {
+        return A2($author$project$Neat$Internal$mapBoundary, $author$project$Neat$Internal$Layered, A2($author$project$Neat$Boundary$modifyProps, function(props) {
+            return _Utils_update(props, {
+                enforcePointerEvent: true
+            });
+        }, boundary));
     };
     var $author$project$Main$body = function(_v0) {
-        return $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$column, $author$project$Neat$View$alignBottom($author$project$Neat$View$defaultColumn), _List_fromArray([
-            A2($author$project$Neat$View$columnItem, "header", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("header"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
+        return A2($author$project$Neat$Boundary$column, $author$project$Neat$Boundary$alignBottom($author$project$Neat$Boundary$defaultColumn), _List_fromArray([
+            A2($author$project$Neat$Boundary$columnItem, "header", A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("header"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
                 A2($author$project$Neat$View$grownMiddleItem, "text", A2($author$project$Neat$View$textBlock, $author$project$Gap$body, "Header")),
                 A2($author$project$Neat$View$grownMiddleItem, "input", A2($author$project$Neat$View$setNodeName, "input", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, A2($arowM$elm_mixin$Mixin$style, "padding", "0.4em"), A2($author$project$Neat$Boundary$setMixin, A2($arowM$elm_mixin$Mixin$attribute, "placeholder", "foo"), A2($author$project$Neat$Boundary$setMinWidthInEm, 4, $author$project$Neat$Boundary$empty)))))),
-                A2($author$project$Neat$View$middleItem, "hamburger", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("header_hamburger"), A2($author$project$Neat$Boundary$setMaxHeightInEm, 3, A2($author$project$Neat$Boundary$setMinHeightInEm, 3, A2($author$project$Neat$Boundary$setMaxWidthInEm, 3, A2($author$project$Neat$Boundary$setMinWidthInEm, 3, $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$alignCenter($author$project$Neat$View$defaultRow), _List_fromArray([
-                    A2($author$project$Neat$View$middleItem, "icon", A2($author$project$Neat$View$textBlock, $author$project$Neat$noGap, "三"))
-                ]))))))))))
-            ])))))),
-            A2($author$project$Neat$View$grownColumnItem, "body", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), $author$project$Neat$Boundary$enableVerticalScroll(A2($author$project$Neat$Boundary$setMinHeightInEm, 10, $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
+                A2($author$project$Neat$View$middleItem, "hamburger", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("header_hamburger"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$alignCenter($author$project$Neat$View$defaultRow), _List_fromArray([
+                    A2($author$project$Neat$View$middleItem, "icon", A2($author$project$Neat$View$textBlock, $author$project$Gap$body, "三"))
+                ]))))))
+            ]))))),
+            A2($author$project$Neat$Boundary$grownColumnItem, "body", A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), A2($author$project$Neat$Boundary$setMinHeightInEm, 10, $author$project$Neat$Boundary$setVerticalScroller($author$project$Neat$View$setBoundary(A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
                 A2($author$project$Neat$View$columnItem, "sampleText", A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$fromTexts, $author$project$Gap$sub, _List_fromArray([
                     $author$project$Neat$Text$fromString("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "),
                     A2($author$project$Neat$Text$setNodeName, "code", A2($author$project$Neat$Text$setClass, "inlineCode", $author$project$Neat$Text$fromString("<eiusmod>"))),
                     $author$project$Neat$Text$fromString(" tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
                 ])))),
-                A2($author$project$Neat$View$columnItem, "subBoxes", A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
+                A2($author$project$Neat$View$grownColumnItem, "subBoxes", A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
                     A2($author$project$Neat$View$columnItem, "sampleBox1", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$sub, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), A2($author$project$Neat$Boundary$setMaxWidthInEm, 20, A2($author$project$Neat$Boundary$setMinWidthInEm, 10, A2($author$project$Neat$Boundary$setMinHeightInEm, 2, $author$project$Neat$Boundary$empty)))))),
-                    A2($author$project$Neat$View$columnItem, "sampleBox2", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$sub, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), A2($author$project$Neat$Boundary$setMinWidthInEm, 7, A2($author$project$Neat$Boundary$setMinHeightInEm, 2, $author$project$Neat$Boundary$empty)))))
+                    A2($author$project$Neat$View$grownColumnItem, "sampleBox2", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$sub, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), A2($author$project$Neat$Boundary$setMinWidthInEm, 7, A2($author$project$Neat$Boundary$setMinHeightInEm, 2, $author$project$Neat$Boundary$empty)))))
+                ])))),
+                A2($author$project$Neat$View$columnItem, "details", A2($author$project$Neat$View$setNodeName, "details", A2($author$project$Neat$View$column, $author$project$Neat$View$defaultColumn, _List_fromArray([
+                    A2($author$project$Neat$View$columnItem, "summary", A2($author$project$Neat$View$setNodeName, "summary", A2($author$project$Neat$View$textBlock, $author$project$Gap$body, "Summary"))),
+                    A2($author$project$Neat$View$columnItem, "body", A2($author$project$Neat$View$textBlock, $author$project$Gap$body, "Foo"))
                 ])))),
                 A2($author$project$Neat$View$grownCenterItem, "sampleNestedBox", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A3($author$project$Neat$Boundary$putLayer, "overlay", _Utils_Tuple2({
                     bottom: 0,
@@ -8331,15 +8484,15 @@ type alias Process =
                 }, $author$project$Neat$Boundary$toLayered(A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), A2($author$project$Neat$Boundary$setMaxWidthInEm, 20, $author$project$Neat$Boundary$empty)))), A2($author$project$Neat$Boundary$setMaxHeightInEm, 33, A2($author$project$Neat$Boundary$setMaxWidthInEm, 40, A2($author$project$Neat$Boundary$setMinWidthInEm, 37, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("red"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$alignRight($author$project$Neat$View$defaultRow), _List_fromArray([
                     A2($author$project$Neat$View$grownRowItem, "sampleBox", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("blue"), A2($author$project$Neat$Boundary$setMaxWidthInEm, 23, A2($author$project$Neat$Boundary$setMinWidthInEm, 12, A2($author$project$Neat$Boundary$setMinHeightInEm, 5, $author$project$Neat$Boundary$empty))))))
                 ])))))))))),
-                A2($author$project$Neat$View$grownLeftItem, "content1", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("scrollableText_content"), A2($author$project$Neat$Boundary$setMaxHeightInEm, 8, A2($author$project$Neat$Boundary$setMinHeightInEm, 1, $author$project$Neat$Boundary$enableVerticalScroll($author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
+                A2($author$project$Neat$View$grownLeftItem, "content1", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("scrollableText_content"), A2($author$project$Neat$Boundary$setMaxHeightInEm, 8, A2($author$project$Neat$Boundary$setMinHeightInEm, 1, $author$project$Neat$Boundary$setVerticalScroller($author$project$Neat$View$setBoundary(A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
                     A2($author$project$Neat$View$grownRowItem, "content", A2($author$project$Neat$View$textBlock, $author$project$Gap$sub, "foo000000\nbar\nbar\nbar\nfoo\nbar\nbar\nbar\n"))
                 ]))))))))),
-                A2($author$project$Neat$View$grownColumnItem, "content2", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("scrollableText_content"), A2($author$project$Neat$Boundary$setMaxHeightInEm, 8, A2($author$project$Neat$Boundary$setMinHeightInEm, 1, $author$project$Neat$Boundary$enableVerticalScroll($author$project$Neat$View$setBoundary(A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
+                A2($author$project$Neat$View$grownColumnItem, "content2", A2($author$project$Neat$Boundary$setGap, $author$project$Gap$body, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("scrollableText_content"), A2($author$project$Neat$Boundary$setMaxHeightInEm, 8, A2($author$project$Neat$Boundary$setMinHeightInEm, 1, $author$project$Neat$Boundary$setVerticalScroller($author$project$Neat$View$setBoundary(A2($author$project$Neat$View$expandGap, $author$project$Gap$body, A2($author$project$Neat$View$row, $author$project$Neat$View$defaultRow, _List_fromArray([
                     A2($author$project$Neat$View$grownRowItem, "content", A2($author$project$Neat$View$textBlock, $author$project$Gap$sub, "foo000000\nbar\nbar\nbar"))
                 ]))))))))))
-            ])))))))),
-            A2($author$project$Neat$View$columnItem, "footer", A2($author$project$Neat$Boundary$setGap, $author$project$Neat$noGap, A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("footer"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$textBlock, $author$project$Gap$body, "Footer")))))
-        ])));
+            ]))))))),
+            A2($author$project$Neat$Boundary$columnItem, "footer", A2($author$project$Neat$Boundary$setMixin, $arowM$elm_mixin$Mixin$class("footer"), $author$project$Neat$View$setBoundary(A2($author$project$Neat$View$textBlock, $author$project$Gap$body, "Footer"))))
+        ]));
     };
     var $author$project$Neat$Internal$Renderer = function(a) {
         return {
@@ -8376,7 +8529,7 @@ type alias Process =
         return f($arowM$elm_mixin$Mixin$toAttributes($arowM$elm_mixin$Mixin$batch(mixins)));
     });
     var $arowM$elm_mixin$Mixin$Html$div = $arowM$elm_mixin$Mixin$lift($elm$html$Html$div);
-    var $author$project$Neat$neatLayoutStyle = '.elmNeatLayout,.elmNeatLayout:before,.elmNeatLayout:after{box-sizing:border-box;margin:0;padding:0}.elmNeatLayout--top{display:block;position:fixed;inset:0;overflow:hidden}.elmNeatLayout--overlay{pointer-events:none;top:var(--overlay-top);bottom:var(--overlay-bottom);left:var(--overlay-left);right:var(--overlay-right);z-index:var(--overlay-priority);display:block;position:absolute;overflow:hidden}.elmNeatLayout--boundary{overflow:hidden}.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--boundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller{height:100%;width:100%}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller-verticalScroll>.elmNeatLayout--boundaryContent{height:auto;min-height:100%}.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller-horizontalScroll>.elmNeatLayout--boundaryContent{width:auto;min-width:100%}.elmNeatLayout--boundary-view-hasContent,.elmNeatLayout--boundary>.elmNeatLayout--boundary_scroller{padding:var(--inner-gap-y)var(--inner-gap-x)}.elmNeatLayout--boundary-text{overflow:visible}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin{height:auto;width:100%}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin:before{width:0;height:0;margin-top:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin:after{width:0;height:0;margin-bottom:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin>.elmNeatLayout--boundary_text{line-height:calc(1em + var(--outer-gap-y));display:inline}.elmNeatLayout--boundary-horizontalOverflow,.elmNeatLayout--boundary-horizontalOverflow>.elmNeatLayout--boundary_scroller{overflow-x:auto}.elmNeatLayout--boundary-verticalOverflow,.elmNeatLayout--boundary-verticalOverflow>.elmNeatLayout--boundary_scroller{overflow-y:auto}.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-text>.elmNeatLayout--boundary_textMargin{overflow-y:hidden}.elmNeatLayout--boundary-verticalOverflow>.elmNeatLayout--boundaryContent.elmNeatLayout--column{height:auto}.elmNeatLayout--boundary-hasMinHeight{min-height:var(--min-height)}.elmNeatLayout--boundary-hasMaxHeight:not(.elmNeatLayout--boundary-verticalOverflow){max-height:var(--max-height)}.elmNeatLayout--boundary-hasMinWidth{min-width:var(--min-width)}.elmNeatLayout--boundary-hasMaxWidth:not(.elmNeatLayout--boundary-horizontalOverflow){max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--rowChild{flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild:not(.elmNeatLayout--boundary-horizontalOverflow){width:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow){height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex:not(.elmNeatLayout--boundary-verticalOverflow).elmNeatLayout--rowChild-alignStretch,.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightFlex.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--max-height)}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize{height:auto;max-height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--heightMinSize.elmNeatLayout--boundary-hasMaxHeight{max-height:min(var(--max-height),100%)}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow{width:0;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--columnChild{flex-shrink:0}.elmNeatLayout--boundary.elmNeatLayout--columnChild:not(.elmNeatLayout--boundary-verticalOverflow){height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow){width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex:not(.elmNeatLayout--boundary-horizontalOverflow).elmNeatLayout--columnChild-alignStretch,.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthFlex.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--max-width)}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize{width:auto;max-width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--widthMinSize.elmNeatLayout--boundary-hasMaxWidth{max-width:min(var(--max-width),100%)}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow{height:0;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--max-height)}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow{height:auto;max-height:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-verticalOverflow.elmNeatLayout--boundary-hasMaxHeight{max-height:min(var(--max-height),100%)}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow{width:auto;max-width:100%}.elmNeatLayout--boundary.elmNeatLayout--boundaryContent.elmNeatLayout--boundary-horizontalOverflow.elmNeatLayout--boundary-hasMaxWidth{max-width:min(var(--max-width),100%)}.elmNeatLayout--row{gap:var(--content-gap-y)var(--content-gap-x);flex-flow:row;display:flex}.elmNeatLayout--row.elmNeatLayout--row-wrap{flex-wrap:wrap}.elmNeatLayout--row.elmNeatLayout--row-justifyStart{justify-content:flex-start}.elmNeatLayout--row.elmNeatLayout--row-justifyCenter{justify-content:center}.elmNeatLayout--row.elmNeatLayout--row-justifyEnd{justify-content:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--row.elmNeatLayout--rowChild{width:auto;height:auto;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild{height:auto;width:100%;flex-shrink:0}.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--row.elmNeatLayout--boundaryContent{width:100%;height:100%}.elmNeatLayout--column{gap:var(--content-gap-y)var(--content-gap-x);flex-flow:column;display:flex}.elmNeatLayout--column.elmNeatLayout--column-justifyStart{justify-content:flex-start}.elmNeatLayout--column.elmNeatLayout--column-justifyCenter{justify-content:center}.elmNeatLayout--column.elmNeatLayout--column-justifyEnd{justify-content:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--column.elmNeatLayout--rowChild{width:auto;height:100%;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--column.elmNeatLayout--columnChild{height:auto;width:auto;flex-shrink:0}.elmNeatLayout--column.elmNeatLayout--boundaryContent{width:100%;height:100%}.elmNeatLayout--textView{overflow:visible}.elmNeatLayout--textView>textView_textMargin{height:auto;width:100%}.elmNeatLayout--textView>textView_textMargin:before{width:0;height:0;margin-top:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--textView>textView_textMargin:after{width:0;height:0;margin-bottom:calc(var(--outer-gap-y)/-2);content:"";display:block}.elmNeatLayout--textView>textView_textMargin>.elmNeatLayout--textView_inline{line-height:calc(1em + var(--content-gap-y));display:inline}';
+    var $author$project$Neat$neatLayoutStyle = ".elmNeatLayout,.elmNeatLayout:before,.elmNeatLayout:after{box-sizing:border-box;margin:0;padding:0}.elmNeatLayout--top{display:block;position:fixed;inset:0;overflow:hidden}.elmNeatLayout--overlay{pointer-events:none;top:var(--elmNeatLayout--overlay-top);bottom:var(--elmNeatLayout--overlay-bottom);left:var(--elmNeatLayout--overlay-left);right:var(--elmNeatLayout--overlay-right);z-index:var(--elmNeatLayout--overlay-priority);display:block;position:absolute;overflow:hidden}.elmNeatLayout--boundary_content{padding:var(--elmNeatLayout--inner-gap-y)var(--elmNeatLayout--inner-gap-x);overflow:hidden}.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--boundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--boundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--boundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--boundary:not(.elmNeatLayout--boundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--boundary:not(.elmNeatLayout--boundary_content)>.elmNeatLayout--boundary_content{height:auto;flex-grow:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild{width:auto;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild{height:auto;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--rowBoundary_content{flex-flow:row;display:flex;overflow:hidden}.elmNeatLayout--rowBoundary-wrap{flex-wrap:wrap}.elmNeatLayout--rowBoundary-justifyStart{justify-content:flex-start}.elmNeatLayout--rowBoundary-justifyCenter{justify-content:center}.elmNeatLayout--rowBoundary-justifyEnd{justify-content:flex-end}.elmNeatLayout--rowBoundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--rowBoundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--rowBoundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--rowBoundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--rowBoundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--rowBoundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--rowBoundary:not(.elmNeatLayout--rowBoundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--rowBoundary:not(.elmNeatLayout--rowBoundary_content)>.elmNeatLayout--rowBoundary_content{height:auto;flex-grow:1}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild:not(.elmNeatLayout--rowBoundary-horizontalOverflow){width:auto;flex-shrink:0}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow{flex-shrink:1}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow:not(.elmNeatLayout--rowChild-grow){width:0}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow.elmNeatLayout--rowChild-grow{width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild{height:auto;flex-shrink:1}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--rowBoundary_content-horizontalOverflow{overflow-x:auto;overflow-y:hidden}.elmNeatLayout--rowBoundary_content-horizontalOverflow>.elmNeatLayout--rowChild{flex-shrink:0}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--columnBoundary_content{flex-flow:column;display:flex;overflow:hidden}.elmNeatLayout--columnBoundary-justifyStart{justify-content:flex-start}.elmNeatLayout--columnBoundary-justifyCenter{justify-content:center}.elmNeatLayout--columnBoundary-justifyEnd{justify-content:flex-end}.elmNeatLayout--columnBoundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--columnBoundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--columnBoundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--columnBoundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--columnBoundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--columnBoundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--columnBoundary:not(.elmNeatLayout--columnBoundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--columnBoundary:not(.elmNeatLayout--columnBoundary_content)>.elmNeatLayout--columnBoundary_content{height:auto;flex-grow:1}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild{width:auto;flex-shrink:1}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild:not(.elmNeatLayout--columnBoundary-verticalOverflow){height:auto;flex-shrink:0}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow{flex-shrink:1}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow:not(.elmNeatLayout--columnChild-grow){height:0}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow.elmNeatLayout--columnChild-grow{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--columnBoundary_content-verticalOverflow{overflow-x:hidden;overflow-y:auto}.elmNeatLayout--columnBoundary_content-verticalOverflow>.elmNeatLayout--columnChild{flex-shrink:0}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--row{gap:var(--elmNeatLayout--content-gap-y)var(--elmNeatLayout--content-gap-x);flex-flow:row;display:flex}.elmNeatLayout--row-wrap{flex-wrap:wrap}.elmNeatLayout--row-justifyStart{justify-content:flex-start}.elmNeatLayout--row-justifyCenter{justify-content:center}.elmNeatLayout--row-justifyEnd{justify-content:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--row.elmNeatLayout--rowChild{width:auto;height:auto;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild{height:auto;width:100%;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--row.elmNeatLayout--boundaryChild{width:100%;height:100%}.elmNeatLayout--column{gap:var(--elmNeatLayout--content-gap-y)var(--elmNeatLayout--content-gap-x);flex-flow:column;display:flex}.elmNeatLayout--column-justifyStart{justify-content:flex-start}.elmNeatLayout--column-justifyCenter{justify-content:center}.elmNeatLayout--column-justifyEnd{justify-content:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--column.elmNeatLayout--rowChild{width:auto;height:100%;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--column.elmNeatLayout--columnChild{height:auto;width:auto;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--boundaryChild{width:100%;height:100%}.elmNeatLayout--textView{overflow:visible}.elmNeatLayout--textView>.elmNeatLayout--textView_inline{line-height:calc(1em + var(--elmNeatLayout--content-gap-y));display:inline}";
     var $arowM$elm_mixin$Mixin$Html$node = function(name) {
         return $arowM$elm_mixin$Mixin$lift($elm$html$Html$node(name));
     };
@@ -8401,65 +8554,133 @@ type alias Process =
             unit
         ]));
     };
-    var $author$project$Neat$boundaryCustomProperty = F3(function(renderer, _v0, o) {
-        var outerGap = _v0.outerGap;
+    var $author$project$Neat$variable = F2(function(prop, val) {
+        return A2($arowM$elm_mixin$Mixin$style, "--elmNeatLayout--" + prop, val);
+    });
+    var $author$project$Neat$boundaryCustomProperty = F2(function(renderer, o) {
         return $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-            A2($arowM$elm_mixin$Mixin$style, "--outer-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, outerGap.horizontal, renderer.baseSize))),
-            A2($arowM$elm_mixin$Mixin$style, "--outer-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, outerGap.vertical, renderer.baseSize))),
-            A2($arowM$elm_mixin$Mixin$style, "--inner-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.padding.horizontal, renderer.baseSize))),
-            A2($arowM$elm_mixin$Mixin$style, "--inner-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.padding.vertical, renderer.baseSize))),
             function() {
-                var _v1 = o.minWidth;
-                if (_v1.$ === "MinWidthInBs") {
-                    var bs = _v1.a;
-                    return A2($arowM$elm_mixin$Mixin$style, "--min-width", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                var _v0 = o.minWidth;
+                if (_v0.$ === "MinWidthInBs") {
+                    var bs = _v0.a;
+                    return A2($author$project$Neat$variable, "min-width", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
                 } else {
-                    var unit = _v1.a;
-                    var v = _v1.b;
-                    return A2($arowM$elm_mixin$Mixin$style, "--min-width", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                    var unit = _v0.a;
+                    var v = _v0.b;
+                    return A2($author$project$Neat$variable, "min-width", _Utils_ap($elm$core$String$fromFloat(v), unit));
                 }
             }(),
             function() {
-                var _v2 = o.maxWidth;
-                switch(_v2.$){
+                var _v1 = o.maxWidth;
+                switch(_v1.$){
                     case "MaxWidthInBs":
-                        var bs = _v2.a;
-                        return A2($arowM$elm_mixin$Mixin$style, "--max-width", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                        var bs = _v1.a;
+                        return A2($author$project$Neat$variable, "max-width", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
                     case "MaxWidthInUnit":
-                        var unit = _v2.a;
-                        var v = _v2.b;
-                        return A2($arowM$elm_mixin$Mixin$style, "--max-width", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                        var unit = _v1.a;
+                        var v = _v1.b;
+                        return A2($author$project$Neat$variable, "max-width", _Utils_ap($elm$core$String$fromFloat(v), unit));
                     default:
                         return $arowM$elm_mixin$Mixin$none;
                 }
             }(),
             function() {
-                var _v3 = o.minHeight;
-                if (_v3.$ === "MinHeightInBs") {
-                    var bs = _v3.a;
-                    return A2($arowM$elm_mixin$Mixin$style, "--min-height", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                var _v2 = o.minHeight;
+                if (_v2.$ === "MinHeightInBs") {
+                    var bs = _v2.a;
+                    return A2($author$project$Neat$variable, "min-height", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
                 } else {
-                    var unit = _v3.a;
-                    var v = _v3.b;
-                    return A2($arowM$elm_mixin$Mixin$style, "--min-height", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                    var unit = _v2.a;
+                    var v = _v2.b;
+                    return A2($author$project$Neat$variable, "min-height", _Utils_ap($elm$core$String$fromFloat(v), unit));
                 }
             }(),
             function() {
-                var _v4 = o.maxHeight;
-                switch(_v4.$){
+                var _v3 = o.maxHeight;
+                switch(_v3.$){
                     case "MaxHeightInBs":
-                        var bs = _v4.a;
-                        return A2($arowM$elm_mixin$Mixin$style, "--max-height", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                        var bs = _v3.a;
+                        return A2($author$project$Neat$variable, "max-height", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
                     case "MaxHeightInUnit":
-                        var unit = _v4.a;
-                        var v = _v4.b;
-                        return A2($arowM$elm_mixin$Mixin$style, "--max-height", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                        var unit = _v3.a;
+                        var v = _v3.b;
+                        return A2($author$project$Neat$variable, "max-height", _Utils_ap($elm$core$String$fromFloat(v), unit));
                     default:
                         return $arowM$elm_mixin$Mixin$none;
                 }
             }()
         ]));
     });
+    var $author$project$Neat$columnBoundaryCustomProperty = F2(function(renderer, o) {
+        return $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+            function() {
+                var _v0 = o.minWidth;
+                if (_v0.$ === "MinWidthInBs") {
+                    var bs = _v0.a;
+                    return A2($author$project$Neat$variable, "min-width", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                } else {
+                    var unit = _v0.a;
+                    var v = _v0.b;
+                    return A2($author$project$Neat$variable, "min-width", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                }
+            }(),
+            function() {
+                var _v1 = o.maxWidth;
+                switch(_v1.$){
+                    case "MaxWidthInBs":
+                        var bs = _v1.a;
+                        return A2($author$project$Neat$variable, "max-width", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                    case "MaxWidthInUnit":
+                        var unit = _v1.a;
+                        var v = _v1.b;
+                        return A2($author$project$Neat$variable, "max-width", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                    default:
+                        return $arowM$elm_mixin$Mixin$none;
+                }
+            }(),
+            function() {
+                var _v2 = o.minHeight;
+                if (_v2.$ === "MinHeightInBs") {
+                    var bs = _v2.a;
+                    return A2($author$project$Neat$variable, "min-height", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                } else {
+                    var unit = _v2.a;
+                    var v = _v2.b;
+                    return A2($author$project$Neat$variable, "min-height", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                }
+            }(),
+            function() {
+                var _v3 = o.maxHeight;
+                switch(_v3.$){
+                    case "MaxHeightInBs":
+                        var bs = _v3.a;
+                        return A2($author$project$Neat$variable, "max-height", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                    case "MaxHeightInUnit":
+                        var unit = _v3.a;
+                        var v = _v3.b;
+                        return A2($author$project$Neat$variable, "max-height", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                    default:
+                        return $arowM$elm_mixin$Mixin$none;
+                }
+            }()
+        ]));
+    });
+    var $author$project$Neat$extractNominalGap = function(view_) {
+        switch(view_.$){
+            case "FromBoundary":
+                var g = view_.a;
+                return g;
+            case "FromRow":
+                var row_ = view_.a;
+                return row_.nominalGap;
+            case "FromColumn":
+                var column_ = view_.a;
+                return column_.nominalGap;
+            default:
+                var texts_ = view_.a;
+                return texts_.nominalGap;
+        }
+    };
     var $author$project$Neat$hasMaxHeight = function(mh) {
         switch(mh.$){
             case "MaxHeightInBs":
@@ -8507,331 +8728,486 @@ type alias Process =
             return !a;
         }
     };
+    var $arowM$elm_mixin$Mixin$Html$span = $arowM$elm_mixin$Mixin$lift($elm$html$Html$span);
     var $arowM$elm_mixin$Mixin$Html$text = $elm$html$Html$text;
-    var $author$project$Neat$renderTexts = F3(function(renderer, _v0, o) {
-        var self = _v0.self;
-        var consTexts = function(_v1) {
-            var t = _v1.a;
-            var ts = _v1.b;
+    var $author$project$Neat$renderTextList = function(mixin) {
+        return $elm$core$List$filterMap(function(inline) {
+            var _v0 = inline.nodeName;
+            if (_v0.$ === "Nothing") return _Utils_eq(inline.mixin, $arowM$elm_mixin$Mixin$none) ? inline.text === "" ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just($arowM$elm_mixin$Mixin$Html$text(inline.text)) : $elm$core$Maybe$Just(A2($arowM$elm_mixin$Mixin$Html$span, _List_fromArray([
+                inline.mixin,
+                mixin
+            ]), _List_fromArray([
+                $arowM$elm_mixin$Mixin$Html$text(inline.text)
+            ])));
+            else {
+                var nodeName = _v0.a;
+                return $elm$core$Maybe$Just(A3($arowM$elm_mixin$Mixin$Html$node, nodeName, _List_fromArray([
+                    inline.mixin,
+                    mixin
+                ]), _List_fromArray([
+                    $arowM$elm_mixin$Mixin$Html$text(inline.text)
+                ])));
+            }
+        });
+    };
+    var $author$project$Neat$renderTexts = F3(function(renderer, extraMixin, o) {
+        var consTexts = function(_v0) {
+            var t = _v0.a;
+            var ts = _v0.b;
             return A2($elm$core$List$cons, t, ts);
         };
+        var textHtmls = A2($author$project$Neat$renderTextList, $author$project$Neat$class("textView_inline"), consTexts(o.texts));
         var base = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
             o.mixin,
-            self,
+            extraMixin,
             $author$project$Neat$class("textView"),
-            A2($arowM$elm_mixin$Mixin$style, "--content-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.horizontal, renderer.baseSize))),
-            A2($arowM$elm_mixin$Mixin$style, "--content-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.vertical, renderer.baseSize)))
+            A2($author$project$Neat$variable, "content-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.vertical, renderer.baseSize)))
         ]));
         return A3($arowM$elm_mixin$Mixin$Html$node, o.nodeName, _List_fromArray([
             base
-        ]), _List_fromArray([
-            A2($arowM$elm_mixin$Mixin$Html$div, _List_fromArray([
-                $author$project$Neat$class("textView_textMargin")
-            ]), A2($elm$core$List$map, function(inline) {
-                return A3($arowM$elm_mixin$Mixin$Html$node, inline.nodeName, _List_fromArray([
-                    inline.mixin,
-                    $author$project$Neat$class("textView_inline")
-                ]), _List_fromArray([
-                    $arowM$elm_mixin$Mixin$Html$text(inline.text)
-                ]));
-            }, consTexts(o.texts)))
-        ]));
+        ]), textHtmls);
     });
-    var $author$project$Neat$renderBoundary = F4(function(renderer, _v10, props, o) {
-        var self = _v10.self;
-        var overlays = $elm$core$List$reverse(o.overlays);
-        var childMixin = {
-            inherit: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-                function() {
-                    var _v13 = o.height;
-                    if (_v13.$ === "MinSize") return $author$project$Neat$class("heightMinSize");
-                    else return $author$project$Neat$class("heightFlex");
-                }(),
-                function() {
-                    var _v14 = o.width;
-                    if (_v14.$ === "MinSize") return $author$project$Neat$class("widthMinSize");
-                    else return $author$project$Neat$class("widthFlex");
-                }()
-            ])),
-            self: $author$project$Neat$class("boundaryContent")
-        };
-        var base = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-            o.mixin,
-            A3($author$project$Neat$boundaryCustomProperty, renderer, props, o),
-            childMixin.inherit,
-            self,
-            $author$project$Neat$class("boundary"),
-            o.horizontalOverflow ? $author$project$Neat$class("boundary-horizontalOverflow") : $arowM$elm_mixin$Mixin$none,
-            o.verticalOverflow ? $author$project$Neat$class("boundary-verticalOverflow") : $arowM$elm_mixin$Mixin$none,
-            $author$project$Neat$hasMaxHeight(o.maxHeight) ? $author$project$Neat$class("boundary-hasMaxHeight") : $arowM$elm_mixin$Mixin$none,
-            $author$project$Neat$hasMaxWidth(o.maxWidth) ? $author$project$Neat$class("boundary-hasMaxWidth") : $arowM$elm_mixin$Mixin$none,
-            !$author$project$Neat$minHeightZero(o.minHeight) ? $author$project$Neat$class("boundary-hasMinHeight") : $arowM$elm_mixin$Mixin$none,
-            !$author$project$Neat$minWidthZero(o.minWidth) ? $author$project$Neat$class("boundary-hasMinWidth") : $arowM$elm_mixin$Mixin$none,
-            !$elm$core$List$isEmpty(o.overlays) ? $author$project$Neat$class("boundary-hasOverlays") : $arowM$elm_mixin$Mixin$none,
-            o.enforcePointerEvent ? $author$project$Neat$class("boundary-enforcePointerEvent") : $arowM$elm_mixin$Mixin$none
-        ]));
-        var _v11 = o.content;
-        switch(_v11.$){
-            case "NoContent":
-                return $arowM$elm_mixin$Mixin$Html$text("");
-            case "ViewContent":
-                var content = _v11.a;
-                return o.verticalOverflow && !!o.padding.vertical ? A3($arowM$elm_mixin$Mixin$Html$node, o.nodeName, _List_fromArray([
-                    base
-                ]), _List_fromArray([
-                    A3($arowM$elm_mixin$Mixin$Html$keyed, "div", _List_fromArray([
-                        $author$project$Neat$class("boundary_scroller"),
-                        $author$project$Neat$class("boundary_scroller-verticalScroll")
-                    ]), A2($elm$core$List$cons, _Utils_Tuple2("content", A3($author$project$Neat$render_, renderer, childMixin, content)), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays)))
-                ])) : _Utils_eq(content, $author$project$Neat$Internal$None) ? A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
-                    base,
-                    $author$project$Neat$class("boundary-view"),
-                    $author$project$Neat$class("boundary-view-noContent")
-                ]), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays)) : A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
-                    base,
-                    $author$project$Neat$class("boundary-view"),
-                    $author$project$Neat$class("boundary-view-hasContent")
-                ]), A2($elm$core$List$cons, _Utils_Tuple2("content", A3($author$project$Neat$render_, renderer, childMixin, content)), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays)));
-            case "HtmlContent":
-                var children = _v11.a;
-                return A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
-                    base,
-                    $author$project$Neat$class("boundary-html")
-                ]), function(cs) {
-                    return _Utils_ap(cs, A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays));
-                }(A2($elm$core$List$map, function(_v12) {
-                    var k = _v12.a;
-                    var b = _v12.b;
-                    return _Utils_Tuple2(k, A4($author$project$Neat$renderBoundary, renderer, childMixin, {
-                        outerGap: $author$project$Neat$emptyGap
-                    }, b));
-                }, children)));
-            case "TextsContent":
-                var texts = _v11.a;
-                return A3($arowM$elm_mixin$Mixin$Html$node, o.nodeName, _List_fromArray([
-                    base,
-                    $author$project$Neat$class("boundary-text")
-                ]), _List_fromArray([
-                    A3($arowM$elm_mixin$Mixin$Html$keyed, "div", _List_fromArray([
-                        $author$project$Neat$class("boundary_textMargin")
-                    ]), function(children) {
-                        return _Utils_ap(children, A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays));
-                    }(A2($elm$core$List$indexedMap, F2(function(n, inline) {
-                        return _Utils_Tuple2("content" + $elm$core$String$fromInt(n), A3($arowM$elm_mixin$Mixin$Html$node, inline.nodeName, _List_fromArray([
-                            inline.mixin,
-                            $author$project$Neat$class("boundary_text")
-                        ]), _List_fromArray([
-                            $arowM$elm_mixin$Mixin$Html$text(inline.text)
-                        ])));
-                    }), texts)))
-                ]));
-            default:
-                var str = _v11.a;
-                return A3($arowM$elm_mixin$Mixin$Html$node, o.nodeName, _List_fromArray([
-                    base
-                ]), _List_fromArray([
-                    $arowM$elm_mixin$Mixin$Html$text(str)
-                ]));
-        }
-    });
-    var $author$project$Neat$renderColumn = F3(function(renderer, _v6, o) {
-        var inherit = _v6.inherit;
-        var self = _v6.self;
-        var childMixin = function(item) {
-            return {
-                inherit: inherit,
-                self: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-                    $author$project$Neat$class("columnChild"),
-                    item.grow ? $author$project$Neat$class("columnChild-grow") : $arowM$elm_mixin$Mixin$none,
-                    function() {
-                        var _v9 = item.alignSelf;
-                        switch(_v9.$){
-                            case "AlignStart":
-                                return $author$project$Neat$class("columnChild-alignStart");
-                            case "AlignCenter":
-                                return $author$project$Neat$class("columnChild-alignCenter");
-                            case "AlignEnd":
-                                return $author$project$Neat$class("columnChild-alignEnd");
-                            default:
-                                return $author$project$Neat$class("columnChild-alignStretch");
-                        }
-                    }()
-                ]))
-            };
-        };
-        var base = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-            o.mixin,
-            self,
-            $author$project$Neat$class("column"),
+    var $author$project$Neat$rowBoundaryCustomProperty = F2(function(renderer, o) {
+        return $arowM$elm_mixin$Mixin$batch(_List_fromArray([
             function() {
-                var _v8 = o.justifyContent;
-                switch(_v8.$){
-                    case "AlignStart":
-                        return $author$project$Neat$class("column-justifyStart");
-                    case "AlignCenter":
-                        return $author$project$Neat$class("column-justifyCenter");
-                    case "AlignEnd":
-                        return $author$project$Neat$class("column-justifyEnd");
-                    default:
-                        return $author$project$Neat$class("column-justifyStretch");
+                var _v0 = o.minWidth;
+                if (_v0.$ === "MinWidthInBs") {
+                    var bs = _v0.a;
+                    return A2($author$project$Neat$variable, "min-width", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                } else {
+                    var unit = _v0.a;
+                    var v = _v0.b;
+                    return A2($author$project$Neat$variable, "min-width", _Utils_ap($elm$core$String$fromFloat(v), unit));
                 }
             }(),
-            A2($arowM$elm_mixin$Mixin$style, "--content-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.horizontal, renderer.baseSize))),
-            A2($arowM$elm_mixin$Mixin$style, "--content-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.vertical, renderer.baseSize)))
-        ]));
-        var _v7 = o.children;
-        if (!_v7.b.b) {
-            var item = _v7.a;
-            return A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
-                base,
-                $author$project$Neat$class("column-single")
-            ]), _List_fromArray([
-                _Utils_Tuple2(item.key, A3($author$project$Neat$render_, renderer, childMixin(item), item.content))
-            ]));
-        } else {
-            var item0 = _v7.a;
-            var items = _v7.b;
-            return A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
-                base,
-                $author$project$Neat$class("column-multi")
-            ]), A2($elm$core$List$map, function(item) {
-                return _Utils_Tuple2(item.key, A3($author$project$Neat$render_, renderer, childMixin(item), item.content));
-            }, A2($elm$core$List$cons, item0, items)));
-        }
-    });
-    var $author$project$Neat$renderOverlay = F2(function(renderer, overlay) {
-        var childMixin = {
-            inherit: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-                $author$project$Neat$class("heightFlex"),
-                $author$project$Neat$class("widthFlex")
-            ])),
-            self: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-                $author$project$Neat$class("overlay"),
-                A2($arowM$elm_mixin$Mixin$style, "--overlay-top", $elm$core$String$fromFloat(overlay.area.top) + "%"),
-                A2($arowM$elm_mixin$Mixin$style, "--overlay-bottom", $elm$core$String$fromFloat(overlay.area.bottom) + "%"),
-                A2($arowM$elm_mixin$Mixin$style, "--overlay-left", $elm$core$String$fromFloat(overlay.area.left) + "%"),
-                A2($arowM$elm_mixin$Mixin$style, "--overlay-right", $elm$core$String$fromFloat(overlay.area.right) + "%"),
-                A2($arowM$elm_mixin$Mixin$style, "--overlay-priority", A2($elm$core$Maybe$withDefault, "auto", A2($elm$core$Maybe$map, $elm$core$String$fromInt, overlay.area.priority)))
-            ]))
-        };
-        var _v5 = overlay.boundary;
-        var boundary = _v5.a;
-        return _Utils_Tuple2("overlay-" + overlay.name, A4($author$project$Neat$renderBoundary, renderer, childMixin, {
-            outerGap: $author$project$Neat$emptyGap
-        }, _Utils_update(boundary, {
-            height: $author$project$Neat$Internal$FlexSize,
-            width: $author$project$Neat$Internal$FlexSize
-        })));
-    });
-    var $author$project$Neat$renderRow = F3(function(renderer, _v1, o) {
-        var inherit = _v1.inherit;
-        var self = _v1.self;
-        var childMixin = function(item) {
-            return {
-                inherit: inherit,
-                self: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-                    $author$project$Neat$class("rowChild"),
-                    item.grow ? $author$project$Neat$class("rowChild-grow") : $arowM$elm_mixin$Mixin$none,
-                    function() {
-                        var _v4 = item.alignSelf;
-                        switch(_v4.$){
-                            case "AlignStart":
-                                return $author$project$Neat$class("rowChild-alignStart");
-                            case "AlignCenter":
-                                return $author$project$Neat$class("rowChild-alignCenter");
-                            case "AlignEnd":
-                                return $author$project$Neat$class("rowChild-alignEnd");
-                            default:
-                                return $author$project$Neat$class("rowChild-alignStretch");
-                        }
-                    }()
-                ]))
-            };
-        };
-        var base = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-            o.mixin,
-            self,
-            $author$project$Neat$class("row"),
-            o.wrap ? $author$project$Neat$class("row-wrap") : $arowM$elm_mixin$Mixin$none,
             function() {
-                var _v3 = o.justifyContent;
+                var _v1 = o.maxWidth;
+                switch(_v1.$){
+                    case "MaxWidthInBs":
+                        var bs = _v1.a;
+                        return A2($author$project$Neat$variable, "max-width", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                    case "MaxWidthInUnit":
+                        var unit = _v1.a;
+                        var v = _v1.b;
+                        return A2($author$project$Neat$variable, "max-width", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                    default:
+                        return $arowM$elm_mixin$Mixin$none;
+                }
+            }(),
+            function() {
+                var _v2 = o.minHeight;
+                if (_v2.$ === "MinHeightInBs") {
+                    var bs = _v2.a;
+                    return A2($author$project$Neat$variable, "min-height", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                } else {
+                    var unit = _v2.a;
+                    var v = _v2.b;
+                    return A2($author$project$Neat$variable, "min-height", _Utils_ap($elm$core$String$fromFloat(v), unit));
+                }
+            }(),
+            function() {
+                var _v3 = o.maxHeight;
                 switch(_v3.$){
-                    case "AlignStart":
-                        return $author$project$Neat$class("row-justifyStart");
-                    case "AlignCenter":
-                        return $author$project$Neat$class("row-justifyCenter");
-                    case "AlignEnd":
-                        return $author$project$Neat$class("row-justifyEnd");
+                    case "MaxHeightInBs":
+                        var bs = _v3.a;
+                        return A2($author$project$Neat$variable, "max-height", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, bs, renderer.baseSize)));
+                    case "MaxHeightInUnit":
+                        var unit = _v3.a;
+                        var v = _v3.b;
+                        return A2($author$project$Neat$variable, "max-height", _Utils_ap($elm$core$String$fromFloat(v), unit));
                     default:
-                        return $author$project$Neat$class("row-justifyStretch");
+                        return $arowM$elm_mixin$Mixin$none;
                 }
-            }(),
-            A2($arowM$elm_mixin$Mixin$style, "--content-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.horizontal, renderer.baseSize))),
-            A2($arowM$elm_mixin$Mixin$style, "--content-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.vertical, renderer.baseSize)))
+            }()
         ]));
-        var _v2 = o.children;
-        if (!_v2.b.b) {
-            var item = _v2.a;
-            return A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
-                base,
-                $author$project$Neat$class("row-single")
-            ]), _List_fromArray([
-                _Utils_Tuple2(item.key, A3($author$project$Neat$render_, renderer, childMixin(item), item.content))
-            ]));
-        } else {
-            var item0 = _v2.a;
-            var items = _v2.b;
-            return A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
-                base,
-                $author$project$Neat$class("row-multi")
-            ]), A2($elm$core$List$map, function(item) {
-                return _Utils_Tuple2(item.key, A3($author$project$Neat$render_, renderer, childMixin(item), item.content));
-            }, A2($elm$core$List$cons, item0, items)));
+    });
+    var $elm$core$String$append = _String_append;
+    var $author$project$Neat$uniqueKeyFrom = A2($elm$core$Basics$composeR, A2($elm$core$List$foldl, F2(function(str, _v0) {
+        var length = _v0.a;
+        var acc = _v0.b;
+        var strLength = $elm$core$String$length(str);
+        return _Utils_cmp(strLength, length) > 0 ? _Utils_Tuple2(strLength, str) : _Utils_Tuple2(length, acc);
+    }), _Utils_Tuple2(0, "")), A2($elm$core$Basics$composeR, $elm$core$Tuple$second, $elm$core$String$append("Unique")));
+    var $arowM$elm_mixin$Mixin$when = F2(function(p, mixin) {
+        return p ? mixin : $arowM$elm_mixin$Mixin$none;
+    });
+    var $arowM$elm_mixin$Mixin$unless = function(p) {
+        return $arowM$elm_mixin$Mixin$when(!p);
+    };
+    var $author$project$Neat$renderBoundary_ = F4(function(renderer, extraMixin, props, boundary_) {
+        var wrapper = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+            A2($author$project$Neat$boundaryCustomProperty, renderer, props),
+            extraMixin,
+            $author$project$Neat$class("boundary"),
+            function() {
+                var _v24 = props.height;
+                if (_v24.$ === "MinSize") return $author$project$Neat$class("heightMinSize");
+                else return $author$project$Neat$class("heightFlex");
+            }(),
+            function() {
+                var _v25 = props.width;
+                if (_v25.$ === "MinSize") return $author$project$Neat$class("widthMinSize");
+                else return $author$project$Neat$class("widthFlex");
+            }(),
+            A2($arowM$elm_mixin$Mixin$when, $author$project$Neat$hasMaxHeight(props.maxHeight), $author$project$Neat$class("boundary-hasMaxHeight")),
+            A2($arowM$elm_mixin$Mixin$when, $author$project$Neat$hasMaxWidth(props.maxWidth), $author$project$Neat$class("boundary-hasMaxWidth")),
+            A2($arowM$elm_mixin$Mixin$unless, $author$project$Neat$minHeightZero(props.minHeight), $author$project$Neat$class("boundary-hasMinHeight")),
+            A2($arowM$elm_mixin$Mixin$unless, $author$project$Neat$minWidthZero(props.minWidth), $author$project$Neat$class("boundary-hasMinWidth")),
+            A2($arowM$elm_mixin$Mixin$unless, $elm$core$List$isEmpty(props.overlays), $author$project$Neat$class("boundary-hasOverlays")),
+            A2($arowM$elm_mixin$Mixin$when, props.enforcePointerEvent, $author$project$Neat$class("boundary-enforcePointerEvent"))
+        ]));
+        var overlays = $elm$core$List$reverse(props.overlays);
+        var uniqueKey = $author$project$Neat$uniqueKeyFrom(A2($elm$core$List$map, function(_v23) {
+            var name = _v23.a.name;
+            return name;
+        }, overlays));
+        switch(boundary_.$){
+            case "FromView":
+                var param = boundary_.a;
+                var nominalGap = $author$project$Neat$extractNominalGap(param.content);
+                var innerGap = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+                    A2($author$project$Neat$variable, "inner-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, nominalGap.horizontal, renderer.baseSize))),
+                    A2($author$project$Neat$variable, "inner-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, nominalGap.vertical, renderer.baseSize)))
+                ]));
+                var childMixin = $author$project$Neat$class("boundaryChild");
+                return _Utils_eq(overlays, _List_Nil) ? A3($arowM$elm_mixin$Mixin$Html$node, props.nodeName, _List_fromArray([
+                    props.mixin,
+                    innerGap,
+                    wrapper,
+                    $author$project$Neat$class("boundary_content")
+                ]), _List_fromArray([
+                    A3($author$project$Neat$renderView_, renderer, childMixin, param.content)
+                ])) : A3($arowM$elm_mixin$Mixin$Html$keyed, "div", _List_fromArray([
+                    wrapper
+                ]), A2($elm$core$List$cons, _Utils_Tuple2(uniqueKey, A3($arowM$elm_mixin$Mixin$Html$node, props.nodeName, _List_fromArray([
+                    props.mixin,
+                    innerGap,
+                    $author$project$Neat$class("boundary_content")
+                ]), _List_fromArray([
+                    A3($author$project$Neat$renderView_, renderer, childMixin, param.content)
+                ]))), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays)));
+            case "EmptyBoundary":
+                return _Utils_eq(overlays, _List_Nil) ? A3($arowM$elm_mixin$Mixin$Html$node, props.nodeName, _List_fromArray([
+                    props.mixin,
+                    wrapper,
+                    $author$project$Neat$class("boundary_content")
+                ]), _List_Nil) : A3($arowM$elm_mixin$Mixin$Html$keyed, "div", _List_fromArray([
+                    wrapper
+                ]), A2($elm$core$List$cons, _Utils_Tuple2(uniqueKey, A3($arowM$elm_mixin$Mixin$Html$node, props.nodeName, _List_fromArray([
+                    props.mixin,
+                    $author$project$Neat$class("boundary_content")
+                ]), _List_Nil)), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays)));
+            case "RowBoundary":
+                var param = boundary_.a;
+                return A4($author$project$Neat$renderRowBoundary, renderer, extraMixin, props, param);
+            default:
+                var param = boundary_.a;
+                return A4($author$project$Neat$renderColumnBoundary, renderer, extraMixin, props, param);
         }
     });
-    var $author$project$Neat$render_ = F3(function(renderer, childMixin, view) {
+    var $author$project$Neat$renderColumn = F3(function(renderer, extraMixin, o) {
+        var childMixin = function(item) {
+            return $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+                $author$project$Neat$class("columnChild"),
+                A2($arowM$elm_mixin$Mixin$when, item.grow, $author$project$Neat$class("columnChild-grow")),
+                function() {
+                    var _v21 = item.alignSelf;
+                    switch(_v21.$){
+                        case "AlignStart":
+                            return $author$project$Neat$class("columnChild-alignStart");
+                        case "AlignCenter":
+                            return $author$project$Neat$class("columnChild-alignCenter");
+                        case "AlignEnd":
+                            return $author$project$Neat$class("columnChild-alignEnd");
+                        default:
+                            return $author$project$Neat$class("columnChild-alignStretch");
+                    }
+                }()
+            ]));
+        };
+        var base = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+            o.mixin,
+            extraMixin,
+            $author$project$Neat$class("column"),
+            A2($author$project$Neat$variable, "content-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.horizontal, renderer.baseSize))),
+            A2($author$project$Neat$variable, "content-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.vertical, renderer.baseSize))),
+            function() {
+                var _v20 = o.justifyContent;
+                switch(_v20.$){
+                    case "JustifyStart":
+                        return $author$project$Neat$class("column-justifyStart");
+                    case "JustifyCenter":
+                        return $author$project$Neat$class("column-justifyCenter");
+                    default:
+                        return $author$project$Neat$class("column-justifyEnd");
+                }
+            }()
+        ]));
+        var _v19 = o.children;
+        var item0 = _v19.a;
+        var items = _v19.b;
+        return A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
+            base
+        ]), A2($elm$core$List$map, function(item) {
+            return _Utils_Tuple2(item.key, A3($author$project$Neat$renderView_, renderer, childMixin(item), item.content));
+        }, A2($elm$core$List$cons, item0, items)));
+    });
+    var $author$project$Neat$renderColumnBoundary = F4(function(renderer, extraMixin, props, o) {
+        var wrapper = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+            A2($author$project$Neat$columnBoundaryCustomProperty, renderer, props),
+            extraMixin,
+            $author$project$Neat$class("columnBoundary"),
+            function() {
+                var _v16 = o.justifyContent;
+                switch(_v16.$){
+                    case "JustifyStart":
+                        return $author$project$Neat$class("columnBoundary-justifyStart");
+                    case "JustifyCenter":
+                        return $author$project$Neat$class("columnBoundary-justifyCenter");
+                    default:
+                        return $author$project$Neat$class("columnBoundary-justifyEnd");
+                }
+            }(),
+            A2($arowM$elm_mixin$Mixin$when, o.scrollable, $author$project$Neat$class("columnBoundary-verticalOverflow")),
+            A2($arowM$elm_mixin$Mixin$when, $author$project$Neat$hasMaxHeight(props.maxHeight), $author$project$Neat$class("columnBoundary-hasMaxHeight")),
+            A2($arowM$elm_mixin$Mixin$when, $author$project$Neat$hasMaxWidth(props.maxWidth), $author$project$Neat$class("columnBoundary-hasMaxWidth")),
+            A2($arowM$elm_mixin$Mixin$unless, $author$project$Neat$minHeightZero(props.minHeight), $author$project$Neat$class("columnBoundary-hasMinHeight")),
+            A2($arowM$elm_mixin$Mixin$unless, $author$project$Neat$minWidthZero(props.minWidth), $author$project$Neat$class("columnBoundary-hasMinWidth")),
+            function() {
+                var _v17 = props.height;
+                if (_v17.$ === "MinSize") return $author$project$Neat$class("heightMinSize");
+                else return $author$project$Neat$class("heightFlex");
+            }(),
+            function() {
+                var _v18 = props.width;
+                if (_v18.$ === "MinSize") return $author$project$Neat$class("widthMinSize");
+                else return $author$project$Neat$class("widthFlex");
+            }(),
+            A2($arowM$elm_mixin$Mixin$unless, $elm$core$List$isEmpty(props.overlays), $author$project$Neat$class("columnBoundary-hasOverlays")),
+            A2($arowM$elm_mixin$Mixin$when, props.enforcePointerEvent, $author$project$Neat$class("columnBoundary-enforcePointerEvent"))
+        ]));
+        var overlays = $elm$core$List$reverse(props.overlays);
+        var uniqueKey = $author$project$Neat$uniqueKeyFrom(A2($elm$core$List$map, function(_v15) {
+            var name = _v15.a.name;
+            return name;
+        }, overlays));
+        var childMixin = function(item) {
+            return $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+                $author$project$Neat$class("columnChild"),
+                A2($arowM$elm_mixin$Mixin$when, item.grow, $author$project$Neat$class("columnChild-grow")),
+                function() {
+                    var _v14 = item.alignSelf;
+                    switch(_v14.$){
+                        case "AlignStart":
+                            return $author$project$Neat$class("columnChild-alignStart");
+                        case "AlignCenter":
+                            return $author$project$Neat$class("columnChild-alignCenter");
+                        case "AlignEnd":
+                            return $author$project$Neat$class("columnChild-alignEnd");
+                        default:
+                            return $author$project$Neat$class("columnChild-alignStretch");
+                    }
+                }()
+            ]));
+        };
+        var _v12 = o.children;
+        var children = _v12.a;
+        var contents = A2($elm$core$List$map, function(item) {
+            return _Utils_Tuple2(item.key, A4($author$project$Neat$renderBoundary_, renderer, childMixin(item), item.props, item.content));
+        }, A2($elm$core$List$cons, children.head, children.tail));
+        return !_Utils_eq(overlays, _List_Nil) && o.scrollable ? A3($arowM$elm_mixin$Mixin$Html$keyed, "div", _List_fromArray([
+            wrapper
+        ]), A2($elm$core$List$cons, _Utils_Tuple2(uniqueKey, A3($arowM$elm_mixin$Mixin$Html$keyed, props.nodeName, _List_fromArray([
+            props.mixin,
+            $author$project$Neat$class("columnBoundary_content"),
+            A2($arowM$elm_mixin$Mixin$when, o.scrollable, $author$project$Neat$class("columnBoundary_content-verticalOverflow"))
+        ]), contents)), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays))) : A3($arowM$elm_mixin$Mixin$Html$keyed, props.nodeName, _List_fromArray([
+            props.mixin,
+            wrapper,
+            $author$project$Neat$class("columnBoundary_content"),
+            A2($arowM$elm_mixin$Mixin$when, o.scrollable, $author$project$Neat$class("columnBoundary_content-verticalOverflow"))
+        ]), _Utils_ap(A2($elm$core$List$map, function(_v13) {
+            var key = _v13.a;
+            var c = _v13.b;
+            return _Utils_Tuple2(_Utils_ap(uniqueKey, key), c);
+        }, contents), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays)));
+    });
+    var $author$project$Neat$renderOverlay = F2(function(renderer, _v11) {
+        var overlay = _v11.a;
+        var childMixin = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+            $author$project$Neat$class("overlay"),
+            A2($author$project$Neat$variable, "overlay-top", $elm$core$String$fromFloat(overlay.area.top) + "%"),
+            A2($author$project$Neat$variable, "overlay-bottom", $elm$core$String$fromFloat(overlay.area.bottom) + "%"),
+            A2($author$project$Neat$variable, "overlay-left", $elm$core$String$fromFloat(overlay.area.left) + "%"),
+            A2($author$project$Neat$variable, "overlay-right", $elm$core$String$fromFloat(overlay.area.right) + "%"),
+            A2($author$project$Neat$variable, "overlay-priority", A2($elm$core$Maybe$withDefault, "auto", A2($elm$core$Maybe$map, $elm$core$String$fromInt, overlay.area.priority)))
+        ]));
+        return _Utils_Tuple2("overlay-" + overlay.name, A4($author$project$Neat$renderBoundary_, renderer, childMixin, overlay.props, overlay.boundary_));
+    });
+    var $author$project$Neat$renderRow = F3(function(renderer, extraMixin, o) {
+        var childMixin = function(item) {
+            return $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+                $author$project$Neat$class("rowChild"),
+                A2($arowM$elm_mixin$Mixin$when, item.grow, $author$project$Neat$class("rowChild-grow")),
+                function() {
+                    var _v10 = item.alignSelf;
+                    switch(_v10.$){
+                        case "AlignStart":
+                            return $author$project$Neat$class("rowChild-alignStart");
+                        case "AlignCenter":
+                            return $author$project$Neat$class("rowChild-alignCenter");
+                        case "AlignEnd":
+                            return $author$project$Neat$class("rowChild-alignEnd");
+                        default:
+                            return $author$project$Neat$class("rowChild-alignStretch");
+                    }
+                }()
+            ]));
+        };
+        var base = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+            o.mixin,
+            extraMixin,
+            $author$project$Neat$class("row"),
+            A2($author$project$Neat$variable, "content-gap-x", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.horizontal, renderer.baseSize))),
+            A2($author$project$Neat$variable, "content-gap-y", $author$project$Neat$renderBaseSize(A2($author$project$Neat$multipleBaseSize, o.contentGap.vertical, renderer.baseSize))),
+            A2($arowM$elm_mixin$Mixin$when, o.wrap, $author$project$Neat$class("row-wrap")),
+            function() {
+                var _v9 = o.justifyContent;
+                switch(_v9.$){
+                    case "JustifyStart":
+                        return $author$project$Neat$class("row-justifyStart");
+                    case "JustifyCenter":
+                        return $author$project$Neat$class("row-justifyCenter");
+                    default:
+                        return $author$project$Neat$class("row-justifyEnd");
+                }
+            }()
+        ]));
+        var _v8 = o.children;
+        var item0 = _v8.a;
+        var items = _v8.b;
+        return A3($arowM$elm_mixin$Mixin$Html$keyed, o.nodeName, _List_fromArray([
+            base
+        ]), A2($elm$core$List$map, function(item) {
+            return _Utils_Tuple2(item.key, A3($author$project$Neat$renderView_, renderer, childMixin(item), item.content));
+        }, A2($elm$core$List$cons, item0, items)));
+    });
+    var $author$project$Neat$renderRowBoundary = F4(function(renderer, extraMixin, props, o) {
+        var wrapper = $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+            A2($author$project$Neat$rowBoundaryCustomProperty, renderer, props),
+            extraMixin,
+            $author$project$Neat$class("rowBoundary"),
+            A2($arowM$elm_mixin$Mixin$when, o.wrap, $author$project$Neat$class("rowBoundary-wrap")),
+            function() {
+                var _v5 = o.justifyContent;
+                switch(_v5.$){
+                    case "JustifyStart":
+                        return $author$project$Neat$class("rowBoundary-justifyStart");
+                    case "JustifyCenter":
+                        return $author$project$Neat$class("rowBoundary-justifyCenter");
+                    default:
+                        return $author$project$Neat$class("rowBoundary-justifyEnd");
+                }
+            }(),
+            function() {
+                var _v6 = props.height;
+                if (_v6.$ === "MinSize") return $author$project$Neat$class("heightMinSize");
+                else return $author$project$Neat$class("heightFlex");
+            }(),
+            function() {
+                var _v7 = props.width;
+                if (_v7.$ === "MinSize") return $author$project$Neat$class("widthMinSize");
+                else return $author$project$Neat$class("widthFlex");
+            }(),
+            A2($arowM$elm_mixin$Mixin$when, o.scrollable, $author$project$Neat$class("rowBoundary-horizontalOverflow")),
+            A2($arowM$elm_mixin$Mixin$when, $author$project$Neat$hasMaxHeight(props.maxHeight), $author$project$Neat$class("rowBoundary-hasMaxHeight")),
+            A2($arowM$elm_mixin$Mixin$when, $author$project$Neat$hasMaxWidth(props.maxWidth), $author$project$Neat$class("rowBoundary-hasMaxWidth")),
+            A2($arowM$elm_mixin$Mixin$unless, $author$project$Neat$minHeightZero(props.minHeight), $author$project$Neat$class("rowBoundary-hasMinHeight")),
+            A2($arowM$elm_mixin$Mixin$unless, $author$project$Neat$minWidthZero(props.minWidth), $author$project$Neat$class("rowBoundary-hasMinWidth")),
+            A2($arowM$elm_mixin$Mixin$unless, $elm$core$List$isEmpty(props.overlays), $author$project$Neat$class("rowBoundary-hasOverlays")),
+            A2($arowM$elm_mixin$Mixin$when, props.enforcePointerEvent, $author$project$Neat$class("rowBoundary-enforcePointerEvent"))
+        ]));
+        var overlays = $elm$core$List$reverse(props.overlays);
+        var uniqueKey = $author$project$Neat$uniqueKeyFrom(A2($elm$core$List$map, function(_v4) {
+            var name = _v4.a.name;
+            return name;
+        }, overlays));
+        var childMixin = function(item) {
+            return $arowM$elm_mixin$Mixin$batch(_List_fromArray([
+                $author$project$Neat$class("rowChild"),
+                item.grow ? $author$project$Neat$class("rowChild-grow") : $arowM$elm_mixin$Mixin$none,
+                function() {
+                    var _v3 = item.alignSelf;
+                    switch(_v3.$){
+                        case "AlignStart":
+                            return $author$project$Neat$class("rowChild-alignStart");
+                        case "AlignCenter":
+                            return $author$project$Neat$class("rowChild-alignCenter");
+                        case "AlignEnd":
+                            return $author$project$Neat$class("rowChild-alignEnd");
+                        default:
+                            return $author$project$Neat$class("rowChild-alignStretch");
+                    }
+                }()
+            ]));
+        };
+        var _v1 = o.children;
+        var children = _v1.a;
+        var contents = A2($elm$core$List$map, function(item) {
+            return _Utils_Tuple2(item.key, A4($author$project$Neat$renderBoundary_, renderer, childMixin(item), item.props, item.content));
+        }, A2($elm$core$List$cons, children.head, children.tail));
+        return !_Utils_eq(overlays, _List_Nil) && o.scrollable ? A3($arowM$elm_mixin$Mixin$Html$keyed, "div", _List_fromArray([
+            wrapper
+        ]), A2($elm$core$List$cons, _Utils_Tuple2(uniqueKey, A3($arowM$elm_mixin$Mixin$Html$keyed, props.nodeName, _List_fromArray([
+            props.mixin,
+            $author$project$Neat$class("rowBoundary_content"),
+            A2($arowM$elm_mixin$Mixin$when, o.scrollable, $author$project$Neat$class("rowBoundary_content-horizontalOverflow"))
+        ]), contents)), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays))) : A3($arowM$elm_mixin$Mixin$Html$keyed, props.nodeName, _List_fromArray([
+            props.mixin,
+            wrapper,
+            $author$project$Neat$class("rowBoundary_content"),
+            A2($arowM$elm_mixin$Mixin$when, o.scrollable, $author$project$Neat$class("rowBoundary_content-horizontalOverflow"))
+        ]), _Utils_ap(A2($elm$core$List$map, function(_v2) {
+            var key = _v2.a;
+            var c = _v2.b;
+            return _Utils_Tuple2(_Utils_ap(uniqueKey, key), c);
+        }, contents), A2($elm$core$List$map, $author$project$Neat$renderOverlay(renderer), overlays)));
+    });
+    var $author$project$Neat$renderView_ = F3(function(renderer, extraMixin, view) {
         switch(view.$){
             case "FromBoundary":
-                var outerGap = view.a;
-                var o = view.b;
-                return A4($author$project$Neat$renderBoundary, renderer, childMixin, {
-                    outerGap: outerGap
-                }, o);
+                var props = view.b;
+                var boundary_ = view.c;
+                return A4($author$project$Neat$renderBoundary_, renderer, extraMixin, props, boundary_);
             case "FromRow":
                 var o = view.a;
-                return A3($author$project$Neat$renderRow, renderer, childMixin, o);
+                return A3($author$project$Neat$renderRow, renderer, extraMixin, o);
             case "FromColumn":
                 var o = view.a;
-                return A3($author$project$Neat$renderColumn, renderer, childMixin, o);
-            case "FromTexts":
-                var o = view.a;
-                return A3($author$project$Neat$renderTexts, renderer, childMixin, o);
+                return A3($author$project$Neat$renderColumn, renderer, extraMixin, o);
             default:
-                return $arowM$elm_mixin$Mixin$Html$text("");
+                var o = view.a;
+                return A3($author$project$Neat$renderTexts, renderer, extraMixin, o);
         }
     });
-    var $author$project$Neat$render = F2(function(_v0, _v1) {
+    var $author$project$Neat$render = F2(function(_v0, boundary) {
         var renderer = _v0.a;
-        var boundary = _v1.a;
-        var childMixin = {
-            inherit: $arowM$elm_mixin$Mixin$batch(_List_fromArray([
-                $author$project$Neat$class("heightFlex"),
-                $author$project$Neat$class("widthFlex")
-            ])),
-            self: $author$project$Neat$class("top")
-        };
         return A2($arowM$elm_mixin$Mixin$Html$div, _List_Nil, _List_fromArray([
             A3($arowM$elm_mixin$Mixin$Html$node, "style", _List_fromArray([
                 A2($arowM$elm_mixin$Mixin$style, "display", "none")
             ]), _List_fromArray([
                 $arowM$elm_mixin$Mixin$Html$text($author$project$Neat$neatLayoutStyle)
             ])),
-            A4($author$project$Neat$renderBoundary, renderer, childMixin, {
-                outerGap: $author$project$Neat$emptyGap
-            }, _Utils_update(boundary, {
-                height: $author$project$Neat$Internal$FlexSize,
-                width: $author$project$Neat$Internal$FlexSize
-            }))
+            function() {
+                if (boundary.$ === "Boundary") {
+                    var props = boundary.a;
+                    var boundary_ = boundary.b;
+                    return A4($author$project$Neat$renderBoundary_, renderer, $author$project$Neat$class("top"), _Utils_update(props, {
+                        height: $author$project$Neat$Internal$FlexSize,
+                        width: $author$project$Neat$Internal$FlexSize
+                    }), boundary_);
+                } else return $arowM$elm_mixin$Mixin$Html$text("");
+            }()
         ]));
     });
     var $author$project$Main$view = function(model) {
