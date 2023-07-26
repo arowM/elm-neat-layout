@@ -1,6 +1,6 @@
 .elmNeatLayout {
   $prefix: &;
-  $variable: elmneatlayout;
+  $variable: elmNeatLayout;
   $top: #{$prefix}--top;
   $boundary: #{$prefix}--boundary;
   $boundaryChild: #{$prefix}--boundaryChild;
@@ -48,7 +48,8 @@
 
   &--boundary {
     &_content {
-      overflow: hidden;
+      display: block;
+      overflow: visible;
       padding: var(--#{$variable}--inner-gap-y) var(--#{$variable}--inner-gap-x);
     }
 
@@ -349,8 +350,11 @@
         &:not(#{$columnChild}-grow) {
           height: 0;
         }
+        &:not(#{$columnBoundary}_content) {
+          overflow-y: hidden;
+        }
         &#{$columnChild}-grow {
-          height: auto;
+          height: 100%;
         }
       }
 
