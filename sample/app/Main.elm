@@ -5,7 +5,7 @@ import Gap
 import Mixin
 import Neat
 import Neat.Boundary as Boundary exposing (Boundary)
-import Neat.Text as Text
+import Neat.Flow as Flow
 import Neat.View as View
 
 
@@ -89,12 +89,12 @@ body _ =
             |> Boundary.columnItem "header"
         , View.column
             View.defaultColumn
-            [ View.fromTexts Gap.sub
-                [ Text.fromString "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
-                , Text.fromString "<eiusmod>"
-                    |> Text.setClass "inlineCode"
-                    |> Text.setNodeName "code"
-                , Text.fromString " tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            [ View.fromFlows Gap.sub
+                [ Flow.fromString "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
+                , Flow.fromString "<eiusmod>"
+                    |> Flow.setClass "inlineCode"
+                    |> Flow.setNodeName "code"
+                , Flow.fromString " tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
                 ]
                 |> View.expandGap Gap.body
                 |> View.columnItem "sampleText"

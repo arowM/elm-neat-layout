@@ -73,6 +73,7 @@ import Neat.Internal as Internal
         , Children(..)
         , ColumnBoundary_
         , Column_
+        , Flows_
         , Gap
         , IsGap(..)
         , Justify(..)
@@ -86,7 +87,6 @@ import Neat.Internal as Internal
         , RowBoundary_
         , Row_
         , Size(..)
-        , Texts_
         , View_(..)
         )
 import Neat.View
@@ -275,8 +275,8 @@ renderView_ renderer extraMixin view =
         FromColumn o ->
             renderColumn renderer extraMixin o
 
-        FromTexts o ->
-            renderTexts renderer extraMixin o
+        FromFlows o ->
+            renderFlows renderer extraMixin o
 
 
 renderBoundary_ :
@@ -375,11 +375,20 @@ renderBoundary_ renderer extraMixin props boundary_ =
                     )
 
         EmptyBoundary ->
+            let
+                innerGap =
+                    Mixin.batch
+                        [ variable "inner-gap-x" "0"
+                        , variable "inner-gap-y" "0"
+                        ]
+            in
             if overlays == [] then
                 Html.node props.nodeName
                     [ props.mixin
+                    , innerGap
                     , wrapper
                     , class "boundary_content"
+                    , class "boundary_content-empty"
                     ]
                     []
 
@@ -392,9 +401,67 @@ renderBoundary_ renderer extraMixin props boundary_ =
                     (( uniqueKey
                      , Html.node props.nodeName
                         [ props.mixin
+                        , innerGap
                         , class "boundary_content"
+                        , class "boundary_content-empty"
                         ]
                         []
+                     )
+                        :: List.map (renderOverlay renderer) overlays
+                    )
+
+        FlowsBoundary param ->
+            let
+                consFlows ( t, ts ) =
+                    t :: ts
+
+                flowHtmls =
+                    renderFlowList
+                        (class "inline")
+                        (consFlows param.texts)
+
+                innerGap =
+                    Mixin.batch
+                        [ variable "inner-gap-x"
+                            (multipleBaseSize param.contentGap.horizontal renderer.baseSize
+                                |> renderBaseSize
+                            )
+                        , variable "inner-gap-y"
+                            (multipleBaseSize param.contentGap.vertical renderer.baseSize
+                                |> renderBaseSize
+                            )
+                        ]
+            in
+            if overlays == [] then
+                Html.node props.nodeName
+                    [ props.mixin
+                    , innerGap
+                    , wrapper
+                    , class "boundary_content"
+                    , class "textBoundary"
+                    , variable "content-gap-y"
+                        (multipleBaseSize param.contentGap.vertical renderer.baseSize
+                            |> renderBaseSize
+                        )
+                    ]
+                    flowHtmls
+
+            else
+                Html.keyed "div"
+                    [ wrapper
+                    ]
+                    (( uniqueKey
+                     , Html.node props.nodeName
+                        [ props.mixin
+                        , innerGap
+                        , class "boundary_content"
+                        , class "textBoundary"
+                        , variable "content-gap-y"
+                            (multipleBaseSize param.contentGap.vertical renderer.baseSize
+                                |> renderBaseSize
+                            )
+                        ]
+                        flowHtmls
                      )
                         :: List.map (renderOverlay renderer) overlays
                     )
@@ -724,7 +791,7 @@ extractNominalGap view_ =
         FromColumn column_ ->
             column_.nominalGap
 
-        FromTexts texts_ ->
+        FromFlows texts_ ->
             texts_.nominalGap
 
 
@@ -1011,10 +1078,10 @@ renderColumn renderer extraMixin o =
                     ]
 
 
-renderTexts : Renderer_ -> Mixin msg -> Texts_ msg -> Html msg
-renderTexts renderer extraMixin o =
+renderFlows : Renderer_ -> Mixin msg -> Flows_ msg -> Html msg
+renderFlows renderer extraMixin o =
     let
-        consTexts ( t, ts ) =
+        consFlows ( t, ts ) =
             t :: ts
 
         base =
@@ -1029,18 +1096,21 @@ renderTexts renderer extraMixin o =
                 ]
 
         textHtmls =
-            renderTextList
-                (class "textView_inline")
-                (consTexts o.texts)
+            renderFlowList
+                (class "inline")
+                (consFlows o.texts)
     in
-    Html.node o.nodeName
+    Html.node
+        (o.nodeName
+            |> Maybe.withDefault "div"
+        )
         [ base
         ]
         textHtmls
 
 
-renderTextList : Mixin msg -> List (Internal.Text msg) -> List (Html msg)
-renderTextList mixin =
+renderFlowList : Mixin msg -> List (Internal.Flow msg) -> List (Html msg)
+renderFlowList mixin =
     List.filterMap
         (\inline ->
             case inline.nodeName of
@@ -1104,7 +1174,7 @@ class str =
 
 variable : String -> String -> Mixin msg
 variable prop val =
-    Mixin.style ("--elmNeatLayout--" ++ prop) val
+    Mixin.style ("--elmneatlayout--" ++ prop) val
 
 
 
@@ -1143,4 +1213,4 @@ withMaybe ma f =
 
 neatLayoutStyle : String
 neatLayoutStyle =
-    """.elmNeatLayout,.elmNeatLayout:after,.elmNeatLayout:before{box-sizing:border-box;margin:0;padding:0}.elmNeatLayout--top{bottom:0;display:block;left:0;overflow:hidden;position:fixed;right:0;top:0}.elmNeatLayout--overlay{bottom:var(--elmNeatLayout--overlay-bottom);display:block;left:var(--elmNeatLayout--overlay-left);overflow:hidden;pointer-events:none;position:absolute;right:var(--elmNeatLayout--overlay-right);top:var(--elmNeatLayout--overlay-top);z-index:var(--elmNeatLayout--overlay-priority)}.elmNeatLayout--boundary_content{display:block;overflow:visible;padding:var(--elmNeatLayout--inner-gap-y) var(--elmNeatLayout--inner-gap-x)}.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--boundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--boundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--boundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--boundary:not(.elmNeatLayout--boundary_content){align-items:stretch;display:flex;flex-direction:row}.elmNeatLayout--boundary:not(.elmNeatLayout--boundary_content)>.elmNeatLayout--boundary_content{flex-grow:1;height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild{flex-shrink:1;width:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild{flex-shrink:1;height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--rowBoundary_content{display:flex;flex-flow:row nowrap;overflow:hidden}.elmNeatLayout--rowBoundary-wrap{flex-wrap:wrap}.elmNeatLayout--rowBoundary-justifyStart{justify-content:flex-start}.elmNeatLayout--rowBoundary-justifyCenter{justify-content:center}.elmNeatLayout--rowBoundary-justifyEnd{justify-content:flex-end}.elmNeatLayout--rowBoundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--rowBoundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--rowBoundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--rowBoundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--rowBoundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--rowBoundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--rowBoundary:not(.elmNeatLayout--rowBoundary_content){align-items:stretch;display:flex;flex-direction:row}.elmNeatLayout--rowBoundary:not(.elmNeatLayout--rowBoundary_content)>.elmNeatLayout--rowBoundary_content{flex-grow:1;height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild:not(.elmNeatLayout--rowBoundary-horizontalOverflow){flex-shrink:0;width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow{flex-shrink:1}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow:not(.elmNeatLayout--rowChild-grow){width:0}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow.elmNeatLayout--rowChild-grow{width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild{flex-shrink:1;height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--rowBoundary_content-horizontalOverflow{overflow-x:auto;overflow-y:hidden}.elmNeatLayout--rowBoundary_content-horizontalOverflow>.elmNeatLayout--rowChild{flex-shrink:0}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--columnBoundary_content{display:flex;flex-flow:column nowrap;overflow:hidden}.elmNeatLayout--columnBoundary-justifyStart{justify-content:flex-start}.elmNeatLayout--columnBoundary-justifyCenter{justify-content:center}.elmNeatLayout--columnBoundary-justifyEnd{justify-content:flex-end}.elmNeatLayout--columnBoundary-hasMaxHeight{max-height:var(--elmNeatLayout--max-height)}.elmNeatLayout--columnBoundary-hasMaxWidth{max-width:var(--elmNeatLayout--max-width)}.elmNeatLayout--columnBoundary-hasMinHeight{min-height:var(--elmNeatLayout--min-height)}.elmNeatLayout--columnBoundary-hasMinWidth{min-width:var(--elmNeatLayout--min-width)}.elmNeatLayout--columnBoundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--columnBoundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--columnBoundary:not(.elmNeatLayout--columnBoundary_content){align-items:stretch;display:flex;flex-direction:row}.elmNeatLayout--columnBoundary:not(.elmNeatLayout--columnBoundary_content)>.elmNeatLayout--columnBoundary_content{flex-grow:1;height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild{flex-shrink:1;width:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild:not(.elmNeatLayout--columnBoundary-verticalOverflow){flex-shrink:0;height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow{flex-shrink:1}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow:not(.elmNeatLayout--columnChild-grow){height:0}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow:not(.elmNeatLayout--columnBoundary_content){overflow-y:hidden}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow.elmNeatLayout--columnChild-grow{height:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--columnBoundary_content-verticalOverflow{overflow-x:hidden;overflow-y:auto}.elmNeatLayout--columnBoundary_content-verticalOverflow>.elmNeatLayout--columnChild{flex-shrink:0}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--row{display:flex;flex-flow:row nowrap;gap:var(--elmNeatLayout--content-gap-y) var(--elmNeatLayout--content-gap-x)}.elmNeatLayout--row-wrap{flex-wrap:wrap}.elmNeatLayout--row-justifyStart{justify-content:flex-start}.elmNeatLayout--row-justifyCenter{justify-content:center}.elmNeatLayout--row-justifyEnd{justify-content:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--row.elmNeatLayout--rowChild{flex-shrink:1;height:auto;width:auto}.elmNeatLayout--row.elmNeatLayout--columnChild{flex-shrink:1;height:auto;width:100%}.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--row.elmNeatLayout--boundaryChild{height:100%;width:100%}.elmNeatLayout--column{display:flex;flex-flow:column nowrap;gap:var(--elmNeatLayout--content-gap-y) var(--elmNeatLayout--content-gap-x)}.elmNeatLayout--column-justifyStart{justify-content:flex-start}.elmNeatLayout--column-justifyCenter{justify-content:center}.elmNeatLayout--column-justifyEnd{justify-content:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--column.elmNeatLayout--rowChild{flex-shrink:1;height:100%;width:auto}.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--column.elmNeatLayout--columnChild{flex-shrink:1;height:auto;width:auto}.elmNeatLayout--column.elmNeatLayout--boundaryChild{height:100%;width:100%}.elmNeatLayout--textView{overflow:visible}.elmNeatLayout--textView>.elmNeatLayout--textView_inline{display:inline;line-height:calc(1em + var(--elmNeatLayout--content-gap-y))}"""
+    """.elmNeatLayout,.elmNeatLayout:before,.elmNeatLayout:after{box-sizing:border-box;margin:0;padding:0}.elmNeatLayout--top{display:block;position:fixed;inset:0;overflow:hidden}.elmNeatLayout--overlay{pointer-events:none;top:var(--elmneatlayout--overlay-top);bottom:var(--elmneatlayout--overlay-bottom);left:var(--elmneatlayout--overlay-left);right:var(--elmneatlayout--overlay-right);z-index:var(--elmneatlayout--overlay-priority);display:block;position:absolute;overflow:hidden}.elmNeatLayout--boundary_content{padding:var(--elmneatlayout--inner-gap-y)var(--elmneatlayout--inner-gap-x);display:block;overflow-x:clip;overflow-y:visible}.elmNeatLayout--boundary-hasMaxHeight{max-height:var(--elmneatlayout--max-height)}.elmNeatLayout--boundary-hasMaxWidth{max-width:var(--elmneatlayout--max-width)}.elmNeatLayout--boundary-hasMinHeight{min-height:var(--elmneatlayout--min-height)}.elmNeatLayout--boundary-hasMinWidth{min-width:var(--elmneatlayout--min-width)}.elmNeatLayout--boundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--boundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--boundary:not(.elmNeatLayout--boundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--boundary:not(.elmNeatLayout--boundary_content)>.elmNeatLayout--boundary_content{height:auto;flex-grow:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild{width:auto;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--boundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild{height:auto;flex-shrink:1}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--boundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--rowBoundary_content{flex-flow:row;display:flex;overflow:hidden}.elmNeatLayout--rowBoundary-wrap{flex-wrap:wrap}.elmNeatLayout--rowBoundary-justifyStart{justify-content:flex-start}.elmNeatLayout--rowBoundary-justifyCenter{justify-content:center}.elmNeatLayout--rowBoundary-justifyEnd{justify-content:flex-end}.elmNeatLayout--rowBoundary-hasMaxHeight{max-height:var(--elmneatlayout--max-height)}.elmNeatLayout--rowBoundary-hasMaxWidth{max-width:var(--elmneatlayout--max-width)}.elmNeatLayout--rowBoundary-hasMinHeight{min-height:var(--elmneatlayout--min-height)}.elmNeatLayout--rowBoundary-hasMinWidth{min-width:var(--elmneatlayout--min-width)}.elmNeatLayout--rowBoundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--rowBoundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--rowBoundary:not(.elmNeatLayout--rowBoundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--rowBoundary:not(.elmNeatLayout--rowBoundary_content)>.elmNeatLayout--rowBoundary_content{height:auto;flex-grow:1}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild{flex-shrink:1}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild:not(.elmNeatLayout--rowBoundary-horizontalOverflow){width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow:not(.elmNeatLayout--rowChild-grow){width:0}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--rowBoundary-horizontalOverflow.elmNeatLayout--rowChild-grow{width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--rowBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild{height:auto;flex-shrink:1}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--rowBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--rowBoundary_content-horizontalOverflow{overflow-x:auto;overflow-y:hidden}.elmNeatLayout--rowBoundary_content-horizontalOverflow>.elmNeatLayout--rowChild{flex-shrink:0}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild{flex-grow:0}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--rowBoundary_content>.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--columnBoundary_content{flex-flow:column;display:flex;overflow:hidden}.elmNeatLayout--columnBoundary-justifyStart{justify-content:flex-start}.elmNeatLayout--columnBoundary-justifyCenter{justify-content:center}.elmNeatLayout--columnBoundary-justifyEnd{justify-content:flex-end}.elmNeatLayout--columnBoundary-hasMaxHeight{max-height:var(--elmneatlayout--max-height)}.elmNeatLayout--columnBoundary-hasMaxWidth{max-width:var(--elmneatlayout--max-width)}.elmNeatLayout--columnBoundary-hasMinHeight{min-height:var(--elmneatlayout--min-height)}.elmNeatLayout--columnBoundary-hasMinWidth{min-width:var(--elmneatlayout--min-width)}.elmNeatLayout--columnBoundary-hasOverlays:not(.elmNeatLayout--top){position:relative}.elmNeatLayout--columnBoundary-enforcePointerEvent{pointer-events:auto}.elmNeatLayout--columnBoundary:not(.elmNeatLayout--columnBoundary_content){flex-direction:row;align-items:stretch;display:flex}.elmNeatLayout--columnBoundary:not(.elmNeatLayout--columnBoundary_content)>.elmNeatLayout--columnBoundary_content{height:auto;flex-grow:1}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild{width:auto;flex-shrink:1}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightMinSize{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex{height:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--rowChild.elmNeatLayout--heightFlex.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild{flex-shrink:1}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild:not(.elmNeatLayout--columnBoundary-verticalOverflow){height:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow:not(.elmNeatLayout--columnChild-grow){height:0}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow:not(.elmNeatLayout--columnBoundary_content){overflow-y:hidden}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--columnBoundary-verticalOverflow.elmNeatLayout--columnChild-grow{height:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthMinSize{width:auto}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex{width:100%}.elmNeatLayout--columnBoundary.elmNeatLayout--columnChild.elmNeatLayout--widthFlex.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--columnBoundary_content-verticalOverflow{overflow-x:hidden;overflow-y:auto}.elmNeatLayout--columnBoundary_content-verticalOverflow>.elmNeatLayout--columnChild{flex-shrink:0}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild{flex-grow:0}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--columnBoundary_content>.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--row{gap:var(--elmneatlayout--content-gap-y)var(--elmneatlayout--content-gap-x);flex-flow:row;display:flex}.elmNeatLayout--row-wrap{flex-wrap:wrap}.elmNeatLayout--row-justifyStart{justify-content:flex-start}.elmNeatLayout--row-justifyCenter{justify-content:center}.elmNeatLayout--row-justifyEnd{justify-content:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild{flex-grow:0;flex-shrink:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-grow{flex-grow:1}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStart{align-self:flex-start}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignCenter{align-self:center}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignEnd{align-self:flex-end}.elmNeatLayout--row>.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{align-self:stretch}.elmNeatLayout--row.elmNeatLayout--rowChild{width:auto;height:auto;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild{height:auto;width:100%;flex-shrink:1}.elmNeatLayout--row.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{width:auto}.elmNeatLayout--row.elmNeatLayout--boundaryChild{width:100%;height:100%}.elmNeatLayout--column{gap:var(--elmneatlayout--content-gap-y)var(--elmneatlayout--content-gap-x);flex-flow:column;display:flex}.elmNeatLayout--column-justifyStart{justify-content:flex-start}.elmNeatLayout--column-justifyCenter{justify-content:center}.elmNeatLayout--column-justifyEnd{justify-content:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild{flex-grow:0;flex-shrink:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-grow{flex-grow:1}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStart{align-self:flex-start}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignCenter{align-self:center}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignEnd{align-self:flex-end}.elmNeatLayout--column>.elmNeatLayout--columnChild.elmNeatLayout--columnChild-alignStretch{align-self:stretch}.elmNeatLayout--column.elmNeatLayout--rowChild{width:auto;height:100%;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--rowChild.elmNeatLayout--rowChild-alignStretch{height:auto}.elmNeatLayout--column.elmNeatLayout--columnChild{height:auto;width:auto;flex-shrink:1}.elmNeatLayout--column.elmNeatLayout--boundaryChild{width:100%;height:100%}.elmNeatLayout--textView{margin:calc(var(--elmneatlayout--content-gap-y)/-2)0;overflow-x:clip;overflow-y:visible}.elmNeatLayout--inline{line-height:calc(1em + var(--elmneatlayout--content-gap-y));display:inline}"""

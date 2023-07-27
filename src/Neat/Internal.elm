@@ -11,6 +11,8 @@ module Neat.Internal exposing
     , ColumnConfig
     , ColumnItem(..)
     , Column_
+    , Flow
+    , Flows_
     , Gap
     , IsGap(..)
     , ItemBoundary_
@@ -31,15 +33,13 @@ module Neat.Internal exposing
     , RowItem(..)
     , Row_
     , Size(..)
-    , Text
-    , Texts_
     , View(..)
     , View_(..)
     , defaultBoundaryProps
     , mapBoundary
     , mapBoundary_
+    , mapFlow
     , mapOverlays
-    , mapText
     , mapView_
     )
 
@@ -64,7 +64,7 @@ type View_ msg
         (Boundary_ msg)
     | FromRow (Row_ msg)
     | FromColumn (Column_ msg)
-    | FromTexts (Texts_ msg)
+    | FromFlows (Flows_ msg)
 
 
 type alias Row_ msg =
@@ -88,12 +88,12 @@ type alias Column_ msg =
     }
 
 
-type alias Texts_ msg =
+type alias Flows_ msg =
     { mixin : Mixin msg
     , nominalGap : Gap
     , contentGap : Gap
-    , nodeName : String
-    , texts : ( Text msg, List (Text msg) )
+    , nodeName : Maybe String
+    , texts : ( Flow msg, List (Flow msg) )
     }
 
 
@@ -148,8 +148,8 @@ mapView_ f view =
                 , children = modifyChild (mapView_ f) o.children
                 }
 
-        FromTexts o ->
-            FromTexts
+        FromFlows o ->
+            FromFlows
                 { mixin = Mixin.map f o.mixin
                 , nominalGap = o.nominalGap
                 , contentGap = o.contentGap
@@ -159,8 +159,8 @@ mapView_ f view =
                         ( head, tail ) =
                             o.texts
                     in
-                    ( mapText f head
-                    , List.map (mapText f) tail
+                    ( mapFlow f head
+                    , List.map (mapFlow f) tail
                     )
                 }
 
@@ -194,6 +194,7 @@ type Boundary_ msg
     = FromView (FromView_ msg)
     | RowBoundary (RowBoundary_ msg)
     | ColumnBoundary (ColumnBoundary_ msg)
+    | FlowsBoundary (FlowsBoundary_ msg)
       -- e.g., `input`
     | EmptyBoundary
 
@@ -224,6 +225,10 @@ mapBoundary_ f boundary_ =
         ColumnBoundary props ->
             mapColumnBoundary_ f props
                 |> ColumnBoundary
+
+        FlowsBoundary props ->
+            mapFlowsBoundary_ f props
+                |> FlowsBoundary
 
         EmptyBoundary ->
             EmptyBoundary
@@ -321,6 +326,24 @@ mapColumnBoundary_ f o =
     { children = mapChildBoundaries f o.children
     , justifyContent = o.justifyContent
     , scrollable = o.scrollable
+    }
+
+
+type alias FlowsBoundary_ msg =
+    { contentGap : Gap
+    , texts : ( Flow msg, List (Flow msg) )
+    }
+
+
+mapFlowsBoundary_ : (a -> b) -> FlowsBoundary_ a -> FlowsBoundary_ b
+mapFlowsBoundary_ f o =
+    { contentGap = o.contentGap
+    , texts =
+        let
+            ( t, ts ) =
+                o.texts
+        in
+        ( mapFlow f t, List.map (mapFlow f) ts )
     }
 
 
@@ -474,15 +497,15 @@ type Layered msg
     = Layered msg
 
 
-type alias Text msg =
+type alias Flow msg =
     { mixin : Mixin msg
     , nodeName : Maybe String
     , text : String
     }
 
 
-mapText : (a -> b) -> Text a -> Text b
-mapText f text =
+mapFlow : (a -> b) -> Flow a -> Flow b
+mapFlow f text =
     { mixin = Mixin.map f text.mixin
     , nodeName = text.nodeName
     , text = text.text

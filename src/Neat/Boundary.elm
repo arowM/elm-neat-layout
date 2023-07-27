@@ -105,7 +105,7 @@ The following styles are not reflected by the `style` attribute or CSS files.
   - position
       - Use putLayer
   - line-height
-      - Specify with `Neat.View.textBlock` of `Neat.View.fromTexts`
+      - Specify with `Neat.View.textBlock` of `Neat.View.fromFlows`
 
 @docs setMixin
 @docs setMixins
@@ -305,6 +305,26 @@ map =
 
 
 {-| An empty block.
+
+In HTML terms, it generates an HTML element without content.
+
+    -- Exposed by `elm-community/html-extra`
+
+
+    import Html.Attributes exposing (type_, value)
+    import Html.Events.Extra exposing (onChange)
+    import Neat.Boundary as Boundary
+
+    input : Model -> Boundary msg
+    input model =
+        Boundary.empty
+            |> Boundary.setNodeName "input"
+            |> Boundary.setAttributes
+                [ type_ "text"
+                , value model.input
+                , onChange ChangeInputValue
+                ]
+
 -}
 empty : Boundary msg
 empty =
@@ -314,6 +334,7 @@ empty =
 
 
 
+-- Flow contents
 -- Attributes
 
 

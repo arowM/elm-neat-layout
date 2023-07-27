@@ -1,6 +1,6 @@
 .elmNeatLayout {
   $prefix: &;
-  $variable: elmNeatLayout;
+  $variable: elmneatlayout;
   $top: #{$prefix}--top;
   $boundary: #{$prefix}--boundary;
   $boundaryChild: #{$prefix}--boundaryChild;
@@ -50,6 +50,7 @@
     &_content {
       display: block;
       overflow: visible;
+      overflow-x: clip;
       padding: var(--#{$variable}--inner-gap-y) var(--#{$variable}--inner-gap-x);
     }
 
@@ -184,15 +185,13 @@
     }
 
     &#{$rowChild} {
+      flex-shrink: 1;
 
       &:not(#{$rowBoundary}-horizontalOverflow) {
-        flex-shrink: 0;
         width: auto;
       }
 
       &#{$rowBoundary}-horizontalOverflow {
-        flex-shrink: 1;
-
         &:not(#{$rowChild}-grow) {
           width: 0;
         }
@@ -338,15 +337,13 @@
     }
 
     &#{$columnChild} {
+      flex-shrink: 1;
 
       &:not(#{$columnBoundary}-verticalOverflow) {
-        flex-shrink: 0;
         height: auto;
       }
 
       &#{$columnBoundary}-verticalOverflow {
-        flex-shrink: 1;
-
         &:not(#{$columnChild}-grow) {
           height: 0;
         }
@@ -428,6 +425,7 @@
 
     & > #{$rowChild} {
       flex-grow: 0;
+      flex-shrink: 1;
 
       &#{$rowChild}-grow {
         flex-grow: 1;
@@ -491,6 +489,7 @@
 
     & > #{$columnChild} {
       flex-grow: 0;
+      flex-shrink: 1;
 
       &#{$columnChild}-grow {
         flex-grow: 1;
@@ -533,11 +532,13 @@
   }
 
   &--textView {
-    overflow: visible;
+    overflow-x: clip;
+    overflow-y: visible;
+    margin: calc(var(--#{$variable}--content-gap-y) / -2) 0;
+  }
 
-    & > #{$textView}_inline {
-      display: inline;
-      line-height: calc(1em + var(--#{$variable}--content-gap-y));
-    }
+  &--inline {
+    display: inline;
+    line-height: calc(1em + var(--#{$variable}--content-gap-y));
   }
 }
