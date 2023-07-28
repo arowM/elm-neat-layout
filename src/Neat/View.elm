@@ -4,9 +4,10 @@ module Neat.View exposing
     , textBlock
     , fromFlows
     , row
+    , center
     , Row
     , defaultRow
-    , enableWrap
+    , disableWrap
     , RowItem
     , alignCenter
     , alignRight
@@ -62,13 +63,14 @@ module Neat.View exposing
 # Row
 
 @docs row
+@docs center
 
 
 ## Config
 
 @docs Row
 @docs defaultRow
-@docs enableWrap
+@docs disableWrap
 @docs RowItem
 @docs alignCenter
 @docs alignRight
@@ -217,7 +219,7 @@ defaultRow_ gap children =
     , nodeName = "div"
     , justifyContent = JustifyStart
     , children = children
-    , wrap = False
+    , wrap = True
     }
 
 
@@ -352,6 +354,19 @@ row (Row { justify, wrap }) children_ =
                     }
 
 
+{-| An alias for `row` with a centered element.
+-}
+center : View gap msg -> View gap msg
+center v =
+    row
+        (defaultRow
+            |> alignCenter
+        )
+        [ v
+            |> middleItem "content"
+        ]
+
+
 {-| -}
 type alias Row =
     Internal.Row
@@ -361,7 +376,7 @@ type alias Row =
 
   - HTML node name: `"div"`
   - horizontal alignment: left
-  - wrapping: disabled
+  - wrapping: enabled
   - role: no role
   - ARIA attributes: no attributes
 
@@ -371,15 +386,15 @@ defaultRow =
     Row
         { nodeName = "div"
         , justify = JustifyStart
-        , wrap = False
+        , wrap = True
         }
 
 
 {-| -}
-enableWrap : Row -> Row
-enableWrap (Row config) =
+disableWrap : Row -> Row
+disableWrap (Row config) =
     Row
-        { config | wrap = True }
+        { config | wrap = False }
 
 
 {-| -}

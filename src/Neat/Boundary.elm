@@ -24,9 +24,10 @@ module Neat.Boundary exposing
     , setMaxHeightInEm
     , setMaxHeightInRem
     , row
+    , center
     , Row
     , defaultRow
-    , enableWrap
+    , disableWrap
     , enableHScroll
     , RowItem
     , alignCenter
@@ -167,13 +168,14 @@ The default value for maximum height is _fit_, which shrinks as much as its chil
 # Row
 
 @docs row
+@docs center
 
 
 ## Config
 
 @docs Row
 @docs defaultRow
-@docs enableWrap
+@docs disableWrap
 @docs enableHScroll
 @docs RowItem
 @docs alignCenter
@@ -625,9 +627,22 @@ defaultRowBoundary_ : ChildBoundaries msg -> RowBoundary_ msg
 defaultRowBoundary_ children =
     { children = children
     , justifyContent = JustifyStart
-    , wrap = False
+    , wrap = True
     , scrollable = False
     }
+
+
+{-| An alias for `row` with a centered element.
+-}
+center : Boundary msg -> Boundary msg
+center v =
+    row
+        (defaultRow
+            |> alignCenter
+        )
+        [ v
+            |> middleItem "content"
+        ]
 
 
 {-| -}
@@ -645,7 +660,7 @@ type alias RowConfig =
 {-| Default setting for rows.
 
   - horizontal alignment: left
-  - wrapping: disabled
+  - wrapping: enabled
   - horizontal scroll: disabled
 
 -}
@@ -653,16 +668,16 @@ defaultRow : Row
 defaultRow =
     Row
         { justify = JustifyStart
-        , wrap = False
+        , wrap = True
         , scrollable = False
         }
 
 
 {-| -}
-enableWrap : Row -> Row
-enableWrap (Row config) =
+disableWrap : Row -> Row
+disableWrap (Row config) =
     Row
-        { config | wrap = True }
+        { config | wrap = False }
 
 
 {-| -}
