@@ -94,6 +94,10 @@ type alias Flows_ msg =
     , contentGap : Gap
     , nodeName : Maybe String
     , texts : ( Flow msg, List (Flow msg) )
+    , justify : Justify
+    , wrap : Bool
+    , ellipsis : Bool
+    , preserveWhiteSpace : Bool
     }
 
 
@@ -162,6 +166,10 @@ mapView_ f view =
                     ( mapFlow f head
                     , List.map (mapFlow f) tail
                     )
+                , justify = o.justify
+                , wrap = o.wrap
+                , ellipsis = o.ellipsis
+                , preserveWhiteSpace = o.preserveWhiteSpace
                 }
 
 
@@ -332,6 +340,10 @@ mapColumnBoundary_ f o =
 type alias FlowsBoundary_ msg =
     { contentGap : Gap
     , texts : ( Flow msg, List (Flow msg) )
+    , justify : Justify
+    , wrap : Bool
+    , ellipsis : Bool
+    , preserveWhiteSpace : Bool
     }
 
 
@@ -344,6 +356,10 @@ mapFlowsBoundary_ f o =
                 o.texts
         in
         ( mapFlow f t, List.map (mapFlow f) ts )
+    , justify = o.justify
+    , wrap = o.wrap
+    , ellipsis = o.ellipsis
+    , preserveWhiteSpace = o.preserveWhiteSpace
     }
 
 

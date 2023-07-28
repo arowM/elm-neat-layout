@@ -2,7 +2,14 @@ module Neat.View exposing
     ( View
     , map
     , textBlock
-    , fromFlows
+    , flows
+    , Flows
+    , defaultFlows
+    , disableTextWrap
+    , enableEllipsis
+    , preserveWhiteSpace
+    , pushCenter
+    , pushEnd
     , row
     , center
     , Row
@@ -57,7 +64,18 @@ module Neat.View exposing
 # Inline Flows
 
 @docs textBlock
-@docs fromFlows
+@docs flows
+
+
+## Config
+
+@docs Flows
+@docs defaultFlows
+@docs disableTextWrap
+@docs enableEllipsis
+@docs preserveWhiteSpace
+@docs pushCenter
+@docs pushEnd
 
 
 # Row
@@ -242,7 +260,7 @@ defaultColumn_ gap children =
 
 The first argument specifies the line height, which is the size of the gap between text lines when the given text is wrapped.
 
-It is an alias for `\str -> fromFlows gap [ Neat.Flow.fromString str ]`.
+It is an alias for `\str -> flows gap defaultFlows [ Neat.Flow.fromString str ]`.
 
 Note that `textBlock gap ""` does not generate anything.
 
@@ -252,12 +270,13 @@ textBlock :
     -> String
     -> View gap msg
 textBlock gap str =
-    fromFlows gap
+    flows gap
+        defaultFlows
         [ Flow.fromString str
         ]
 
 
-{-| Build a text block from `Flow`s.
+{-| Generates a view that displays flow contents.
 
 Unlike a `row` consist of `textBlock`s, the `fromFlows` generates a single coherent sentence.
 
@@ -293,11 +312,12 @@ The resulting View will be newlined as follows:
 Note that `fromFlows gap []` does not generate anything.
 
 -}
-fromFlows :
+flows :
     IsGap gap
+    -> Flows
     -> List (Flow msg)
     -> View gap msg
-fromFlows (IsGap gap) texts =
+flows (IsGap gap) (Flows param) texts =
     case texts of
         [] ->
             None
@@ -310,7 +330,92 @@ fromFlows (IsGap gap) texts =
                     , contentGap = gap
                     , nodeName = Nothing
                     , texts = ( item, items )
+                    , justify = param.justify
+                    , wrap = param.wrap
+                    , ellipsis = param.ellipsis
+                    , preserveWhiteSpace = param.preserveWhiteSpace
                     }
+
+
+{-| Setting for displaying flow contents.
+-}
+type Flows
+    = Flows Flows_
+
+
+{-| Default setting for displaying flow contents.
+-}
+defaultFlows : Flows
+defaultFlows =
+    Flows
+        { justify = JustifyStart
+        , wrap = True
+        , ellipsis = False
+        , preserveWhiteSpace = False
+        }
+
+
+type alias Flows_ =
+    { justify : Justify
+    , wrap : Bool
+    , ellipsis : Bool
+    , preserveWhiteSpace : Bool
+    }
+
+
+{-| Disable the text content to be wrapped.
+-}
+disableTextWrap : Flows -> Flows
+disableTextWrap (Flows param) =
+    Flows
+        { param
+            | wrap = False
+        }
+
+
+{-| Display ellipsis (`…`, `U+2026 HORIZONTAL ELLIPSIS`) to represent clipped text when the flow content overflows.
+
+This also disables the text content to be wrapped.
+
+-}
+enableEllipsis : Flows -> Flows
+enableEllipsis (Flows param) =
+    Flows
+        { param
+            | ellipsis = True
+            , wrap = False
+        }
+
+
+{-| Disable [collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/white-space#collapsing_of_white_space) of spaces, tabs, and new lines.
+-}
+preserveWhiteSpace : Flows -> Flows
+preserveWhiteSpace (Flows param) =
+    Flows
+        { param
+            | preserveWhiteSpace = True
+        }
+
+
+{-| Push the flow content to the center.
+-}
+pushCenter : Flows -> Flows
+pushCenter (Flows param) =
+    Flows
+        { param
+            | justify = JustifyCenter
+        }
+
+
+{-| Push the flow content to the end.
+(Right if [direction](https://developer.mozilla.org/en-US/docs/Web/CSS/direction) is `ltr`, left if direction is `rtl`.)
+-}
+pushEnd : Flows -> Flows
+pushEnd (Flows param) =
+    Flows
+        { param
+            | justify = JustifyEnd
+        }
 
 
 
@@ -832,6 +937,10 @@ setBoundary view =
                     (FlowsBoundary
                         { contentGap = flows_.contentGap
                         , texts = flows_.texts
+                        , wrap = flows_.wrap
+                        , justify = flows_.justify
+                        , ellipsis = flows_.ellipsis
+                        , preserveWhiteSpace = flows_.preserveWhiteSpace
                         }
                     )
 

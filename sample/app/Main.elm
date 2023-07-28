@@ -89,7 +89,8 @@ body _ =
             |> Boundary.columnItem "header"
         , View.column
             View.defaultColumn
-            [ View.fromFlows Gap.sub
+            [ View.flows Gap.sub
+                View.defaultFlows
                 [ Flow.fromString "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
                 , Flow.fromString "<eiusmod>"
                     |> Flow.setClass "inlineCode"

@@ -49,8 +49,8 @@
   &--boundary {
     &_content {
       display: block;
-      overflow: visible;
       overflow-x: clip;
+      overflow-y: visible;
       padding: var(--#{$variable}--inner-gap-y) var(--#{$variable}--inner-gap-x);
     }
 
@@ -532,17 +532,55 @@
   }
 
   &--textView {
+    display: block;
     overflow-x: clip;
     overflow-y: visible;
     margin: calc(var(--#{$variable}--content-gap-y) / -2) 0;
+  }
+
+  &--textView, &--textBoundary {
     line-height: calc(1em + var(--#{$variable}--content-gap-y));
   }
 
-  &--textBoundary {
-    line-height: calc(1em + var(--#{$variable}--content-gap-y));
+  &--flows {
+    &-justifyStart {
+      text-align: start;
+    }
+
+    &-justifyCenter {
+      text-align: center;
+    }
+
+    &-justifyEnd {
+      text-align: end;
+    }
+
+    &-ellipsis {
+      text-overflow: ellipsis;
+    }
+
+    $parent: &;
+    &:not(#{$parent}-nowrap) {
+      &:not(#{$parent}-preserveWhiteSpace) {
+        white-space: normal;
+      }
+      &#{$parent}-preserveWhiteSpace {
+        white-space: break-spaces;
+      }
+    }
+
+    &-nowrap {
+      &:not(#{$parent}-preserveWhiteSpace) {
+        white-space: nowrap;
+      }
+      &#{$parent}-preserveWhiteSpace {
+        white-space: pre;
+      }
+    }
   }
 
   &--inline {
     display: inline;
+    line-height: calc(1em + var(--#{$variable}--content-gap-y));
   }
 }
