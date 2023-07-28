@@ -535,10 +535,14 @@
     overflow-x: clip;
     overflow-y: visible;
     margin: calc(var(--#{$variable}--content-gap-y) / -2) 0;
+    line-height: calc(1em + var(--#{$variable}--content-gap-y));
+  }
+
+  &--textBoundary {
+    line-height: calc(1em + var(--#{$variable}--content-gap-y));
   }
 
   &--inline {
     display: inline;
-    line-height: calc(1em + var(--#{$variable}--content-gap-y));
   }
 }
