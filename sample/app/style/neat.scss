@@ -48,7 +48,9 @@
 
   &--boundary {
     &_content {
-      display: block;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
       overflow-x: clip;
       overflow-y: visible;
       padding: var(--#{$variable}--inner-gap-y) var(--#{$variable}--inner-gap-x);
@@ -123,6 +125,14 @@
         }
       }
     }
+  }
+
+  &--boundaryChild {
+    display: block;
+    width: 100%;
+    height: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
   }
 
   &--rowBoundary {
@@ -463,11 +473,6 @@
         width: auto;
       }
     }
-
-    &#{$boundaryChild} {
-      width: 100%;
-      height: 100%;
-    }
   }
 
   &--column {
@@ -523,11 +528,6 @@
       flex-shrink: 1;
       height: auto;
       width: auto;
-    }
-
-    &#{$boundaryChild} {
-      width: 100%;
-      height: 100%;
     }
   }
 
