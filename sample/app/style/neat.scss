@@ -3,6 +3,7 @@
   $variable: elmneatlayout;
   $top: #{$prefix}--top;
   $boundary: #{$prefix}--boundary;
+  $textBoundary: #{$prefix}--textBoundary;
   $boundaryChild: #{$prefix}--boundaryChild;
   $row: #{$prefix}--row;
   $rowChild: #{$prefix}--rowChild;
@@ -48,12 +49,15 @@
 
   &--boundary {
     &_content {
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
       overflow-x: clip;
       overflow-y: visible;
       padding: var(--#{$variable}--inner-gap-y) var(--#{$variable}--inner-gap-x);
+
+      &:not(#{$textBoundary}) {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+      }
     }
 
     &-hasMaxHeight {
@@ -81,7 +85,7 @@
     }
 
     // wrapper
-    &:not(#{$boundary}_content) {
+    &:not(#{$boundary}_content):not(#{$textBoundary}) {
       display: flex;
       flex-direction: row;
       align-items: stretch;
@@ -538,11 +542,9 @@
     margin: calc(var(--#{$variable}--content-gap-y) / -2) 0;
   }
 
-  &--textView, &--textBoundary {
-    line-height: calc(1em + var(--#{$variable}--content-gap-y));
-  }
-
   &--flows {
+    line-height: calc(1em + var(--#{$variable}--content-gap-y));
+
     &-justifyStart {
       text-align: start;
     }
