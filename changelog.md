@@ -1,3 +1,15 @@
+# 4.0.0
+
+* Change `Neat.View.row` initially to be wrapped
+* Change `Neat.Text` to `Neat.Flow`
+* Change `Neat.View.fromTexts` to `Neat.View.flow`, and make it configurable
+* Add `Neat.Boundary.row` `Neat.Boundary.column`
+* Remove `Neat.Boundary.enableVerticalScroll`
+* Add `enableVScroll` property to `Neat.Boundary.column`
+* Add `Neat.Boundary.setVerticalScroller` shorthand
+* Remove `Neat.htmlNode`
+    * Use `Neat.View.flow` to render `select` tag
+
 # 3.2.2
 
 * Bugfix about `Neat.Boundary.enableVerticalScroll`
