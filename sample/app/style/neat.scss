@@ -247,7 +247,10 @@
     &_content-horizontalOverflow {
       overflow-x: auto;
       overflow-y: hidden;
-      min-width: fit-content;
+
+      &:not(#{$top}):not(#{$rowBoundary}-hasMinWidth) {
+        min-width: fit-content;
+      }
 
       & > #{$rowChild} {
         flex-shrink: 0;
@@ -386,7 +389,10 @@
     &_content-verticalOverflow {
       overflow-y: auto;
       overflow-x: hidden;
-      min-height: fit-content;
+
+      &:not(#{$top}):not(#{$columnBoundary}-hasMinHeight) {
+        min-height: fit-content;
+      }
 
       & > #{$columnChild} {
         flex-shrink: 0;
