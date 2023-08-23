@@ -1,4 +1,4 @@
-# 4.0.1
+# 4.0.1, 4.0.2
 
 * Bugfix about uninterrupted content of scrollable elements
 
