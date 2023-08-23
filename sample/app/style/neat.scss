@@ -209,6 +209,9 @@
         &:not(#{$rowChild}-grow) {
           width: 0;
         }
+        &#{$rowBoundary}_content {
+          min-width: fit-content;
+        }
         &#{$rowChild}-grow {
           width: auto;
         }
@@ -247,10 +250,6 @@
     &_content-horizontalOverflow {
       overflow-x: auto;
       overflow-y: hidden;
-
-      &:not(#{$top}):not(#{$rowBoundary}-hasMinWidth) {
-        min-width: fit-content;
-      }
 
       & > #{$rowChild} {
         flex-shrink: 0;
@@ -365,6 +364,9 @@
         &:not(#{$columnChild}-grow) {
           height: 0;
         }
+        &#{$columnBoundary}_content {
+          min-height: fit-content;
+        }
         &:not(#{$columnBoundary}_content) {
           overflow-y: hidden;
         }
@@ -389,10 +391,6 @@
     &_content-verticalOverflow {
       overflow-y: auto;
       overflow-x: hidden;
-
-      &:not(#{$top}):not(#{$columnBoundary}-hasMinHeight) {
-        min-height: fit-content;
-      }
 
       & > #{$columnChild} {
         flex-shrink: 0;
