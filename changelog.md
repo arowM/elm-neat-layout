@@ -1,3 +1,7 @@
+# 4.0.1
+
+* Bugfix about uninterrupted content of scrollable elements
+
 # 4.0.0
 
 * Change `Neat.View.row` initially to be wrapped
