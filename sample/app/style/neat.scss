@@ -2,6 +2,7 @@
   $prefix: &;
   $variable: elmneatlayout;
   $top: #{$prefix}--top;
+  $overlay: #{$prefix}--overlay;
   $boundary: #{$prefix}--boundary;
   $textBoundary: #{$prefix}--textBoundary;
   $boundaryChild: #{$prefix}--boundaryChild;
@@ -76,7 +77,7 @@
       min-width: var(--#{$variable}--min-width);
     }
 
-    &-hasOverlays:not(#{$top}) {
+    &-hasOverlays:not(#{$top}):not(#{$overlay}) {
       position: relative;
     }
 
@@ -178,7 +179,7 @@
       min-width: var(--#{$variable}--min-width);
     }
 
-    &-hasOverlays:not(#{$top}) {
+    &-hasOverlays:not(#{$top}):not(#{$overlay}) {
       position: relative;
     }
 
@@ -316,7 +317,7 @@
       min-width: var(--#{$variable}--min-width);
     }
 
-    &-hasOverlays:not(#{$top}) {
+    &-hasOverlays:not(#{$top}):not(#{$overlay}) {
       position: relative;
     }
 
