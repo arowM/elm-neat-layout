@@ -566,6 +566,9 @@
 
     &-ellipsis {
       text-overflow: ellipsis;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
     $parent: &;
