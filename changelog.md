@@ -1,3 +1,7 @@
+# 4.0.5
+
+- Style fix about `Neat.View.enableEllipsis`
+
 # 4.0.4
 
 - Bugfix to enable put Layer on the other Layer
